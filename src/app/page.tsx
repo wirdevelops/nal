@@ -8,8 +8,8 @@ import { Icons } from '@/components/ui/Icons'
 import { Container } from '@/components/ui/Container'
 import { Section } from '@/components/ui/Section'
 import { SectionHeader } from '@/components/ui/SectionHeader'
-import { Button } from '@/components/ui/Button'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/Card'
+import { Button } from '@/components/ui/button'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
 import { featuredCategories, blogPosts, creators, testimonials, impactStats, foundationInitiatives, featuredPodcasts } from '@/data/content'
 import { AuthButtons } from '@/components/auth/auth-buttons'
 
@@ -40,7 +40,7 @@ export default function Home() {
   return (
     <div className="flex flex-col">
       {/* Hero Section with Diagonal Split */}
-      <section className="relative h-[90vh] overflow-hidden">
+      <section className="relative min-h-[85vh] md:h-[90vh] overflow-hidden">
         <motion.div
           className="absolute inset-0"
           initial={{ scale: 1.1 }}
@@ -52,21 +52,22 @@ export default function Home() {
             alt="Hero background"
             fill
             priority
-            className="object-cover object-center"
+            className="object-cover object-[center_30%] md:object-center"
             sizes="100vw"
             quality={85}
           />
         </motion.div>
         <motion.div
-          className="absolute inset-0 bg-gradient-to-b from-primary/40 via-primary/30 to-secondary/20 dark:from-black/60 dark:via-black/40 dark:to-transparent backdrop-blur-[2px]"
+          className="absolute inset-0 bg-gradient-to-b from-transparent via-background/80 to-background dark:from-transparent dark:via-zinc-900/90 dark:to-background"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1.5 }}
         />
-        <div className="relative container mx-auto px-4 h-full flex items-center">
-          <div className="max-w-3xl">
+        <div className="relative container mx-auto px-4 h-full flex flex-col">
+          <div className="flex-1 min-h-[60vh] md:min-h-0" />
+          <div className="max-w-3xl space-y-4 md:space-y-6 pb-16 md:pb-0">
             <motion.h1
-              className="text-5xl md:text-7xl font-display font-bold mb-6 bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent"
+              className="text-3xl sm:text-4xl md:text-7xl font-display font-bold text-white dark:text-white"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
@@ -74,7 +75,7 @@ export default function Home() {
               Where African Culture Meets Innovation
             </motion.h1>
             <motion.p
-              className="text-xl md:text-2xl text-white/90 mb-8"
+              className="text-lg sm:text-xl md:text-2xl text-white/90 dark:text-white/90"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 }}
@@ -82,7 +83,7 @@ export default function Home() {
               Empowering voices, sharing stories, and building communities through digital innovation
             </motion.p>
             <motion.div
-              className="flex flex-col sm:flex-row gap-4"
+              className="flex flex-col sm:flex-row gap-3 md:gap-4 pt-2"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
@@ -91,7 +92,7 @@ export default function Home() {
             </motion.div>
           </div>
         </div>
-        <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-16 md:h-24 bg-gradient-to-t from-background to-transparent" />
       </section>
 
       {/* Featured Categories */}
@@ -140,7 +141,7 @@ export default function Home() {
           <Container>
             <div className="flex justify-between items-center mb-12">
               <h2 className="text-3xl font-display font-medium">Latest Stories</h2>
-              <Button variant="link" asChild>
+              <Button variant="link">
                 <Link href="/blog" className="inline-flex items-center">
                   View all posts
                   <Icons.arrowRight className="ml-2 h-4 w-4" />
@@ -177,7 +178,7 @@ export default function Home() {
                         <CardDescription>{post.excerpt}</CardDescription>
                       </CardHeader>
                       <CardFooter>
-                        <Button variant="link" asChild>
+                        <Button variant="link">
                           <Link href={`/blog/${post.slug}`} className="inline-flex items-center">
                             Read more
                             <Icons.arrowRight className="ml-2 h-4 w-4" />
@@ -256,12 +257,12 @@ export default function Home() {
                       </CardContent>
                       <CardFooter className="justify-center space-x-4">
                         {creator.social.twitter && (
-                          <Button variant="ghost" size="sm" asChild>
+                          <Button variant="ghost" size="sm">
                             <Link href={creator.social.twitter}>Twitter</Link>
                           </Button>
                         )}
                         {creator.social.instagram && (
-                          <Button variant="ghost" size="sm" asChild>
+                          <Button variant="ghost" size="sm">
                             <Link href={creator.social.instagram}>Instagram</Link>
                           </Button>
                         )}
@@ -345,7 +346,7 @@ export default function Home() {
                       />
                     </div>
                     <div className="flex items-center gap-2 mb-3 text-primary">
-                      {Icons[initiative.icon as keyof typeof Icons]}
+                      {/* {Icons[initiative.icon as keyof typeof Icons]} */}
                       <span className="text-sm font-medium">{initiative.category}</span>
                     </div>
                     <CardTitle>{initiative.title}</CardTitle>
@@ -409,7 +410,7 @@ export default function Home() {
                             variant="secondary"
                             className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                           >
-                            <Icons.play className="w-5 h-5" />
+                            <Icons.play size="sm" className="w-5 h-5" />
                           </Button>
                         </div>
                         <div className="flex-1">
@@ -449,7 +450,7 @@ export default function Home() {
                 </Button>
               </div>
             </div>
-            <ScrollReveal className="hidden lg:block">
+            <ScrollReveal  className="hidden lg:block">
               <div className="relative">
                 <Image
                   src="/images/home/podcast-feature.jpg"
@@ -516,13 +517,13 @@ export default function Home() {
                 Start sharing your story and connect with creators across Africa
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" asChild>
+                <Button size="lg">
                   <Link href="/sign-up">
                     Get Started
                     <Icons.arrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
-                <Button size="lg" variant="outline" asChild>
+                <Button size="lg" variant="outline">
                   <Link href="/contact">Contact Us</Link>
                 </Button>
               </div>
