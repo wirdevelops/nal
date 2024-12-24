@@ -9,13 +9,9 @@ const withPWA = require('@ducanh2912/next-pwa').default({
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-  output: 'standalone',
   images: {
     domains: ['fonts.gstatic.com'],
     unoptimized: true
-  },
-  experimental: {
-    appDir: true
   }
 }
 
