@@ -16,7 +16,7 @@ const NavigationStructure = [
         { icon: <Home />, label: 'Home', href: '/' },
         { icon: <Globe />, label: 'NGO Initiative', href: '/ngo' },
         { icon: <Lightbulb />, label: 'Projects', href: '/ngo/projects' },
-        { icon: <Store />, label: 'Market', href: '/ngo/market' }
+        { icon: <Store />, label: 'Market', href: '/products' }
       ]
     },
     {

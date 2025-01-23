@@ -1,38 +1,43 @@
+// stores/useNGOProjectStore.ts
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { v4 as uuidv4 } from 'uuid';
 import { z } from 'zod';
 import {
   NGOProject,
+  Milestone,
+  Budget,
+  Update,
+  Report,
   ProjectStatus,
-  ProjectCategory,
-  ProjectMedia,
   Beneficiary,
   Volunteer,
-  ProjectLocation,
+  ProjectMedia,
+   ProjectLocation,
   ProjectBudgetSchema,
   ProjectLocationSchema,
-} from '@/types/ngo/project';
+  TeamMember, 
+  
+} from '@/types/ngo';
 
-export interface ProjectState {
+interface NGOProjectState {
   projects: NGOProject[];
   loading: boolean;
   error: string | null;
-};
+}
 
-export interface ProjectActions {
-  // State properties
-  loading: boolean;
-  error: string | null;
-
+interface NGOProjectActions {
   // Core CRUD
   createProject: (data: Omit<NGOProject, 'id' | 'createdAt' | 'updatedAt' | 'metrics'>) => void;
   updateProject: (id: string, updates: Partial<NGOProject>) => void;
   deleteProject: (id: string) => void;
   
-  // Async Operations
-  fetchProjects: () => Promise<void>;
-  
+  // Project Components
+  addMilestone: (projectId: string, milestone: Omit<Milestone, 'id'>) => void;
+  updateBudget: (projectId: string, budgetUpdates: Partial<Budget>) => void;
+  addUpdate: (projectId: string, update: Omit<Update, 'id'>) => void;
+  addReport: (projectId: string, report: Omit<Report, 'id'>) => void;
+
   // Media Management
   addProjectMedia: (projectId: string, media: Omit<ProjectMedia, 'id'>) => void;
   removeProjectMedia: (projectId: string, mediaId: string) => void;
@@ -41,7 +46,10 @@ export interface ProjectActions {
   updateBeneficiaryCount: (projectId: string, newCount: number) => void;
   
   // Volunteer Management
-  addVolunteer: (projectId: string, volunteer: Omit<Volunteer, 'userId' | 'joinDate'>) => void;
+  addVolunteer: (
+    projectId: string, 
+    volunteer: Omit<TeamMember, 'userId' | 'joinDate' | 'hoursContributed'>
+  ) => void;
   updateVolunteerHours: (projectId: string, userId: string, hours: number) => void;
   
   // Metrics
@@ -52,9 +60,12 @@ export interface ProjectActions {
   getProjectById: (id: string) => NGOProject | undefined;
   getProjectsByStatus: (status: ProjectStatus) => NGOProject[];
   getProjectsByLocation: (location: Partial<ProjectLocation>) => NGOProject[];
-};
 
-export const useProjectStore = create<ProjectState & ProjectActions>()(
+  // Async Operations
+  fetchProjects: () => Promise<void>;
+}
+
+export const useNGOProjectStore = create<NGOProjectState & NGOProjectActions>()(
   persist(
     (set, get) => ({
       projects: [],
@@ -64,12 +75,18 @@ export const useProjectStore = create<ProjectState & ProjectActions>()(
       // Core CRUD
       createProject: (data) => {
         try {
-          // Validate budget
           ProjectBudgetSchema.parse(data.budget);
-          
+          ProjectLocationSchema.parse(data.location);
+
           const newProject: NGOProject = {
             ...data,
             id: uuidv4(),
+            media: [],
+            milestones: [],
+            updates: [],
+            reports: [],
+            beneficiaries: data.beneficiaries || [],
+            team: [],
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             metrics: {
@@ -83,7 +100,7 @@ export const useProjectStore = create<ProjectState & ProjectActions>()(
               correlationData: [],
             },
           };
-          
+
           set((state) => ({ projects: [...state.projects, newProject] }));
         } catch (err) {
           if (err instanceof z.ZodError) {
@@ -106,6 +123,51 @@ export const useProjectStore = create<ProjectState & ProjectActions>()(
         projects: state.projects.filter(project => project.id !== id)
       })),
 
+      // Project Components
+      addMilestone: (projectId, milestone) => set(state => ({
+        projects: state.projects.map(p => p.id === projectId ? {
+          ...p,
+          milestones: [...p.milestones, {
+            ...milestone,
+            id: uuidv4(),
+            createdAt: new Date().toISOString()
+          }]
+        } : p)
+      })),
+
+      updateBudget: (projectId, budgetUpdates) => set(state => ({
+        projects: state.projects.map(p => p.id === projectId ? {
+          ...p,
+          budget: {
+            ...p.budget,
+            ...budgetUpdates,
+            updatedAt: new Date().toISOString()
+          }
+        } : p)
+      })),
+
+      addUpdate: (projectId, update) => set(state => ({
+        projects: state.projects.map(p => p.id === projectId ? {
+          ...p,
+          updates: [...p.updates, {
+            ...update,
+            id: uuidv4(),
+            createdAt: new Date().toISOString()
+          }]
+        } : p)
+      })),
+
+      addReport: (projectId, report) => set(state => ({
+        projects: state.projects.map(p => p.id === projectId ? {
+          ...p,
+          reports: [...p.reports, {
+            ...report,
+            id: uuidv4(),
+            createdAt: new Date().toISOString()
+          }]
+        } : p)
+      })),
+
       // Async Operations
       fetchProjects: async () => {
         set({ loading: true, error: null });
@@ -122,19 +184,22 @@ export const useProjectStore = create<ProjectState & ProjectActions>()(
 
       // Media Management
       addProjectMedia: (projectId, media) => {
-        const newMedia = { ...media, id: uuidv4() };
+        const newMedia: ProjectMedia = {
+          ...media,
+          id: uuidv4(),
+        };
+        
         set(state => ({
           projects: state.projects.map(p => p.id === projectId ? {
             ...p,
-            media: [...p.media, newMedia]
           } : p)
         }));
       },
-
+      
       removeProjectMedia: (projectId, mediaId) => set(state => ({
         projects: state.projects.map(p => p.id === projectId ? {
           ...p,
-          media: p.media.filter(m => m.id !== mediaId)
+          media: (p.media || []).filter(m => m.id !== mediaId)
         } : p)
       })),
 
@@ -142,7 +207,7 @@ export const useProjectStore = create<ProjectState & ProjectActions>()(
       updateBeneficiaryCount: (projectId, newCount) => set(state => ({
         projects: state.projects.map(p => p.id === projectId ? {
           ...p,
-          beneficiaries: p.beneficiaries.map(b => ({
+          beneficiaries: (p.beneficiaries || []).map(b => ({
             ...b,
             count: newCount
           }))
@@ -153,7 +218,7 @@ export const useProjectStore = create<ProjectState & ProjectActions>()(
       addVolunteer: (projectId, volunteer) => set(state => ({
         projects: state.projects.map(p => p.id === projectId ? {
           ...p,
-          team: [...p.team, {
+          team: [...(p.team || []), {
             ...volunteer,
             userId: uuidv4(),
             joinDate: new Date().toISOString(),
@@ -165,7 +230,7 @@ export const useProjectStore = create<ProjectState & ProjectActions>()(
       updateVolunteerHours: (projectId, userId, hours) => set(state => ({
         projects: state.projects.map(p => p.id === projectId ? {
           ...p,
-          team: p.team.map(v => v.userId === userId ? {
+          team: (p.team || []).map(v => v.userId === userId ? {
             ...v,
             hoursContributed: hours
           } : v)
@@ -180,7 +245,7 @@ export const useProjectStore = create<ProjectState & ProjectActions>()(
           totalBudget: projects.reduce((sum, p) => sum + p.budget.total, 0),
           activeProjects: projects.filter(p => p.status === 'ongoing').length,
           totalBeneficiaries: projects.reduce((sum, p) => sum + 
-            p.beneficiaries.reduce((bSum, b) => bSum + b.count, 0), 0),
+            (p.beneficiaries || []).reduce((bSum, b) => bSum + b.count, 0), 0),
           completionRate: projects.length > 0 ? 
             (projects.filter(p => p.status === 'completed').length / projects.length) * 100 : 0,
         };
@@ -190,13 +255,19 @@ export const useProjectStore = create<ProjectState & ProjectActions>()(
         const project = get().projects.find(p => p.id === projectId);
         if (!project) throw new Error('Project not found');
         
+        const totalBeneficiaries = (project.beneficiaries || []).reduce((sum, b) => sum + b.count, 0);
+        
         return {
           ...project.metrics,
-          costPerBeneficiary: project.budget.used / 
-            project.beneficiaries.reduce((sum, b) => sum + b.count, 0),
-          volunteerImpactRatio: project.metrics.volunteers / 
-            project.beneficiaries.reduce((sum, b) => sum + b.count, 0),
-          fundingUtilization: (project.budget.used / project.budget.total) * 100
+          costPerBeneficiary: totalBeneficiaries > 0 
+            ? project.budget.used / totalBeneficiaries 
+            : 0,
+          volunteerImpactRatio: totalBeneficiaries > 0 
+            ? (project.metrics.volunteers || 0) / totalBeneficiaries 
+            : 0,
+          fundingUtilization: project.budget.total > 0 
+            ? (project.budget.used / project.budget.total) * 100 
+            : 0
         };
       },
 
@@ -211,26 +282,30 @@ export const useProjectStore = create<ProjectState & ProjectActions>()(
     {
       name: 'ngo-projects-storage',
       version: 2,
-      migrate: (state, version) => {
-        // Add type assertion for the persisted state
-        const persistedState = state as ProjectState;
-        
+      migrate: (persistedState: any, version) => {
+        // Migration from version <2 to 2
         if (version < 2) {
           return {
             ...persistedState,
-            projects: persistedState.projects?.map(p => ({
+            projects: (persistedState.projects || []).map((p: any) => ({
               ...p,
+              media: p.media || [],
+              milestones: p.milestones || [],
+              updates: p.updates || [],
+              reports: p.reports || [],
+              beneficiaries: p.beneficiaries || [],
+              team: p.team || [],
               metrics: p.metrics || {
-                costPerBeneficiary: 0,
-                volunteerImpactRatio: 0,
-                fundingUtilization: 0,
                 impactScore: 0,
                 volunteers: 0,
                 donations: 0,
                 socialShares: 0,
+                costPerBeneficiary: 0,
+                volunteerImpactRatio: 0,
+                fundingUtilization: 0,
                 correlationData: []
               }
-            })) || []
+            }))
           };
         }
         return persistedState;
