@@ -46,3 +46,8 @@ next-env.d.ts
 # Cloudflare
 .cloudflare/
 wrangler.toml
+
+
+node_modules
+.next
+.env
