@@ -1,9 +1,9 @@
 import {
-    FileText, Users, Calendar, DollarSign, Film, Camera, Music,
-    Video, Palette, Settings, BookOpen, Layout, PenTool, Box,
+    FileText, Users, Calendar, DollarSign, Film, Camera,
+     Palette, Settings, BookOpen, Layout, PenTool, Box,
     AudioLines, Share2, BarChart, Megaphone, Clapperboard,
     MonitorPlay, Library, Cast, SplitSquareVertical, Folder,
-    Brush, Boxes, Layers, Database
+    Brush, Layers, Database
   } from 'lucide-react';
   
   export interface ProjectTool {

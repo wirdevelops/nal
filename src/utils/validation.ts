@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 import type { ValidationResult, ProjectCreationData } from '@/types/validation';
-import type { Project, ProjectType } from '@/types/project';
+import type { ProjectType } from '@/types/project';
 
 const MAX_THUMBNAIL_SIZE = 2 * 1024 * 1024; // 2MB
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];

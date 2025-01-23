@@ -166,6 +166,7 @@ interface Receipt {
 // ---- Core NGO interfaces -----
 
 interface NGOProject {
+  url: string;
     metrics: ProjectMetrics;
     impactStories: ImpactStory[];
     media: NGOProject[];

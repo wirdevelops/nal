@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ProjectStatus, ProjectCategory, ProjectLocation } from '@/types/ngo/project';
+import { ProjectStatus, ProjectCategory, ProjectLocation } from '@/types/ngo';
 
 interface ProjectFiltersProps {
   onFilterChange: (filters: {
