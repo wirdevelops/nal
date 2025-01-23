@@ -5,10 +5,22 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Star } from 'lucide-react';
+import { Star, Trash2 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useProduct } from '@/hooks/useProducts';
 import type { Product, PhysicalProduct, DigitalProduct } from '@/types/store/product';
 import Link from 'next/link';
+import { toast } from 'react-hot-toast';
 
 interface ProductDetailPageProps {
     params: {
@@ -16,12 +28,25 @@ interface ProductDetailPageProps {
     };
 }
 
+// Mock deleteProduct function - Replace with your actual implementation
+const deleteProduct = async (productId: string) => {
+  return new Promise<void>((resolve) => {
+    setTimeout(() => {
+        //replace this with the actual deletion code
+      console.log(`Product with ID: ${productId} deleted.`);
+      resolve()
+    }, 1000);
+  });
+};
 
 const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ params }) => {
     const { productId } = params;
     const { products, isLoading, error } = useProduct();
     const [product, setProduct] = useState<Product | undefined>(undefined)
     const router = useRouter();
+    const [isDeleting, setIsDeleting] = useState(false);
+    const currentUserId = 'test'; // Replace with actual user ID logic
+
 
     useEffect(() => {
         if(!products || products.length === 0) return;
@@ -29,8 +54,51 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ params }) => {
         setProduct(foundProduct);
     }, [productId, products]);
 
-    const relatedProducts = products?.filter(p => product && p.category === product.category && p.id !== product.id).slice(0,5);
+    const handleDelete = async () => {
+      try {
+          setIsDeleting(true);
+          await deleteProduct(productId);
+          toast.success('Product deleted successfully');
+          router.push('/');
+      } catch (error) {
+          console.error('Failed to delete product:', error);
+          toast.error('Failed to delete product');
+      } finally {
+          setIsDeleting(false);
+      }
+  };
 
+    
+    const DeleteButton = () => (
+      <AlertDialog>
+          <AlertDialogTrigger asChild>
+              <Button variant="destructive" disabled={isDeleting}>
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  {isDeleting ? 'Deleting...' : 'Delete Product'}
+              </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+              <AlertDialogHeader>
+                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                      This action cannot be undone. This will permanently delete your
+                      product and remove it from our servers.
+                  </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                      onClick={handleDelete}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                      Delete
+                  </AlertDialogAction>
+              </AlertDialogFooter>
+          </AlertDialogContent>
+      </AlertDialog>
+  );
+
+  const relatedProducts = products?.filter(p => product && p.category === product.category && p.id !== product.id).slice(0,5);
 
     if (isLoading) return <div>Loading...</div>;
      if (error) return <div>Error: {error}</div>;
@@ -72,7 +140,10 @@ const ProductDetailPage: React.FC<ProductDetailPageProps> = ({ params }) => {
 
                 {/* Product Details */}
                 <div className="space-y-4">
-                    <h1 className="text-3xl font-bold">{product.title}</h1>
+                    <div className='flex justify-between items-center'>
+                     <h1 className="text-3xl font-bold">{product.title}</h1>
+                     <DeleteButton />
+                    </div>
                     <div className="flex items-center gap-2">
                          {product.type === 'physical' && (
                              <Badge>Physical Product</Badge>
