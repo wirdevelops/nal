@@ -1,34 +1,34 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Shield, Users, Lock, Activity } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Shield, Users, Lock, Activity } from "lucide-react";
 
 const stats = [
   {
     title: "Total Roles",
     value: "12",
     icon: Shield,
-    description: "+2 from last month"
+    description: "+2 from last month",
   },
   {
     title: "Users Assigned",
     value: "1,234",
     icon: Users,
-    description: "+8.2% from last month"
+    description: "+8.2% from last month",
   },
   {
     title: "Total Permissions",
     value: "48",
     icon: Lock,
-    description: "+4 from last month"
+    description: "+4 from last month",
   },
   {
     title: "Role Changes",
     value: "156",
     icon: Activity,
-    description: "Last 30 days"
-  }
-]
+    description: "Last 30 days",
+  },
+];
 
 export function RoleStats() {
   return (
@@ -46,5 +46,16 @@ export function RoleStats() {
         </Card>
       ))}
     </div>
-  )
+  );
+}
+
+// Add and export UserStats as requested.
+export function UserStats() {
+  return (
+    <div className="p-4 bg-background rounded-md shadow">
+      <h3 className="text-lg font-bold mb-2">User Statistics</h3>
+      <p className="text-muted-foreground">Overview of user assignments and activities.</p>
+      {/* Add your specific implementation for UserStats */}
+    </div>
+  );
 }

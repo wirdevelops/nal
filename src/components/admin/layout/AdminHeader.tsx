@@ -1,3 +1,4 @@
+// src/components/admin/layout/AdminHeader.tsx
 "use client"
 
 import { Menu } from "lucide-react"

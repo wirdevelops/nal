@@ -1,3 +1,4 @@
+// components/admin/dashboard/Overview.tsx
 import { BarChart, Users, Film, Calendar } from 'lucide-react'
 import StatsCard from './StatsCard'
 

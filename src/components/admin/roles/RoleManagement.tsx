@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Plus, Shield } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { RoleForm } from './forms/RoleForm';
 import { RolePermissions } from './forms/RolePermissions';
 import { useToast } from '@/hooks/use-toast';

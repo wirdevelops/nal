@@ -1,3 +1,4 @@
+// src/lib/constants/navigation.ts
 import { 
     LayoutDashboard, 
     Users, 

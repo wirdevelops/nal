@@ -1,3 +1,4 @@
+// components/admin/dashboard/StatsCard.tsx
 import { ArrowUp, ArrowDown, LucideIcon } from 'lucide-react'
 
 interface StatsCardProps {
