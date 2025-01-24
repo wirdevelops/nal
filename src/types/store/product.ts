@@ -102,6 +102,16 @@ export const DigitalProduct = Type.Composite([
   })
 ]);
 
+export interface FilterState {
+  type: ('digital' | 'physical')[];
+  category: ProductCategory[];
+  priceRange: [number, number];
+  condition: ProductCondition[];
+  inStock: boolean | undefined;
+  sortBy: string;
+  search: string;
+}
+
 export type DigitalProduct = Static<typeof DigitalProduct>;
 
 export const Product = Type.Union([PhysicalProduct, DigitalProduct]);

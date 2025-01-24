@@ -54,11 +54,6 @@ enum Skill {
     OTHER = "other"
 }
 
-enum MediaType {
-  IMAGE = 'image',
-  VIDEO = 'video',
-  DOCUMENT = 'document',
-}
 
 // ----- Shared interfaces --------
 
@@ -83,16 +78,6 @@ interface Budget {
     used?: number;
 }
 
-export interface TeamMember {
-    userId: string;
-    name: string;
-    role: string; // Example: Project Manager, Field Coordinator
-    avatar?: string;
-    department?: string;
-    joinDate: string;
-  hoursContributed: number;
-  trainingCompleted: boolean;
-}
 
 interface Milestone {
     id: string;
@@ -102,29 +87,7 @@ interface Milestone {
     status: string;
 }
 
-interface Media {
-    type: MediaType;
-    url: string;
-    caption?: string;
-    altText?:string;
-  }
 
-interface Update {
-  id: string;
-  date: string; // ISO Date String
-  content: string;
-  media?: Media[];
-  authorId: string;
-}
-
-interface Report {
-    id: string;
-    title: string;
-    date: string; // ISO Date String
-    authorId: string;
-    url: string;
-    type: string;
-  }
 interface ImpactMetric {
   metric: string; // e.g. "People Served", "Trees Planted"
   value: number;
@@ -165,48 +128,7 @@ interface Receipt {
 
 // ---- Core NGO interfaces -----
 
-interface NGOProject {
-  url: string;
-    metrics: ProjectMetrics;
-    impactStories: ImpactStory[];
-    media: NGOProject[];
-    id: string;
-    name: string;
-    description: string;
-    category: ProjectCategory;
-    status: ProjectStatus;
-    startDate: string; // ISO Date String
-    endDate?: string;  // ISO Date String
-    location: Location;
-    budget: Budget;
-    team: TeamMember[];
-    beneficiaries: Beneficiary[];
-    milestones: Milestone[];
-    gallery: Media[];
-    updates: Update[];
-    reports: Report[];
-    impact: ImpactMetric[];
-    createdAt: string;  // ISO Date String
-    updatedAt: string;  // ISO Date String
-    duration: number;
-    donors: Donor[];
-  timeline: {
-    startDate: string;
-    endDate?: string;
-    milestones: Milestone[];
-    media: ProjectMedia[];
-}
-}
-export interface Donor {
-  id: string;
-  name: string;
-  avatar?: string;
-  amount: number;
-  donatedAt: string;
-  isAnonymous: boolean;
-  tier: 'platinum' | 'gold' | 'silver' | 'bronze';
-  message?: string;
-}
+
 
 
 interface Volunteer {
@@ -240,146 +162,6 @@ interface Training {
   expirationDate?: string; // ISO Date
 }
 
-interface Donation {
-    id: string;
-    donorId: string; // Assuming you have a user ID system
-    projectId?: string;  // Optional, if the donation is project-specific
-    amount: number;
-    frequency: DonationFrequency;
-    status: PaymentStatus;
-    receipt?: Receipt;
-    impact?: ImpactMetric[];
-    donationDate: string; // ISO Date String
-    paymentMethod: string;
-    createdAt: string;  // ISO Date String
-    updatedAt: string;  // ISO Date String
-    currency: string;
-    date: string;
-    donor: {
-      name: string;
-      email: string;
-      anonymous: boolean;
-    };
-    allocation: Array<{
-      projectId: string;
-      percentage: number;
-    }>;
-}
-
-export interface ImpactStory {
-  id: string;
-  title: string;
-  description: string;
-  image: string;
-  category: ImpactCategory;
-  location: {
-    city: string;
-    country: string;
-  };
-  beneficiary: {
-    name: string;
-    avatar?: string;
-    quote: string;
-    age?: number;
-    background?: string;
-  };
-  stats: {
-    peopleHelped: number;
-    volunteersInvolved: number;
-    duration: string;
-    investmentAmount?: number;
-    returnOnInvestment?: number;
-  };
-  engagement: {
-    likes: number;
-    comments: number;
-    shares: number;
-  };
-  metadata: {
-    createdAt: string;
-    updatedAt: string;
-    verified: boolean;
-    status: 'draft' | 'published' | 'archived';
-    tags: string[];
-  };
-}
-
-export type ImpactCategory = 
-  | 'education'
-  | 'health'
-  | 'environment'
-  | 'poverty'
-  | 'gender-equality'
-  | 'economic-development'
-  | 'disaster-relief'
-  | 'community';
-
-export interface ImpactMeasurement {
-  date: string;
-  value: number;
-  target: number;
-  volunteerHours: number;
-  beneficiaryOutcomes: number;
-  category: ImpactCategory;
-  notes?: string;
-}
-
-export interface ImpactSummary {
-  totalImpact: number;
-  volunteerHours: number;
-  goalsProgress: number;
-  efficiency: number;
-  impactTrend: number;
-  volunteerTrend: number;
-  efficiencyTrend: number;
-  measurements: ImpactMeasurement[];
-}
-
-import { z } from 'zod';
-
-// SCHEMAS
-export const ProjectLocationSchema = z.object({
-  address: z.string(),
-  city: z.string(),
-  country: z.string(),
-  coordinates: z.object({
-    lat: z.number(),
-    lng: z.number(),
-  }).optional(),
-});
-
-export const ProjectBudgetSchema = z.object({
-  allocated: z.number(),
-  used: z.number(),
-  total: z.number(),
-  currency: z.string().length(3),
-  lastUpdated: z.string().datetime(),
-  breakdown: z.array(z.object({
-    category: z.string(),
-    amount: z.number(),
-  })),
-});
-
-
-
-// CORE TYPES
-export interface ProjectLocation extends z.infer<typeof ProjectLocationSchema> {}
-export interface ProjectBudget extends z.infer<typeof ProjectBudgetSchema> {}
-
-export interface ProjectMetrics {
-  impactScore: number;
-  volunteers: number;
-  donations: number;
-  socialShares: number;
-  costPerBeneficiary: number;
-  volunteerImpactRatio: number;
-  fundingUtilization: number;
-  correlationData: Array<{
-    date: string;
-    volunteerHours: number;
-    beneficiaryOutcomes: number;
-  }>;
-}
 
 export interface ProjectMedia {
   id: string;
@@ -387,29 +169,3 @@ export interface ProjectMedia {
   type: 'image' | 'video' | 'document';
   caption?: string;
 }
-
-export interface Beneficiary {
-  type: 'individual' | 'community';
-  count: number;
-  description: string;
-  id: string;
-    name: string;
-    demographic?: string; // E.g., age range, location
-    details?: string;
-}
-
-
-interface Milestone {
-  name: string;
-  date: string;
-  description: string;
-  completed: boolean;
-  media: ProjectMedia[];
-  teamMembers: string[];
-  notes?: string;
-  attachments?: string[];
-  dependencies?: string[];
-}
-
-export type {NGOProject, Volunteer, Location, Budget, Milestone, Media, Update, Report, ImpactMetric, Schedule, TimeLog, Reference, Receipt}
-export {ProjectCategory, ProjectStatus, DonationFrequency, PaymentStatus, BackgroundCheck, Skill, MediaType}

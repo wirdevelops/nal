@@ -1,5 +1,4 @@
 // @types/ngo/impactStory.ts
-
 export type ImpactCategoryType = 
   | 'education'
   | 'health'

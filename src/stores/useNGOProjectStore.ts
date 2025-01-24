@@ -2,32 +2,33 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { v4 as uuidv4 } from 'uuid';
-import { z } from 'zod';
-import {
+import { Value } from '@sinclair/typebox/value';
+import type {
   NGOProject,
-  Milestone,
+  ProjectCategory,
+  ProjectStatus,
+  Location,
   Budget,
+  Milestone,
   Update,
   Report,
-  ProjectStatus,
-  Beneficiary,
-  Volunteer,
   ProjectMedia,
-   ProjectLocation,
-  ProjectBudgetSchema,
-  ProjectLocationSchema,
-  TeamMember, 
-  
-} from '@/types/ngo';
+  TeamMember,
+  Beneficiary,
+  ProjectMetrics,
+  MediaType
+} from '@/types/ngo/project';
+import { NGO_PROJECT_SCHEMA } from '@/types/ngo/schemas';
 
-interface NGOProjectState {
+interface ProjectState {
   projects: NGOProject[];
-  loading: boolean;
+  isLoading: boolean;
   error: string | null;
 }
 
 interface NGOProjectActions {
   // Core CRUD
+  initializeProject: (baseData: { name: string; category: ProjectCategory }) => NGOProject;
   createProject: (data: Omit<NGOProject, 'id' | 'createdAt' | 'updatedAt' | 'metrics'>) => void;
   updateProject: (id: string, updates: Partial<NGOProject>) => void;
   deleteProject: (id: string) => void;
@@ -53,263 +54,368 @@ interface NGOProjectActions {
   updateVolunteerHours: (projectId: string, userId: string, hours: number) => void;
   
   // Metrics
-  calculateMetrics: () => Record<string, number>;
+  calculateMetrics: () => ProjectMetrics;
   getProjectMetrics: (projectId: string) => NGOProject['metrics'];
   
   // Queries
   getProjectById: (id: string) => NGOProject | undefined;
   getProjectsByStatus: (status: ProjectStatus) => NGOProject[];
-  getProjectsByLocation: (location: Partial<ProjectLocation>) => NGOProject[];
+  getProjectsByLocation: (location: Partial<Location>) => NGOProject[];
 
   // Async Operations
   fetchProjects: () => Promise<void>;
 }
 
-export const useNGOProjectStore = create<NGOProjectState & NGOProjectActions>()(
+const DEFAULT_METRICS = {
+  impactScore: 0,
+  volunteers: 0,
+  donations: 0,
+  socialShares: 0,
+  costPerBeneficiary: 0,
+  volunteerImpactRatio: 0,
+  fundingUtilization: 0,
+  correlationData: []
+};
+
+export const useNGOProjectStore = create<ProjectState & NGOProjectActions>()(
   persist(
     (set, get) => ({
       projects: [],
-      loading: false,
+      isLoading: false,
       error: null,
 
-      // Core CRUD
-      createProject: (data) => {
-        try {
-          ProjectBudgetSchema.parse(data.budget);
-          ProjectLocationSchema.parse(data.location);
+      // Core CRUD Operations
+      // Updated initializeProject method
+initializeProject: (baseData) => ({
+  id: uuidv4(),
+  ...baseData,
+  // Add missing properties
+  url: '',
+  impactStories: [],
+  media: [],
+  // Rest of the existing properties
+  status: 'planned',
+  description: '',
+  startDate: new Date().toISOString(),
+  endDate: undefined,
+  location: {} as Location,
+  budget: {
+    allocated: 0,
+    total: 0,
+    amount: 0,
+    currency: 'USD',
+    used: 0
+  },
+  team: [],
+  beneficiaries: [],
+  milestones: [],
+  gallery: [],
+  updates: [],
+  reports: [],
+  impact: [],
+  metrics: DEFAULT_METRICS,
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
+  duration: 0,
+  donors: [],
+  timeline: {
+    startDate: new Date().toISOString(),
+    milestones: [],
+    media: []
+  }
+}),
 
-          const newProject: NGOProject = {
-            ...data,
-            id: uuidv4(),
-            media: [],
-            milestones: [],
-            updates: [],
-            reports: [],
-            beneficiaries: data.beneficiaries || [],
-            team: [],
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            metrics: {
-              impactScore: 0,
-              volunteers: 0,
-              donations: 0,
-              socialShares: 0,
-              costPerBeneficiary: 0,
-              volunteerImpactRatio: 0,
-              fundingUtilization: 0,
-              correlationData: [],
-            },
-          };
+createProject: (projectData) => {
+  try {
+    const baseProject = get().initializeProject(projectData);
+    const fullProject = {
+      ...baseProject,
+      ...projectData,
+      // Ensure media types are properly set
+      media: projectData.media?.map(m => ({
+        ...m,
+        type: m.type as MediaType
+      })) || []
+    };
+    
+    if (!Value.Check(NGO_PROJECT_SCHEMA, fullProject)) {
+      throw new Error('Invalid project data');
+    }
 
-          set((state) => ({ projects: [...state.projects, newProject] }));
-        } catch (err) {
-          if (err instanceof z.ZodError) {
-            set({ error: 'Invalid project data: ' + err.errors[0].message });
-          }
-        }
+    set(state => ({
+      projects: [...state.projects, fullProject],
+      error: null
+    }));
+  } catch (error) {
+    set({ error: error instanceof Error ? error.message : 'Invalid project data' });
+  }
+},
+
+updateProject: (id, updates) => {
+  set(state => ({
+    projects: state.projects.map(project => {
+      if (project.id === id) {
+        const updated = Value.Encode(NGO_PROJECT_SCHEMA, { 
+          ...project, 
+          ...updates,
+          updatedAt: new Date().toISOString()
+        });
+        
+        // Add type assertion and missing properties
+        return {
+          ...(updated as unknown as NGOProject),
+          // Ensure required properties are maintained
+          metrics: updates.metrics || project.metrics,
+          timeline: updates.timeline || project.timeline
+        };
+      }
+      return project;
+    })
+  }));
+},
+
+      deleteProject: (id) => {
+        set(state => ({
+          projects: state.projects.filter(project => project.id !== id)
+        }));
       },
 
-      updateProject: (id, updates) => set((state) => ({
-        projects: state.projects.map(project =>
-          project.id === id ? {
-            ...project,
-            ...updates,
-            updatedAt: new Date().toISOString()
-          } : project
-        )
-      })),
-
-      deleteProject: (id) => set((state) => ({
-        projects: state.projects.filter(project => project.id !== id)
-      })),
-
       // Project Components
-      addMilestone: (projectId, milestone) => set(state => ({
-        projects: state.projects.map(p => p.id === projectId ? {
-          ...p,
-          milestones: [...p.milestones, {
-            ...milestone,
-            id: uuidv4(),
-            createdAt: new Date().toISOString()
-          }]
-        } : p)
-      })),
+      addMilestone: (projectId, milestone) => {
+        set(state => ({
+          projects: state.projects.map(project => {
+            if (project.id === projectId) {
+              const newMilestone = {
+                ...milestone,
+                id: uuidv4(),
+                status: 'planned'
+              };
+              return {
+                ...project,
+                milestones: [...project.milestones, newMilestone],
+                updatedAt: new Date().toISOString()
+              };
+            }
+            return project;
+          })
+        }));
+      },
 
-      updateBudget: (projectId, budgetUpdates) => set(state => ({
-        projects: state.projects.map(p => p.id === projectId ? {
-          ...p,
-          budget: {
-            ...p.budget,
-            ...budgetUpdates,
-            updatedAt: new Date().toISOString()
-          }
-        } : p)
-      })),
+      updateBudget: (projectId, budgetUpdates) => {
+        set(state => ({
+          projects: state.projects.map(project => {
+            if (project.id === projectId) {
+              return {
+                ...project,
+                budget: { ...project.budget, ...budgetUpdates },
+                updatedAt: new Date().toISOString()
+              };
+            }
+            return project;
+          })
+        }));
+      },
 
-      addUpdate: (projectId, update) => set(state => ({
-        projects: state.projects.map(p => p.id === projectId ? {
-          ...p,
-          updates: [...p.updates, {
-            ...update,
-            id: uuidv4(),
-            createdAt: new Date().toISOString()
-          }]
-        } : p)
-      })),
+      addUpdate: (projectId, update) => {
+        set(state => ({
+          projects: state.projects.map(project => {
+            if (project.id === projectId) {
+              const newUpdate = {
+                ...update,
+                id: uuidv4(),
+                date: new Date().toISOString()
+              };
+              return {
+                ...project,
+                updates: [...project.updates, newUpdate],
+                updatedAt: new Date().toISOString()
+              };
+            }
+            return project;
+          })
+        }));
+      },
 
-      addReport: (projectId, report) => set(state => ({
-        projects: state.projects.map(p => p.id === projectId ? {
-          ...p,
-          reports: [...p.reports, {
-            ...report,
-            id: uuidv4(),
-            createdAt: new Date().toISOString()
-          }]
-        } : p)
-      })),
-
-      // Async Operations
-      fetchProjects: async () => {
-        set({ loading: true, error: null });
-        try {
-          // Simulated API call
-          // const response = await fetch('/api/projects');
-          // const data = await response.json();
-          // set({ projects: data });
-          set({ loading: false });
-        } catch (err) {
-          set({ error: 'Failed to load projects', loading: false });
-        }
+      addReport: (projectId, report) => {
+        set(state => ({
+          projects: state.projects.map(project => {
+            if (project.id === projectId) {
+              const newReport = {
+                ...report,
+                id: uuidv4(),
+                date: new Date().toISOString()
+              };
+              return {
+                ...project,
+                reports: [...project.reports, newReport],
+                updatedAt: new Date().toISOString()
+              };
+            }
+            return project;
+          })
+        }));
       },
 
       // Media Management
+      // Media Management
       addProjectMedia: (projectId, media) => {
-        const newMedia: ProjectMedia = {
-          ...media,
-          id: uuidv4(),
-        };
-        
         set(state => ({
-          projects: state.projects.map(p => p.id === projectId ? {
-            ...p,
-          } : p)
+          projects: state.projects.map(project => 
+            project.id === projectId 
+              ? {
+                  ...project,
+                  gallery: [
+                    ...project.gallery, 
+                    {
+                      ...media,
+                      id: uuidv4(),
+                      // Ensure type is properly cast
+                      type: media.type as MediaType
+                    }
+                  ],
+                  updatedAt: new Date().toISOString()
+                }
+              : project
+          )
         }));
       },
-      
-      removeProjectMedia: (projectId, mediaId) => set(state => ({
-        projects: state.projects.map(p => p.id === projectId ? {
-          ...p,
-          media: (p.media || []).filter(m => m.id !== mediaId)
-        } : p)
-      })),
+
+      removeProjectMedia: (projectId, mediaId) => {
+        set(state => ({
+          projects: state.projects.map(project => {
+            if (project.id === projectId) {
+              return {
+                ...project,
+                gallery: project.gallery.filter(media => media.url !== mediaId),
+                updatedAt: new Date().toISOString()
+              };
+            }
+            return project;
+          })
+        }));
+      },
 
       // Beneficiary Management
-      updateBeneficiaryCount: (projectId, newCount) => set(state => ({
-        projects: state.projects.map(p => p.id === projectId ? {
-          ...p,
-          beneficiaries: (p.beneficiaries || []).map(b => ({
-            ...b,
-            count: newCount
-          }))
-        } : p)
-      })),
+      updateBeneficiaryCount: (projectId, newCount) => {
+        set(state => ({
+          projects: state.projects.map(project => {
+            if (project.id === projectId) {
+              return {
+                ...project,
+                beneficiaries: project.beneficiaries.map(b => ({
+                  ...b,
+                  count: newCount
+                })),
+                updatedAt: new Date().toISOString()
+              };
+            }
+            return project;
+          })
+        }));
+      },
 
       // Volunteer Management
-      addVolunteer: (projectId, volunteer) => set(state => ({
-        projects: state.projects.map(p => p.id === projectId ? {
-          ...p,
-          team: [...(p.team || []), {
-            ...volunteer,
-            userId: uuidv4(),
-            joinDate: new Date().toISOString(),
-            hoursContributed: 0
-          }]
-        } : p)
-      })),
+      addVolunteer: (projectId, volunteer) => {
+        set(state => ({
+          projects: state.projects.map(project => {
+            if (project.id === projectId) {
+              const newVolunteer: TeamMember = {
+                ...volunteer,
+                userId: uuidv4(),
+                joinDate: new Date().toISOString(),
+                hoursContributed: 0
+              };
+              return {
+                ...project,
+                team: [...project.team, newVolunteer],
+                updatedAt: new Date().toISOString()
+              };
+            }
+            return project;
+          })
+        }));
+      },
 
-      updateVolunteerHours: (projectId, userId, hours) => set(state => ({
-        projects: state.projects.map(p => p.id === projectId ? {
-          ...p,
-          team: (p.team || []).map(v => v.userId === userId ? {
-            ...v,
-            hoursContributed: hours
-          } : v)
-        } : p)
-      })),
+      updateVolunteerHours: (projectId, userId, hours) => {
+        set(state => ({
+          projects: state.projects.map(project => {
+            if (project.id === projectId) {
+              return {
+                ...project,
+                team: project.team.map(member => 
+                  member.userId === userId
+                    ? { ...member, hoursContributed: hours }
+                    : member
+                ),
+                updatedAt: new Date().toISOString()
+              };
+            }
+            return project;
+          })
+        }));
+      },
 
       // Metrics
-      calculateMetrics: () => {
-        const projects = get().projects;
-        return {
-          totalProjects: projects.length,
-          totalBudget: projects.reduce((sum, p) => sum + p.budget.total, 0),
-          activeProjects: projects.filter(p => p.status === 'ongoing').length,
-          totalBeneficiaries: projects.reduce((sum, p) => sum + 
-            (p.beneficiaries || []).reduce((bSum, b) => bSum + b.count, 0), 0),
-          completionRate: projects.length > 0 ? 
-            (projects.filter(p => p.status === 'completed').length / projects.length) * 100 : 0,
-        };
-      },
+      // Update the metrics calculation
+calculateMetrics: (): ProjectMetrics => {
+  const projects = get().projects;
+  
+  return projects.reduce((acc, project) => ({
+    impactScore: acc.impactScore + project.metrics.impactScore,
+    volunteers: acc.volunteers + project.metrics.volunteers,
+    donations: acc.donations + project.metrics.donations,
+    socialShares: acc.socialShares + project.metrics.socialShares,
+    costPerBeneficiary: acc.costPerBeneficiary + project.metrics.costPerBeneficiary,
+    volunteerImpactRatio: acc.volunteerImpactRatio + project.metrics.volunteerImpactRatio,
+    fundingUtilization: acc.fundingUtilization + project.metrics.fundingUtilization,
+    correlationData: [
+      ...acc.correlationData,
+      ...project.metrics.correlationData
+    ]
+  }), DEFAULT_METRICS);
+},
 
       getProjectMetrics: (projectId) => {
         const project = get().projects.find(p => p.id === projectId);
-        if (!project) throw new Error('Project not found');
-        
-        const totalBeneficiaries = (project.beneficiaries || []).reduce((sum, b) => sum + b.count, 0);
-        
-        return {
-          ...project.metrics,
-          costPerBeneficiary: totalBeneficiaries > 0 
-            ? project.budget.used / totalBeneficiaries 
-            : 0,
-          volunteerImpactRatio: totalBeneficiaries > 0 
-            ? (project.metrics.volunteers || 0) / totalBeneficiaries 
-            : 0,
-          fundingUtilization: project.budget.total > 0 
-            ? (project.budget.used / project.budget.total) * 100 
-            : 0
-        };
+        return project?.metrics || DEFAULT_METRICS;
       },
 
       // Queries
-      getProjectById: (id) => get().projects.find(p => p.id === id),
-      getProjectsByStatus: (status) => get().projects.filter(p => p.status === status),
-      getProjectsByLocation: (location) => get().projects.filter(p =>
-        (!location.country || p.location.country === location.country) &&
-        (!location.city || p.location.city === location.city)
-      ),
+      getProjectById: (id) => {
+        return get().projects.find(project => project.id === id);
+      },
+
+      getProjectsByStatus: (status) => {
+        return get().projects.filter(project => project.status === status);
+      },
+
+      getProjectsByLocation: (location) => {
+        return get().projects.filter(project => 
+          Object.entries(location).every(([key, value]) => 
+            project.location[key as keyof Location] === value
+          )
+        );
+      },
+
+      // Async Operations
+      fetchProjects: async () => {
+        set({ isLoading: true });
+        try {
+          // Simulated API call
+          const response = await fetch('/api/projects');
+          const data = await response.json();
+          set({ projects: data, isLoading: false });
+        } catch (error) {
+          set({ 
+            error: error instanceof Error ? error.message : 'Failed to fetch projects',
+            isLoading: false 
+          });
+        }
+      }
     }),
     {
-      name: 'ngo-projects-storage',
-      version: 2,
-      migrate: (persistedState: any, version) => {
-        // Migration from version <2 to 2
-        if (version < 2) {
-          return {
-            ...persistedState,
-            projects: (persistedState.projects || []).map((p: any) => ({
-              ...p,
-              media: p.media || [],
-              milestones: p.milestones || [],
-              updates: p.updates || [],
-              reports: p.reports || [],
-              beneficiaries: p.beneficiaries || [],
-              team: p.team || [],
-              metrics: p.metrics || {
-                impactScore: 0,
-                volunteers: 0,
-                donations: 0,
-                socialShares: 0,
-                costPerBeneficiary: 0,
-                volunteerImpactRatio: 0,
-                fundingUtilization: 0,
-                correlationData: []
-              }
-            }))
-          };
-        }
-        return persistedState;
-      }
+      name: 'ngo-projects',
+      partialize: (state) => ({ projects: state.projects })
     }
   )
 );

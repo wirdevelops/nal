@@ -1,14 +1,15 @@
 'use client'
-// ProductListingPage.tsx
+
 import { useState, useEffect } from 'react';
-import { useProduct } from '@/hooks/useProducts';
+import { useProducts } from '@/hooks/useProducts';
 import { useDebounce } from '@/hooks/useDebounce';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import  ProductFilters  from './ProductFilters';
-import ProductCard  from './ProductCard';
-import  ActiveFilters  from './ActiveFilters';
+import { FilterState } from '@/types/store';
+import ProductFilters from './ProductFilters'; // Import FilterState from ProductFilters
+import ProductCard from './ProductCard';
+import ActiveFilters from './ActiveFilters';
 import {
   Select,
   SelectContent,
@@ -26,123 +27,94 @@ import {
   Search,
   Grid,
   List,
-  Heart
+  Heart,
+  Loader2
 } from 'lucide-react';
-import type { ProductCategory, PhysicalProduct } from '@/types/store';
-
-
-// Filter type definition
-interface FilterState {
-  type: ('digital' | 'physical')[];
-  category: ProductCategory[];
-  priceRange: [number, number];
-  condition: string[];
-    inStock: boolean | undefined;
-    sortBy: string;
-    search: string
-}
-
+import type { ProductCategory, ProductCondition } from '@/types/store';
 
 export default function ProductListingPage() {
-  // State management
   const [view, setView] = useState<'grid' | 'list'>('grid');
-  const [activeTab, setActiveTab] = useState<'all' | 'favorites'>('all')
-
-    const [filters, setFilters] = useState<FilterState>({
+  const [activeTab, setActiveTab] = useState<'all' | 'favorites'>('all');
+  const [filters, setFilters] = useState<FilterState>({
     type: [],
     category: [],
     priceRange: [0, 5000],
-    condition: [],
+    condition: [], // Now correctly typed as ProductCondition[]
     inStock: undefined,
     sortBy: 'newest',
     search: ''
   });
 
   const debouncedSearch = useDebounce(filters.search, 300);
+  
+  const {
+    filteredProducts,
+    isLoading,
+    favoriteIds,
+    searchProducts,
+    filterByCategory,
+    filterByPriceRange,
+    sortProducts,
+    resetFilters,
+    loadNextPage,
+    hasNextPage,
+    currentPage
+  } = useProducts();
 
-  const { products, isLoading, favoriteIds } = useProduct();
-
-  // Filter products
- const filteredProducts = products.filter(product => {
-    // Apply type filter
-    if (filters.type.length && !filters.type.includes(product.type)) return false;
-    
-    // Apply category filter
-    if (filters.category.length && !filters.category.includes(product.category)) return false;
-    
-    // Apply price filter
-    if (product.price < filters.priceRange[0] || product.price > filters.priceRange[1]) return false;
-    
-    // Apply condition filter for physical products
-     if (filters.condition?.length && 'condition' in product) {
-        if (!filters.condition.includes((product as PhysicalProduct).condition)) return false;
-     }
-
-
-      // Apply inStock filter for physical products
-    if (filters.inStock !== undefined && product.type === 'physical') {
-        const physicalProduct = product as PhysicalProduct;
-         if(filters.inStock && physicalProduct.inventory.stock <= 0) return false;
-         if(!filters.inStock && physicalProduct.inventory.stock > 0) return false;
-        }
-
-    // Apply search
+  useEffect(() => {
     if (debouncedSearch) {
-      const searchLower = debouncedSearch.toLowerCase();
-      return (
-        product.title.toLowerCase().includes(searchLower) ||
-        product.description.toLowerCase().includes(searchLower)
-      );
+      searchProducts(debouncedSearch);
     }
+  }, [debouncedSearch, searchProducts]);
 
-    return true;
-  });
-
-
-  // Sort products
-  const sortedProducts = [...filteredProducts].sort((a, b) => {
-    switch (filters.sortBy) {
-      case 'price-low':
-        return a.price - b.price;
-      case 'price-high':
-        return b.price - a.price;
-      case 'newest':
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      default:
-        return 0;
+  useEffect(() => {
+    if (filters.category.length) {
+      filterByCategory(filters.category[0]);
     }
-  });
+  }, [filters.category, filterByCategory]);
+
+  useEffect(() => {
+    filterByPriceRange(filters.priceRange[0], filters.priceRange[1]);
+  }, [filters.priceRange, filterByPriceRange]);
+
+  useEffect(() => {
+    if (filters.sortBy === 'price-low' || filters.sortBy === 'price-high') {
+      sortProducts('price');
+    } else if (filters.sortBy === 'newest') {
+      sortProducts('date');
+    }
+  }, [filters.sortBy, sortProducts]);
 
   const productsToDisplay = activeTab === 'all'
-        ? sortedProducts
-       : sortedProducts.filter((product) => favoriteIds.includes(product.id));
+    ? filteredProducts
+    : filteredProducts.filter((product) => favoriteIds.includes(product.id));
 
   return (
     <div className="container mx-auto p-4 space-y-6">
-      {/* Search and View Controls */}
-      <div className="flex items-center gap-4">
-         <Button
+      <div className="flex items-center gap-4 flex-wrap">
+        <Button
           variant={activeTab === 'all' ? 'default' : 'outline'}
           size="sm"
           onClick={() => setActiveTab('all')}
         >
           All
         </Button>
-         <Button
+        <Button
           variant={activeTab === 'favorites' ? 'default' : 'outline'}
-           size="sm"
+          size="sm"
           onClick={() => setActiveTab('favorites')}
         >
           <Heart className="w-4 h-4 mr-2" />
           Favorites
         </Button>
-        <div className="flex-1 relative">
+        
+        <div className="flex-1 relative min-w-[200px]">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
           <Input
             className="pl-10"
             placeholder="Search products..."
-              value={filters.search}
-                onChange={(e) => setFilters(f => ({...f, search: e.target.value}))}
+            value={filters.search}
+            onChange={(e) => setFilters(f => ({...f, search: e.target.value}))}
           />
         </div>
         
@@ -154,11 +126,18 @@ export default function ProductListingPage() {
             </Button>
           </SheetTrigger>
           <SheetContent>
-            <ProductFilters filters={filters} onChange={setFilters} />
+            <ProductFilters 
+              filters={filters} 
+              onChange={setFilters} 
+              isLoading={isLoading}
+            />
           </SheetContent>
         </Sheet>
 
-        <Select value={filters.sortBy} onValueChange={(value) => setFilters(f => ({ ...f, sortBy: value }))}>
+        <Select 
+          value={filters.sortBy} 
+          onValueChange={(value) => setFilters(f => ({ ...f, sortBy: value }))}
+        >
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Sort by" />
           </SelectTrigger>
@@ -187,26 +166,46 @@ export default function ProductListingPage() {
         </div>
       </div>
 
-      {/* Active Filters */}
-      <ActiveFilters filters={filters} onChange={setFilters} />
+      <ActiveFilters 
+        filters={filters} 
+        onChange={setFilters} 
+        isLoading={isLoading}
+      />
 
-      {/* Product Grid/List */}
       {isLoading ? (
-        <div>Loading...</div>
-      ) : (
-        <div className={cn(
-          "grid gap-6",
-          view === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4' : 'grid-cols-1'
-        )}>
-          {productsToDisplay.map((product) => (
-            <ProductCard 
-              key={product.id} 
-              product={product}
-              view={view}
-             isFavorite={favoriteIds.includes(product.id)}
-            />
-          ))}
+        <div className="flex justify-center items-center min-h-[200px]">
+          <Loader2 className="h-8 w-8 animate-spin" />
         </div>
+      ) : (
+        <>
+          <div className={cn(
+            "grid gap-6",
+            view === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4' : 'grid-cols-1'
+          )}>
+            {productsToDisplay.map((product) => (
+              <ProductCard 
+                key={product.id} 
+                product={product}
+                view={view}
+              />
+            ))}
+          </div>
+          
+          {hasNextPage && (
+            <div className="mt-8 flex justify-center">
+              <Button 
+                variant="outline" 
+                onClick={() => loadNextPage()}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : null}
+                Load More
+              </Button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

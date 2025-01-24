@@ -1,17 +1,7 @@
 import React, { useCallback } from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import type { ProductCategory } from '@/types/store';
-
-interface FilterState {
-  type: ('physical' | 'digital')[];
-  category: ProductCategory[];
-  priceRange: [number, number];
-  condition: string[];
-  inStock: boolean | undefined;
-  sortBy: string;
-  search: string;
-}
+import type { FilterState } from '@/types/store';
 
 interface ActiveFiltersProps {
   filters: FilterState;

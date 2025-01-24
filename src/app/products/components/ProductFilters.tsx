@@ -5,17 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import type { ProductCategory, ProductCondition } from '@/types/store';
-
-interface FilterState {
-  type: ('physical' | 'digital')[];
-  category: ProductCategory[];
-  priceRange: [number, number];
-  condition: ProductCondition[];
-  inStock: boolean | undefined;
-  sortBy: string;
-  search: string;
-}
+import type { FilterState, ProductCategory, ProductCondition } from '@/types/store';
 
 interface ProductFiltersProps {
   filters: FilterState;
