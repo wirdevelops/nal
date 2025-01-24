@@ -6,35 +6,39 @@ import { useNGOProjectStore } from "@/stores/useNGOProjectStore";
 import { useDonationStore } from "@/stores/useDonationStore";
 import { useImpactStore } from "@/stores/useImpactStore";
 import { PageHeader } from "../components/PageHeader";
-import { useUserStore } from "@/stores/useUserStore";
+import { useUser, useUserStore } from "@/stores/useUserStore";
 import { Donation } from "@/types/ngo/donation";
+import { useMemo } from "react";
 
 export default function DonatePage() {
-  const { user, isLoading } = useUserStore(); //get the isLoading state from the store as well
-  const { projects } = useNGOProjectStore();
-  const { getDonationStats, donations, addDonation } = useDonationStore();
-  const { calculateSummary } = useImpactStore();
+  const user = useUser();
+  const isLoading = useUserLoading();
+  const { updateProfile } = useUserActions();
 
-  const donationStats = getDonationStats();
-  const impactSummary = calculateSummary();
+  // Memoized derived data
+  const donationStats = useMemo(() => getDonationStats(), [getDonationStats, donations]);
+  const impactSummary = useMemo(() => calculateSummary(), [calculateSummary]);
 
   const handleDonationSuccess = (donation: Donation) => {
     addDonation(donation);
   };
 
-  const recentDonors = donations
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .slice(0, 5)
-    .map(d => ({
-      id: d.id,
-      name: d.donor.name,
-      amount: d.amount,
-      donatedAt: d.date,
-      isAnonymous: d.anonymous,
-      message: d.message
-    }));
+  const recentDonors = useMemo(() => 
+    donations
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(0, 5)
+      .map(d => ({
+        id: d.id,
+        name: d.donor.name,
+        amount: d.amount,
+        donatedAt: d.date,
+        isAnonymous: d.anonymous,
+        message: d.message
+      })), 
+    [donations]
+  );
 
-  const stats = [
+  const stats = useMemo(() => [
     {
       icon: Heart,
       label: "Total Donations",
@@ -55,13 +59,17 @@ export default function DonatePage() {
       label: "Communities Served",
       value: new Set(projects.map(p => p.location.city)).size,
     }
-  ];
+  ], [donationStats.totalAmount, projects, impactSummary.totalImpact]);
 
   if (isLoading) {
-    return <Loader2 className="h-16 w-16 animate-spin" />
+    return (
+      <div className="flex justify-center p-8">
+        <Loader2 className="h-16 w-16 animate-spin text-primary" />
+      </div>
+    );
   }
 
-  if (!user) return null; // This is still correct logic if a user doesn't exist
+  if (!user) return null;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -85,7 +93,7 @@ export default function DonatePage() {
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-16">
           {stats.map((stat, index) => (
-            <Card key={index} className="bg-white">
+            <Card key={stat.label} className="bg-white"> {/* Use label as key instead of index */}
               <CardContent className="pt-6">
                 <div className="flex items-center gap-4">
                   <div className="p-4 bg-primary/10 rounded-full">

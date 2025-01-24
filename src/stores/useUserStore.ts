@@ -1,7 +1,13 @@
 // stores/useUserStore.ts
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { shallow } from 'zustand/shallow';
 import type { User, UserRole, OnboardingStage } from '@/types/user';
+
+// Type definitions
+type ProfileInitializers = {
+  [K in UserRole]: object;
+};
 
 interface UserState {
   user: User | null;
@@ -10,9 +16,12 @@ interface UserState {
 }
 
 interface UserActions {
+  setLoading: (loading: boolean) => void;
+  setUser: (user: User | null) => void;
+  clearError: () => void;
   initializeUser: (email: string, name: User['name']) => void;
-  updateProfile: <T extends keyof User['profiles']>( // Constrain to valid profile keys
-    role: T, 
+  updateProfile: <T extends UserRole>(
+    role: T,
     data: Partial<User['profiles'][T]>
   ) => void;
   addRole: (role: UserRole) => void;
@@ -22,6 +31,7 @@ interface UserActions {
   logout: () => void;
 }
 
+// Constants
 const DEFAULT_SETTINGS: User['settings'] = {
   notifications: {
     email: true,
@@ -34,7 +44,7 @@ const DEFAULT_SETTINGS: User['settings'] = {
   }
 };
 
-const PROFILE_INITIALIZERS: Record<UserRole, object> = {
+const PROFILE_INITIALIZERS: ProfileInitializers = {
   actor: { actingStyles: [], reels: [], unionStatus: '' },
   producer: { projects: [], collaborations: [] },
   crew: { department: '', certifications: [], equipment: [] },
@@ -44,6 +54,7 @@ const PROFILE_INITIALIZERS: Record<UserRole, object> = {
   admin: {}
 };
 
+// Store implementation
 export const useUserStore = create<UserState & UserActions>()(
   persist(
     (set, get) => ({
@@ -51,18 +62,14 @@ export const useUserStore = create<UserState & UserActions>()(
       isLoading: false,
       error: null,
 
-/*************  ✨ Codeium Command ⭐  *************/
-/**
- * Initializes a new user with the provided email and name.
- * Sets up a default user object with a unique ID, empty roles,
- * undefined profiles, and initial onboarding and settings data.
- * The user status is set to 'pending' and verification is marked as false.
- *
- * @param email - The email address for the new user.
- * @param name - The name object containing first and last name of the user.
- */
+      // Basic state actions
+      setLoading: (loading) => set({ isLoading: loading }),
+      setUser: (user) => set({ user, isLoading: false, error: null }),
+      clearError: () => set({ error: null }),
+      setError: (error) => set({ error, isLoading: false }),
+      logout: () => set({ user: null, error: null, isLoading: false }),
 
-/******  8abd44ad-ae41-4ed8-9988-3ecd934af273  *******/
+      // User initialization
       initializeUser: (email, name) => {
         set({
           user: {
@@ -71,11 +78,7 @@ export const useUserStore = create<UserState & UserActions>()(
             name,
             avatar: undefined,
             roles: [],
-            profiles: {
-              actor: undefined,
-              crew: undefined,
-              vendor: undefined
-            },
+            profiles: {},
             onboarding: {
               stage: 'role-selection',
               completed: [],
@@ -93,17 +96,18 @@ export const useUserStore = create<UserState & UserActions>()(
         });
       },
 
+      // Profile management
       updateProfile: (role, data) => {
-        const { user } = get();
+        const user = get().user;
         if (!user) return;
-      
+
         set({
           user: {
             ...user,
             profiles: {
               ...user.profiles,
               [role]: {
-                ...((user.profiles[role] || PROFILE_INITIALIZERS[role]) as object),
+                ...(user.profiles[role] || PROFILE_INITIALIZERS[role]),
                 ...data
               }
             },
@@ -114,14 +118,20 @@ export const useUserStore = create<UserState & UserActions>()(
           }
         });
       },
+
+      // Role management
       addRole: (role) => {
-        const { user } = get();
-        if (!user) return;
+        const user = get().user;
+        if (!user || user.roles.includes(role)) return;
 
         set({
           user: {
             ...user,
-            roles: Array.from(new Set([...user.roles, role])),
+            roles: [...user.roles, role],
+            profiles: {
+              ...user.profiles,
+              [role]: user.profiles[role] || PROFILE_INITIALIZERS[role]
+            },
             metadata: {
               ...user.metadata,
               updatedAt: new Date().toISOString()
@@ -130,18 +140,21 @@ export const useUserStore = create<UserState & UserActions>()(
         });
       },
 
+      // Onboarding updates
       updateOnboarding: (stage, data = {}) => {
-        const { user } = get();
+        const user = get().user;
         if (!user) return;
-      
+
+        const completed = user.onboarding.completed.includes(stage)
+          ? user.onboarding.completed
+          : [...user.onboarding.completed, stage];
+
         set({
           user: {
             ...user,
             onboarding: {
               stage,
-              completed: user.onboarding.completed.includes(stage) 
-                ? user.onboarding.completed 
-                : [...user.onboarding.completed, stage],
+              completed,
               data: { ...user.onboarding.data, ...data }
             },
             metadata: {
@@ -152,8 +165,9 @@ export const useUserStore = create<UserState & UserActions>()(
         });
       },
 
+      // Settings updates
       updateSettings: (settings) => {
-        const { user } = get();
+        const user = get().user;
         if (!user) return;
 
         set({
@@ -161,14 +175,19 @@ export const useUserStore = create<UserState & UserActions>()(
             ...user,
             settings: {
               ...user.settings,
-              ...settings
+              ...settings,
+              notifications: {
+                ...user.settings.notifications,
+                ...settings.notifications
+              },
+              privacy: {
+                ...user.settings.privacy,
+                ...settings.privacy
+              }
             }
           }
         });
-      },
-
-      setError: (error) => set({ error }),
-      logout: () => set({ user: null, error: null })
+      }
     }),
     {
       name: 'user-store',
@@ -178,6 +197,22 @@ export const useUserStore = create<UserState & UserActions>()(
     }
   )
 );
+
+// Optimized selectors
+export const useUser = () => useUserStore((state) => state.user, shallow);
+export const useUserLoading = () => useUserStore((state) => state.isLoading);
+export const useUserActions = () => useUserStore((state) => ({
+  setLoading: state.setLoading,
+  setUser: state.setUser,
+  clearError: state.clearError,
+  initializeUser: state.initializeUser,
+  updateProfile: state.updateProfile,
+  addRole: state.addRole,
+  updateOnboarding: state.updateOnboarding,
+  updateSettings: state.updateSettings,
+  setError: state.setError,
+  logout: state.logout
+}), shallow);
 
 // // stores/useUserStore.ts
 // import { create } from 'zustand';
