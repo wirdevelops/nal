@@ -7,7 +7,7 @@ export default function ProjectOverviewPage({ params }: { params: { projectId: s
   return (
     <div className="space-y-8">
       <div className="grid gap-6 md:grid-cols-2">
-        <Overview projectId={params.projectId} />
+        <Overview project={params.projectId} />
         <DonorWall projectId={params.projectId} />
       </div>
 

@@ -6,30 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Heart, Share2, MessageSquare } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Story } from '@/types/ngo/story';
 
-interface Story {
-  id: string;
-  title: string;
-  description: string;
-  image: string;
-  category: string;
-  location: string;
-  beneficiary: {
-    name: string;
-    avatar?: string;
-    quote: string;
-  };
-  stats: {
-    peopleHelped: number;
-    volunteersInvolved: number;
-    duration: string;
-  };
-  engagement: {
-    likes: number;
-    comments: number;
-    shares: number;
-  };
-}
 
 interface ImpactStoriesProps {
   stories: Story[];

@@ -4,6 +4,8 @@ import { UUID_PATTERN } from '../common';
 import { User } from '../user';
 import { ImpactStory } from './impactStory';
 import { Donation, ImpactMetric } from './donation';
+import { z } from 'zod';
+
 
 // ===== Enums =====
 export const ProjectCategorySchema = Type.Union([
@@ -101,6 +103,7 @@ export interface ProjectMetrics {
     notes?: string;
     attachments?: string[];
     dependencies?: string[];
+    type: string;
   }
 
   export interface Update {
@@ -201,3 +204,137 @@ export interface Beneficiary {
       media: ProjectMedia[];
   }
   }
+
+
+   
+  
+    
+  
+      export const PROJECT_CATEGORIES = [
+        'education',
+        'health',
+        'environment',
+        'community_development',
+        'emergency_relief',
+        'other'
+      ] as const;
+  
+
+  
+      // In your types
+      export interface ProjectMetrics {
+          impactScore: number;
+          volunteers: number;
+          donations: number;
+          socialShares: number;
+          costPerBeneficiary: number;
+          volunteerImpactRatio: number;
+          fundingUtilization: number;
+          correlationData: Array<{
+          date: string;
+          volunteerHours: number;
+          beneficiaryOutcomes: number;
+          }>;
+      }
+      
+      export interface Milestone {
+        id: string;
+          name: string;
+          date: string;
+          description: string;
+          completed: boolean;
+          media: ProjectMedia[];
+          teamMembers: string[];
+          notes?: string;
+          attachments?: string[];
+          dependencies?: string[];
+      }
+  
+      export interface Update {
+          id: string;
+          date: string; // ISO Date String
+          content: string;
+          media?: Media[];
+          authorId: string;
+      }
+  
+      export interface Media {
+          type: MediaType;
+          url: string;
+          caption?: string;
+          altText?:string;
+      }
+  
+
+  
+      export interface Report {
+          id: string;
+          title: string;
+          date: string; // ISO Date String
+          authorId: string;
+          url: string;
+          type: string;
+      }
+      
+      export interface TeamMember {
+          userId: string;
+          name: string;
+          role: string; // Example: Project Manager, Field Coordinator
+          avatar?: string;
+          department?: string;
+          joinDate: string;
+          hoursContributed: number;
+          trainingCompleted: boolean;
+      }
+  
+      export interface Beneficiary {
+          type: 'individual' | 'community';
+          count: number;
+          description: string;
+          id: string;
+              name: string;
+              demographic?: string; // E.g., age range, location
+              details?: string;
+      }
+      
+      export interface NGOProject {
+        donations: Donation[];
+          url: string;
+          metrics: ProjectMetrics;
+          impactStories: ImpactStory[];
+          media: ProjectMedia[];
+          id: string;
+          name: string;
+          description: string;
+          category: ProjectCategory;
+          status: ProjectStatus;
+          startDate: string; // ISO Date String
+          endDate?: string;  // ISO Date String
+          location: Location;
+          budget: Budget;
+          team: TeamMember[];
+          beneficiaries: Beneficiary[];
+          milestones: Milestone[];
+          gallery: Media[];
+          updates: Update[];
+          reports: Report[];
+          impact: ImpactMetric[];
+          createdAt: string;  // ISO Date String
+          updatedAt: string;  // ISO Date String
+          duration: number;
+          donors: User[];
+          timeline: {
+          startDate: string;
+          endDate?: string;
+          milestones: Milestone[];
+          media: ProjectMedia[];
+      }
+      }
+
+      export const CreateProjectSchema = z.object({
+        name: z.string().min(3, { message: "Project name must be at least 3 characters." }),
+        category: z.enum(PROJECT_CATEGORIES),
+        description: z.string().min(10, { message: "Description must be at least 10 characters." }),
+    });
+    
+    export type CreateProjectSchemaType = z.infer<typeof CreateProjectSchema>;

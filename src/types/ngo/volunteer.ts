@@ -97,6 +97,14 @@ export interface Volunteer {
     hoursContributed: number;
   }
   
+  export interface Reference {
+    id: string;
+    name: string;
+    relationship: string;
+    contact: string;
+    status: BackgroundCheck;
+  }
+  
 export  interface Training {
     id: string;
     name: string;

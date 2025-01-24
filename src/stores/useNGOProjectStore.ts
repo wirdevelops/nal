@@ -14,7 +14,6 @@ import type {
   Report,
   ProjectMedia,
   TeamMember,
-  Beneficiary,
   ProjectMetrics,
   MediaType
 } from '@/types/ngo/project';
@@ -40,7 +39,7 @@ interface NGOProjectActions {
   addReport: (projectId: string, report: Omit<Report, 'id'>) => void;
 
   // Media Management
-  addProjectMedia: (projectId: string, media: Omit<ProjectMedia, 'id'>) => void;
+  addProjectMedia: (projectId: string, media: File[]) => void;
   removeProjectMedia: (projectId: string, mediaId: string) => void;
   
   // Beneficiary Management
@@ -64,6 +63,17 @@ interface NGOProjectActions {
 
   // Async Operations
   fetchProjects: () => Promise<void>;
+
+  getUpcomingEvents: () => {
+      id: string;
+      title: string;
+      date: string;
+      projectId: string;
+      projectName: string;
+      location: string;
+      type: string;
+      description: string;
+    }[];
 }
 
 const DEFAULT_METRICS = {
@@ -84,8 +94,6 @@ export const useNGOProjectStore = create<ProjectState & NGOProjectActions>()(
       isLoading: false,
       error: null,
 
-      // Core CRUD Operations
-      // Updated initializeProject method
 initializeProject: (baseData) => ({
   id: uuidv4(),
   ...baseData,
@@ -118,6 +126,7 @@ initializeProject: (baseData) => ({
   updatedAt: new Date().toISOString(),
   duration: 0,
   donors: [],
+  donations: [], // Add this line
   timeline: {
     startDate: new Date().toISOString(),
     milestones: [],
@@ -174,251 +183,296 @@ updateProject: (id, updates) => {
   }));
 },
 
-      deleteProject: (id) => {
-        set(state => ({
-          projects: state.projects.filter(project => project.id !== id)
-        }));
-      },
+    deleteProject: (id) => {
+      set(state => ({
+        projects: state.projects.filter(project => project.id !== id)
+      }));
+    },
 
-      // Project Components
-      addMilestone: (projectId, milestone) => {
-        set(state => ({
-          projects: state.projects.map(project => {
-            if (project.id === projectId) {
-              const newMilestone = {
-                ...milestone,
-                id: uuidv4(),
-                status: 'planned'
-              };
-              return {
-                ...project,
-                milestones: [...project.milestones, newMilestone],
-                updatedAt: new Date().toISOString()
-              };
-            }
-            return project;
-          })
-        }));
-      },
-
-      updateBudget: (projectId, budgetUpdates) => {
-        set(state => ({
-          projects: state.projects.map(project => {
-            if (project.id === projectId) {
-              return {
-                ...project,
-                budget: { ...project.budget, ...budgetUpdates },
-                updatedAt: new Date().toISOString()
-              };
-            }
-            return project;
-          })
-        }));
-      },
-
-      addUpdate: (projectId, update) => {
-        set(state => ({
-          projects: state.projects.map(project => {
-            if (project.id === projectId) {
-              const newUpdate = {
-                ...update,
-                id: uuidv4(),
-                date: new Date().toISOString()
-              };
-              return {
-                ...project,
-                updates: [...project.updates, newUpdate],
-                updatedAt: new Date().toISOString()
-              };
-            }
-            return project;
-          })
-        }));
-      },
-
-      addReport: (projectId, report) => {
-        set(state => ({
-          projects: state.projects.map(project => {
-            if (project.id === projectId) {
-              const newReport = {
-                ...report,
-                id: uuidv4(),
-                date: new Date().toISOString()
-              };
-              return {
-                ...project,
-                reports: [...project.reports, newReport],
-                updatedAt: new Date().toISOString()
-              };
-            }
-            return project;
-          })
-        }));
-      },
-
-      // Update in useNGOProjectStore.ts
-addProjectMedia: (projectId: string, files: File[]) => {
-  set(state => ({
-    projects: state.projects.map(project => 
-      project.id === projectId 
-        ? {
-            ...project,
-            media: [
-              ...project.media,
-              ...files.map(file => ({
-                id: uuidv4(),
-                url: URL.createObjectURL(file),
-                type: file.type.startsWith('image/') ? 'image' :
-                      file.type.startsWith('video/') ? 'video' : 'document',
-                caption: ''
-              }))
-            ]
+    // Project Components
+    addMilestone: (projectId, milestone) => {
+      set(state => ({
+        projects: state.projects.map(project => {
+          if (project.id === projectId) {
+            const newMilestone = {
+              ...milestone,
+              id: uuidv4(),
+              status: 'planned'
+            };
+            return {
+              ...project,
+              milestones: [...project.milestones, newMilestone],
+              updatedAt: new Date().toISOString()
+            };
           }
-        : project
-    )
-  }));
-},
+          return project;
+        })
+      }));
+    },
 
-      removeProjectMedia: (projectId, mediaId) => {
-        set(state => ({
-          projects: state.projects.map(project => {
-            if (project.id === projectId) {
-              return {
+    updateBudget: (projectId, budgetUpdates) => {
+      set(state => ({
+        projects: state.projects.map(project => {
+          if (project.id === projectId) {
+            return {
+              ...project,
+              budget: { ...project.budget, ...budgetUpdates },
+              updatedAt: new Date().toISOString()
+            };
+          }
+          return project;
+        })
+      }));
+    },
+
+    addUpdate: (projectId, update) => {
+      set(state => ({
+        projects: state.projects.map(project => {
+          if (project.id === projectId) {
+            const newUpdate = {
+              ...update,
+              id: uuidv4(),
+              date: new Date().toISOString()
+            };
+            return {
+              ...project,
+              updates: [...project.updates, newUpdate],
+              updatedAt: new Date().toISOString()
+            };
+          }
+          return project;
+        })
+      }));
+    },
+
+    addReport: (projectId, report) => {
+      set(state => ({
+        projects: state.projects.map(project => {
+          if (project.id === projectId) {
+            const newReport = {
+              ...report,
+              id: uuidv4(),
+              date: new Date().toISOString()
+            };
+            return {
+              ...project,
+              reports: [...project.reports, newReport],
+              updatedAt: new Date().toISOString()
+            };
+          }
+          return project;
+        })
+      }));
+    },
+
+    // Update in useNGOProjectStore.ts
+    addProjectMedia: (projectId: string, files: File[]) => {
+      set(state => ({
+        projects: state.projects.map(project => 
+          project.id === projectId 
+            ? {
                 ...project,
-                gallery: project.gallery.filter(media => media.url !== mediaId),
-                updatedAt: new Date().toISOString()
-              };
-            }
-            return project;
-          })
-        }));
-      },
+                media: [
+                  ...project.media,
+                  ...files.map(file => ({
+                    id: uuidv4(),
+                    url: URL.createObjectURL(file),
+                    type: file.type.startsWith('image/') ? 'image' :
+                          file.type.startsWith('video/') ? 'video' : 'document',
+                    caption: ''
+                  })) as ProjectMedia[]
+                ]
+              }
+            : project
+        )
+      }));
+    },
 
-      // Beneficiary Management
-      updateBeneficiaryCount: (projectId, newCount) => {
-        set(state => ({
-          projects: state.projects.map(project => {
-            if (project.id === projectId) {
-              return {
-                ...project,
-                beneficiaries: project.beneficiaries.map(b => ({
-                  ...b,
-                  count: newCount
-                })),
-                updatedAt: new Date().toISOString()
-              };
-            }
-            return project;
-          })
-        }));
-      },
+    removeProjectMedia: (projectId, mediaId) => {
+      set(state => ({
+        projects: state.projects.map(project => {
+          if (project.id === projectId) {
+            return {
+              ...project,
+              gallery: project.gallery.filter(media => media.url !== mediaId),
+              updatedAt: new Date().toISOString()
+            };
+          }
+          return project;
+        })
+      }));
+    },
 
-      // Volunteer Management
-      addVolunteer: (projectId, volunteer) => {
-        set(state => ({
-          projects: state.projects.map(project => {
-            if (project.id === projectId) {
-              const newVolunteer: TeamMember = {
-                ...volunteer,
-                userId: uuidv4(),
-                joinDate: new Date().toISOString(),
-                hoursContributed: 0
-              };
-              return {
-                ...project,
-                team: [...project.team, newVolunteer],
-                updatedAt: new Date().toISOString()
-              };
-            }
-            return project;
-          })
-        }));
-      },
+    // Beneficiary Management
+    updateBeneficiaryCount: (projectId, newCount) => {
+      set(state => ({
+        projects: state.projects.map(project => {
+          if (project.id === projectId) {
+            return {
+              ...project,
+              beneficiaries: project.beneficiaries.map(b => ({
+                ...b,
+                count: newCount
+              })),
+              updatedAt: new Date().toISOString()
+            };
+          }
+          return project;
+        })
+      }));
+    },
 
-      updateVolunteerHours: (projectId, userId, hours) => {
-        set(state => ({
-          projects: state.projects.map(project => {
-            if (project.id === projectId) {
-              return {
-                ...project,
-                team: project.team.map(member => 
-                  member.userId === userId
-                    ? { ...member, hoursContributed: hours }
-                    : member
-                ),
-                updatedAt: new Date().toISOString()
-              };
-            }
-            return project;
-          })
-        }));
-      },
+    // Volunteer Management
+    addVolunteer: (projectId, volunteer) => {
+      set(state => ({
+        projects: state.projects.map(project => {
+          if (project.id === projectId) {
+            const newVolunteer: TeamMember = {
+              ...volunteer,
+              userId: uuidv4(),
+              joinDate: new Date().toISOString(),
+              hoursContributed: 0
+            };
+            return {
+              ...project,
+              team: [...project.team, newVolunteer],
+              updatedAt: new Date().toISOString()
+            };
+          }
+          return project;
+        })
+      }));
+    },
 
-      // Metrics
-      // Update the metrics calculation
+    updateVolunteerHours: (projectId, userId, hours) => {
+      set(state => ({
+        projects: state.projects.map(project => {
+          if (project.id === projectId) {
+            return {
+              ...project,
+              team: project.team.map(member => 
+                member.userId === userId
+                  ? { ...member, hoursContributed: hours }
+                  : member
+              ),
+              updatedAt: new Date().toISOString()
+            };
+          }
+          return project;
+        })
+      }));
+    },
+
+    // Metrics
+    // Metrics Calculations
 calculateMetrics: (): ProjectMetrics => {
   const projects = get().projects;
-  
-  return projects.reduce((acc, project) => ({
-    impactScore: acc.impactScore + project.metrics.impactScore,
-    volunteers: acc.volunteers + project.metrics.volunteers,
-    donations: acc.donations + project.metrics.donations,
-    socialShares: acc.socialShares + project.metrics.socialShares,
-    costPerBeneficiary: acc.costPerBeneficiary + project.metrics.costPerBeneficiary,
-    volunteerImpactRatio: acc.volunteerImpactRatio + project.metrics.volunteerImpactRatio,
-    fundingUtilization: acc.fundingUtilization + project.metrics.fundingUtilization,
-    correlationData: [
-      ...acc.correlationData,
-      ...project.metrics.correlationData
-    ]
-  }), DEFAULT_METRICS);
+  const totals = projects.reduce((acc, project) => {
+    const beneficiaries = project.beneficiaries.reduce((sum, b) => sum + b.count, 0);
+    return {
+      totalImpact: acc.totalImpact + project.metrics.impactScore,
+      totalVolunteers: acc.totalVolunteers + project.metrics.volunteers,
+      totalDonations: acc.totalDonations + project.metrics.donations,
+      totalSocialShares: acc.totalSocialShares + project.metrics.socialShares,
+      totalAllocated: acc.totalAllocated + project.budget.allocated,
+      totalBeneficiaries: acc.totalBeneficiaries + beneficiaries,
+      totalVolunteerHours: acc.totalVolunteerHours + project.metrics.volunteerImpactRatio,
+      totalFundingUsed: acc.totalFundingUsed + (project.budget.used || 0),
+      correlationData: [...acc.correlationData, ...project.metrics.correlationData]
+    };
+  }, {
+    totalImpact: 0,
+    totalVolunteers: 0,
+    totalDonations: 0,
+    totalSocialShares: 0,
+    totalAllocated: 0,
+    totalBeneficiaries: 0,
+    totalVolunteerHours: 0,
+    totalFundingUsed: 0,
+    correlationData: [] as ProjectMetrics['correlationData']
+  });
+
+  return {
+    impactScore: totals.totalImpact,
+    volunteers: totals.totalVolunteers,
+    donations: totals.totalDonations,
+    socialShares: totals.totalSocialShares,
+    costPerBeneficiary: totals.totalBeneficiaries > 0 
+      ? totals.totalAllocated / totals.totalBeneficiaries 
+      : 0,
+    volunteerImpactRatio: totals.totalVolunteerHours > 0 
+      ? totals.totalImpact / totals.totalVolunteerHours 
+      : 0,
+    fundingUtilization: totals.totalAllocated > 0 
+      ? (totals.totalFundingUsed / totals.totalAllocated) * 100 
+      : 0,
+    correlationData: totals.correlationData
+  };
 },
 
-      getProjectMetrics: (projectId) => {
-        const project = get().projects.find(p => p.id === projectId);
-        return project?.metrics || DEFAULT_METRICS;
-      },
+getProjectMetrics: (projectId) => {
+  const project = get().projects.find(p => p.id === projectId);
+  return project?.metrics || DEFAULT_METRICS;
+},
 
-      // Queries
-      getProjectById: (id) => {
-        return get().projects.find(project => project.id === id);
-      },
+// Query Methods
+getProjectById: (id) => {
+  return get().projects.find(project => project.id === id);
+},
 
-      getProjectsByStatus: (status) => {
-        return get().projects.filter(project => project.status === status);
-      },
+getProjectsByStatus: (status) => {
+  return get().projects.filter(project => project.status === status);
+},
 
-      getProjectsByLocation: (location) => {
-        return get().projects.filter(project => 
-          Object.entries(location).every(([key, value]) => 
-            project.location[key as keyof Location] === value
-          )
-        );
-      },
+    getProjectsByLocation: (location) => {
+      return get().projects.filter(project => 
+        Object.entries(location).every(([key, value]) => 
+          project.location[key as keyof Location] === value
+        )
+      );
+    },
 
-      // Async Operations
-      fetchProjects: async () => {
-        set({ isLoading: true });
-        try {
-          // Simulated API call
-          const response = await fetch('/api/projects');
-          const data = await response.json();
-          set({ projects: data, isLoading: false });
-        } catch (error) {
-          set({ 
-            error: error instanceof Error ? error.message : 'Failed to fetch projects',
-            isLoading: false 
-          });
-        }
+    // Async Operations
+    fetchProjects: async () => {
+      set({ isLoading: true });
+      try {
+        // Simulated API call
+        const response = await fetch('/api/projects');
+        const data = await response.json();
+        set({ projects: data, isLoading: false });
+      } catch (error) {
+        set({ 
+          error: error instanceof Error ? error.message : 'Failed to fetch projects',
+          isLoading: false 
+        });
       }
-    }),
-    {
-      name: 'ngo-projects',
-      partialize: (state) => ({ projects: state.projects })
-    }
-  )
-);
-
+    },
+    
+    getUpcomingEvents: () => {
+        const now = new Date();
+        return get().projects.flatMap(project => 
+        project.timeline.milestones
+            .filter(m => !m.completed && new Date(m.date) > now)
+            .map(milestone => ({
+            id: milestone.id,
+            title: `${project.name}: ${milestone.name}`,
+            date: milestone.date,
+            projectId: project.id,
+            projectName: project.name,
+            location: `${project.location.city}, ${project.location.country}`,
+            type: milestone.type.toLowerCase(),
+            description: milestone.description
+            }))
+        ).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        }
+      }),
+      {
+        name: 'ngo-projects',
+        partialize: (state) => ({ projects: state.projects })
+      }
+    )
+  );
+    
 // import { create } from 'zustand';
 // import { persist } from 'zustand/middleware';
 // import { v4 as uuidv4 } from 'uuid';

@@ -8,7 +8,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { Skill, BackgroundCheck, Volunteer } from '@/types/ngo';
+import { Skill, BackgroundCheck, Volunteer } from '@/types/ngo/volunteer';
 import { useVolunteer } from '@/hooks/useVolunteer';
 import { useState } from 'react';
 import { Progress } from '@/components/ui/progress';
@@ -95,14 +95,13 @@ export function VolunteerSignupForm({ onSuccess, onCancel }: {
     const parsedPhone = parsePhoneNumber(values.phone, 'US')?.formatInternational() || values.phone;
     try {
       const volunteerData: Omit<Volunteer, 'id' | 'createdAt' | 'updatedAt'> = {
-
         // Personal Info
         userId: uuidv4(),
         firstName: values.firstName,
         lastName: values.lastName,
         email: values.email,
         phone: parsedPhone,
-        
+
         // Skills & Availability
         skills: values.skills,
         availability: {
@@ -110,7 +109,7 @@ export function VolunteerSignupForm({ onSuccess, onCancel }: {
           startTime: values.availability.startTime,
           endTime: values.availability.endTime
         },
-        
+
         // References (add required fields)
         references: (values.references || []).map(ref => ({
           id: uuidv4(), // Generate unique ID
@@ -119,16 +118,20 @@ export function VolunteerSignupForm({ onSuccess, onCancel }: {
           contact: ref.contact,
           status: 'pending' as const
         })),
-        
+
         // Required fields with defaults
         projects: [],
         hours: [],
         background: BackgroundCheck.PENDING,
         trainings: [],
-        
+
         // Optional fields
         location: undefined,
-        notes: values.experience ? values.experience : undefined
+        notes: values.experience ? values.experience : undefined,
+        role: '',
+        joinDate: '',
+        trainingCompleted: false,
+        hoursContributed: 0
       };
   
       await registerVolunteer(volunteerData);

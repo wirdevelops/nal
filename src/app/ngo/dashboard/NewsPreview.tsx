@@ -12,7 +12,6 @@ export function NewsPreview() {
       image: '/news/community-center.jpg',
       date: '2024-01-10'
     },
-    // Add more news items...
   ];
 
   return (

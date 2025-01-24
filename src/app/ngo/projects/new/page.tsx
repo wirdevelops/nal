@@ -1,155 +1,183 @@
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useNGOProject } from '@/hooks/useNGOProject';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { ProjectCategory, ProjectStatus } from '@/types/ngo/project';
-import { toast } from '@/components/ui/use-toast';
-import { ArrowLeft } from 'lucide-react';
+    // src/app/ngo/projects/new/page.tsx
+    'use client'
 
-export default function NewProjectPage() {
-  const router = useRouter();
-  const { createProject } = useNGOProject();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+    import { useState } from 'react';
+    import { useRouter } from 'next/navigation';
+    import { zodResolver } from '@hookform/resolvers/zod';
+    import { useForm } from 'react-hook-form';
+    import { toast } from '@/hooks/use-toast';
+    import { Button } from '@/components/ui/button';
+    import {
+      Form,
+      FormControl,
+      FormDescription,
+      FormField,
+      FormItem,
+      FormLabel,
+      FormMessage,
+    } from '@/components/ui/form';
+    import { Input } from '@/components/ui/input';
+    import { Textarea } from '@/components/ui/textarea';
+    import {
+        RadioGroup,
+        RadioGroupItem,
+    } from "@/components/ui/radio-group"
+    import { Label } from "@/components/ui/label"
+    import { useNGOProjectStore } from '@/stores/useNGOProjectStore';
+    import { Budget, CreateProjectSchema, NGOProject, type CreateProjectSchemaType } from '@/types/ngo/project';
+    import { PROJECT_CATEGORIES, Location } from '@/types/ngo/project'; // This is the fix
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    
-    const formData = new FormData(e.currentTarget);
-    const projectData = {
-      name: formData.get('name') as string,
-      description: formData.get('description') as string,
-      category: formData.get('category') as ProjectCategory,
-      status: 'planned' as ProjectStatus,
-      location: {
-        city: formData.get('city') as string,
-        country: formData.get('country') as string
-      },
-      budget: {
-        total: Number(formData.get('budget')),
-        allocated: 0,
-        currency: 'USD'
+
+    export default function NewProjectPage() {
+      const [loading, setLoading] = useState(false)
+      const router = useRouter()
+      const store = useNGOProjectStore();
+  
+      const form = useForm<CreateProjectSchemaType>({
+        resolver: zodResolver(CreateProjectSchema),
+        defaultValues: {
+          name: "",
+          category: 'education',
+          description: '',
+        },
+      });
+  
+      async function onSubmit(values: CreateProjectSchemaType) {
+          setLoading(true)
+          try {
+            const defaultLocation: Location = {
+              address: '',
+              city: '',
+              state: '',
+              country: '',
+            };
+        
+            const defaultBudget: Budget = {
+              allocated: 0,
+              total: 0,
+              amount: 0,
+              currency: 'USD',
+            };
+        
+            const defaultTimeline = {
+              startDate: new Date().toISOString(),
+              milestones: [],
+              media: []
+            };
+        
+            const projectData: Omit<NGOProject, "id" | "createdAt" | "updatedAt" | "metrics"> = {
+              ...values,
+              // Required primitive fields
+              status: 'planned',
+              startDate: new Date().toISOString(),
+              duration: 0,
+              url: '',
+              
+              // Complex type defaults
+              location: defaultLocation,
+              budget: defaultBudget,
+              timeline: defaultTimeline,
+              
+              // Empty arrays for collection properties
+              media: [],
+              impact: [],
+              donations: [],
+              impactStories: [],
+              team: [],
+              beneficiaries: [],
+              milestones: [],
+              gallery: [],
+              updates: [],
+              reports: [],
+              donors: [],
+              
+              // Ensure all required fields are present
+              description: values.description || '', // Handle optional description
+              endDate: undefined, // Explicitly set optional fields
+            };
+        
+            store.createProject(projectData);
+
+              toast({
+                  title: "Success!",
+                  description: "Project created successfully!",
+              });
+              router.push('/ngo')
+          } catch(e) {
+          console.log(e)
+          toast({
+              title: "Error!",
+              description: "Something went wrong, please try again!",
+              variant: 'destructive'
+          });
+          } finally {
+          setLoading(false);
+          }
       }
-    };
-
-    try {
-      await createProject(projectData);
-      toast({
-        title: 'Success',
-        description: 'Project created successfully'
-      });
-      router.push('/ngo/projects');
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to create project',
-        variant: 'destructive'
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  return (
-    <div className="container mx-auto px-6 py-8">
-      <Button 
-        variant="ghost" 
-        onClick={() => router.push('/ngo/projects')}
-        className="mb-6"
-      >
-        <ArrowLeft className="h-4 w-4 mr-2" />
-        Back to Projects
-      </Button>
-
-      <Card className="max-w-2xl mx-auto p-6">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="name">Project Name</Label>
-            <Input
-              id="name"
-              name="name"
-              required
-              placeholder="Enter project name"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              name="description"
-              required
-              placeholder="Describe your project"
-              rows={4}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label>Category</Label>
-            <RadioGroup name="category" className="grid grid-cols-2 gap-4">
-              {Object.values(ProjectCategory).map((category) => (
-                <div key={category} className="flex items-center space-x-2">
-                  <RadioGroupItem value={category} id={category} />
-                  <Label htmlFor={category}>
-                    {category.replace('_', ' ')}
-                  </Label>
-                </div>
-              ))}
-            </RadioGroup>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="city">City</Label>
-              <Input
-                id="city"
-                name="city"
-                required
-                placeholder="City"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="country">Country</Label>
-              <Input
-                id="country"
-                name="country"
-                required
-                placeholder="Country"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="budget">Budget (USD)</Label>
-            <Input
-              id="budget"
-              name="budget"
-              type="number"
-              min="0"
-              required
-              placeholder="Enter project budget"
-            />
-          </div>
-
-          <div className="flex justify-end space-x-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => router.push('/ngo/projects')}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Creating...' : 'Create Project'}
-            </Button>
-          </div>
-        </form>
-      </Card>
-    </div>
-  );
-}
+    
+      return (
+        <div className="container py-10">
+          <h2 className="text-3xl font-bold tracking-tight pb-10">Create a New Project</h2>
+          <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                  <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                      <FormItem>
+                          <FormLabel>Project Name</FormLabel>
+                          <FormControl>
+                          <Input placeholder="Project Name" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                      </FormItem>
+                      )}
+                  />
+                  <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                      <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                          <Textarea
+                          placeholder="Detailed description of the project..."
+                          className="resize-none"
+                          {...field}
+                          />
+                      </FormControl>
+                      <FormDescription>
+                          Provide a detailed description of your project.
+                      </FormDescription>
+                      <FormMessage />
+                      </FormItem>
+                  )}
+                  />
+                  <FormField
+                      control={form.control}
+                      name="category"
+                      render={({ field }) => (
+                          <FormItem>
+                              <Label>Category</Label>
+                              <RadioGroup name="category" className="grid grid-cols-2 gap-4"  onValueChange={field.onChange} defaultValue={field.value}>
+                                  {PROJECT_CATEGORIES.map((category) => (
+                                      <div key={category} className="flex items-center space-x-2">
+                                          <RadioGroupItem value={category} id={category} />
+                                          <Label htmlFor={category}>
+                                              {category}
+                                          </Label>
+                                      </div>
+                                  ))}
+                              </RadioGroup>
+                              <FormMessage/>
+                          </FormItem>
+                      )}
+                  />
+                  <Button type="submit" disabled={loading} >
+                      Create Project
+                  </Button>
+              </form>
+          </Form>
+        </div>
+      )
+  }

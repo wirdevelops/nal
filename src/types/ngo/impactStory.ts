@@ -14,54 +14,6 @@ export const ImpactCategorySchema = Type.Union([
   Type.Literal('community')
 ]);
 
-// export const IMPACT_CATEGORY_SCHEMA = Type.Object({
-//   id: Type.RegExp(UUID_PATTERN),
-//   title: Type.String(),
-//   description: Type.String(),
-//   image: Type.String(),
-//   category: Type.Union([
-//     Type.Literal('education'),
-//     Type.Literal('health'),
-//     Type.Literal('environment'),
-//     Type.Literal('poverty'),
-//     Type.Literal('gender-equality'),
-//     Type.Literal('economic-development'),
-//     Type.Literal('disaster-relief'),
-//     Type.Literal('community')
-//   ]),
-//   location: Type.Object({
-//     city: Type.String(),
-//     country: Type.String()
-//   }),
-//   beneficiary: Type.Object({
-//     name: Type.String(),
-//     avatar: Type.Optional(Type.String()),
-//     quote: Type.String(),
-// }), stats: Type.Object({
-//     peopleHelped: Type.Number(),
-//     volunteersInvolved: Type.Number(),
-//     duration: Type.String(),
-//     investmentAmount: Type.Optional(Type.Number()),
-//     returnOnInvestment: Type.Optional(Type.Number())
-//   }),
-//   engagement: Type.Object({
-//     likes: Type.Number(),
-//     comments: Type.Number(),
-//     shares: Type.Number()
-//   }),
-//   metadata: Type.Object({
-//     createdAt: Type.String({ format: 'date-time' }),
-//     updatedAt: Type.String({ format: 'date-time' }),
-//     verified: Type.Boolean(),
-//     status: Type.Union([
-//       Type.Literal('draft'),
-//       Type.Literal('published'),
-//       Type.Literal('archived')
-//     ]),
-//     tags: Type.Array(Type.String())
-//     })
-// })
-
 export const ImpactStorySchema = Type.Object({
   id: Type.RegExp(UUID_PATTERN),
   title: Type.String(),
