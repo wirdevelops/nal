@@ -1,5 +1,5 @@
 // src/components/project-header.tsx
-import { useNGOProject } from '@/hooks/useNGOProject';
+import { useNGOProjectStore } from '@/stores/useNGOProjectStore';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Edit2, Heart, Users } from 'lucide-react';
@@ -15,7 +15,7 @@ interface ProjectHeaderProps {
 }
 
 export function ProjectHeader({ projectId, onEdit, onDonate, onVolunteer }: ProjectHeaderProps) {
-  const { getProjectById, isLoading } = useNGOProject();
+  const { getProjectById, isLoading } = useNGOProjectStore();
   const project = getProjectById(projectId);
 
   if (isLoading) return <ProjectHeader.Skeleton />;

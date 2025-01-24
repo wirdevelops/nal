@@ -1,3 +1,5 @@
+'use client'
+
 import React, { useState, useCallback } from 'react';
 import { Card, CardHeader, CardContent, CardFooter, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -6,86 +8,93 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { useNGOProject } from '@/hooks/useNGOProject';
+import { useNGOProjectStore } from '@/stores/useNGOProjectStore';
+import { useDonationStore } from '@/stores/useDonationStore';
 import { User } from '@/types/user';
+import { Donation, DonationFrequency, PaymentStatus } from '@/types/ngo/donation';
 import { v4 as uuidv4 } from 'uuid';
 
 interface DonationFormProps {
-  projectId: string; // Made required since donations need a project
-  currentUser: User; // Added user prop from your auth system
-  onSuccess?: () => void;
+  projectId?: string;
+  currentUser?: User; // Make currentUser optional
+  onSuccess: (donation: Donation) => void;
   onCancel?: () => void;
 }
 
 export function DonationForm({ projectId, currentUser, onSuccess, onCancel }: DonationFormProps) {
-  const { updateProject, getProjectById, isLoading } = useNGOProject();
+  const { updateProject, getProjectById } = useNGOProjectStore();
+  const { addDonation } = useDonationStore();
   const [amount, setAmount] = useState<number>();
-  const [frequency, setFrequency] = useState<'one-time' | 'monthly' | 'annual'>('one-time');
+  const [frequency, setFrequency] = useState<DonationFrequency>('one_time');
   const [anonymous, setAnonymous] = useState(false);
   const [message, setMessage] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
-    
-    if (!amount) {
-      setFormError('Please enter a donation amount');
-      return;
-    }
+    setIsSubmitting(true);
 
     try {
-      const project = getProjectById(projectId);
-      if (!project) {
-        throw new Error('Project not found');
+      if (!amount || amount <= 0) {
+        throw new Error('Please enter a valid donation amount');
       }
 
-      // Create donation payload matching your types
-      const donation = {
+      let donorName = 'Anonymous';
+      let donorEmail = '';
+
+      if (currentUser && currentUser.name) {
+          donorName = `${currentUser.name.first} ${currentUser.name.last}`;
+          donorEmail = currentUser.email
+      }
+
+      const donationData: Donation = {
         id: uuidv4(),
+        donorId: currentUser?.id,  //use optional chaining here
+        projectId,
         amount,
-        currency: 'USD',
-        date: new Date().toISOString(),
-        donor: anonymous ? null : currentUser,
-        message,
-        status: 'completed' as const,
+        frequency,
+        status: 'completed' as PaymentStatus,
+        donationDate: new Date().toISOString(),
         paymentMethod: 'card',
-        frequency
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        currency: 'USD',
+        allocation: projectId ? [{ projectId, percentage: 100 }] : [],
+        donor: {
+          name: donorName,
+          email: donorEmail,
+          anonymous,
+        },
+        message,
+        anonymous,
+        date: new Date().toISOString()
       };
 
-      // Update project state
-      updateProject(projectId, {
-        metrics: {
-          ...project.metrics,
-          donations: project.metrics.donations + amount,
-          fundingUtilization: calculateFundingUtilization(
-            project.metrics.donations + amount,
-            project.budget.total
-          )
-        },
-        donors: anonymous ? project.donors : [...project.donors, currentUser],
-        impact: [
-          ...project.impact,
-          {
-            id: uuidv4(),
-            type: 'donation',
-            value: amount,
-            date: donation.date,
-            description: message || 'New donation received'
-          }
-        ]
-      });
+      await addDonation(donationData);
 
-      onSuccess?.();
+      if (projectId) {
+        const project = getProjectById(projectId);
+        if (project) {
+          updateProject(projectId, {
+            metrics: {
+              ...project.metrics,
+              donations: project.metrics.donations + amount,
+              fundingUtilization: ((project.metrics.donations + amount) / project.budget.total) * 100
+            }
+          });
+        }
+      }
+
+      onSuccess?.(donationData);
     } catch (error) {
       setFormError(error instanceof Error ? error.message : 'Donation processing failed');
       console.error('Donation error:', error);
+    } finally {
+      setIsSubmitting(false);
     }
-  }, [amount, projectId, anonymous, message, frequency, currentUser, getProjectById, updateProject, onSuccess]);
-
-  const calculateFundingUtilization = (donations: number, totalBudget: number): number => {
-    return totalBudget > 0 ? Math.min((donations / totalBudget) * 100, 100) : 0;
-  };
+  }, [amount, projectId, anonymous, message, frequency, currentUser, addDonation, getProjectById, updateProject, onSuccess]);
 
   const presetAmounts = [10, 25, 50, 100, 250, 500];
 
@@ -93,7 +102,7 @@ export function DonationForm({ projectId, currentUser, onSuccess, onCancel }: Do
     <Card className="w-full max-w-md">
       <form onSubmit={handleSubmit}>
         <CardHeader>
-          <CardTitle>Support the Project</CardTitle>
+          <CardTitle>Make a Donation</CardTitle>
         </CardHeader>
 
         <CardContent className="space-y-6">
@@ -103,7 +112,6 @@ export function DonationForm({ projectId, currentUser, onSuccess, onCancel }: Do
             </div>
           )}
 
-          {/* Amount Selection */}
           <div className="space-y-4">
             <Label>Select Amount (USD)</Label>
             <div className="grid grid-cols-3 gap-2">
@@ -123,39 +131,38 @@ export function DonationForm({ projectId, currentUser, onSuccess, onCancel }: Do
               <Input
                 type="number"
                 min={1}
+                step="0.01"
                 placeholder="Other amount"
                 value={amount || ''}
                 onChange={(e) => setAmount(Number(e.target.value))}
-                className="[&::-webkit-inner-spin-button]:appearance-none"
+                className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               />
             </div>
           </div>
 
-          {/* Frequency Selection */}
           <div className="space-y-2">
             <Label>Donation Frequency</Label>
             <RadioGroup 
               value={frequency} 
-              onValueChange={(value: 'one-time' | 'monthly' | 'annual') => setFrequency(value)}
+              onValueChange={(value: DonationFrequency) => setFrequency(value)}
             >
               <div className="flex gap-4">
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="one-time" id="one-time" />
-                  <Label htmlFor="one-time">One-time</Label>
+                  <RadioGroupItem value="one_time" id="one_time" />
+                  <Label htmlFor="one_time">One-time</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="monthly" id="monthly" />
                   <Label htmlFor="monthly">Monthly</Label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="annual" id="annual" />
-                  <Label htmlFor="annual">Annual</Label>
+                  <RadioGroupItem value="annually" id="annually" />
+                  <Label htmlFor="annually">Annual</Label>
                 </div>
               </div>
             </RadioGroup>
           </div>
 
-          {/* Anonymity Toggle */}
           <div className="flex items-center justify-between p-4 bg-muted rounded-lg">
             <Label htmlFor="anonymous">Anonymous Donation</Label>
             <Switch
@@ -165,7 +172,6 @@ export function DonationForm({ projectId, currentUser, onSuccess, onCancel }: Do
             />
           </div>
 
-          {/* Personal Message */}
           <div className="space-y-2">
             <Label htmlFor="message">Optional Message</Label>
             <Textarea
@@ -174,6 +180,7 @@ export function DonationForm({ projectId, currentUser, onSuccess, onCancel }: Do
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               className="resize-none"
+              maxLength={500}
             />
           </div>
         </CardContent>
@@ -186,10 +193,10 @@ export function DonationForm({ projectId, currentUser, onSuccess, onCancel }: Do
           )}
           <Button 
             type="submit" 
-            disabled={!amount || isLoading} 
+            disabled={!amount || isSubmitting} 
             className="flex-1"
           >
-            {isLoading ? 'Processing...' : `Donate $${amount?.toLocaleString() || 0}`}
+            {isSubmitting ? 'Processing...' : `Donate $${amount?.toLocaleString() || 0}`}
           </Button>
         </CardFooter>
       </form>

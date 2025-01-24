@@ -1,331 +1,206 @@
-// src/app/ngo/page.tsx
 'use client'
-
-import { Suspense } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { 
-  BarChart, Users, Heart, Target, 
-  ArrowRight, CalendarDays, BookOpen, Search
-} from 'lucide-react';
+import { Users, Heart, BookOpen, CalendarDays, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useNGOProjectStore } from '@/stores/useNGOProjectStore';
-import { useVolunteer } from '@/hooks/useVolunteer';
+import { useImpactStore } from '@/stores/useImpactStore';
+import { useStoryStore } from '@/stores/useStoryStore';
+import { useDonationStore } from '@/stores/useDonationStore';
 import { MetricsOverview } from './dashboard/MetricsOverview';
-import {ProjectsSummary}  from './dashboard/ProjectSummary';
 import { UpcomingEvents } from './dashboard/UpcomingEvents';
-import { ImpactDashboard } from './components/ImpactDashBoard'; // Ensure correct import path
-
+import { ProjectsSummary } from './dashboard/ProjectSummary';
 
 const QuickActionCard = ({ icon: Icon, title, description, href }) => {
-const router = useRouter();
-return (
+  const router = useRouter();
+  return (
     <Card 
-    className="hover:shadow-lg transition-all cursor-pointer"
-    onClick={() => router.push(href)}
+      className="hover:shadow-lg transition-all cursor-pointer"
+      onClick={() => router.push(href)}
     >
-    <CardContent className="p-6">
+      <CardContent className="p-6">
         <div className="flex items-start gap-4">
-        <div className="p-2 bg-primary/10 rounded-lg">
+          <div className="p-2 bg-primary/10 rounded-lg">
             <Icon className="h-6 w-6 text-primary" />
-        </div>
-        <div className="flex-1 space-y-1">
+          </div>
+          <div className="flex-1 space-y-1">
             <h3 className="font-medium">{title}</h3>
             <p className="text-sm text-muted-foreground">{description}</p>
+          </div>
         </div>
-        <ArrowRight className="h-5 w-5 text-muted-foreground" />
-        </div>
-    </CardContent>
+      </CardContent>
     </Card>
-);
+  );
 };
 
 export default function NGODashboard() {
-const router = useRouter();
-const { projects, createProject, isLoading, calculateMetrics } = useNGOProjectStore();
-const { volunteers } = useVolunteer();
+  const router = useRouter();
+  const { projects, calculateMetrics, isLoading } = useNGOProjectStore();
+  const { stories } = useStoryStore();
+  const { getDonationStats } = useDonationStore();
+  const { calculateSummary } = useImpactStore();
 
-const impactSummary = calculateMetrics();
+  const impactSummary = calculateSummary();
+  const donationStats = getDonationStats();
 
-const quickActions = [
+  const quickActions = [
     {
-    icon: Users,
-    title: "Manage Volunteers",
-    description: `Coordinate ${volunteers.length} active volunteers`,
-    href: "/ngo/volunteers"
+      icon: Users,
+      title: "Manage Volunteers",
+      description: "Coordinate volunteer activities",
+      href: "/ngo/volunteers"
     },
     {
-    icon: Heart,
-    title: "Donations",
-    description: "Track and manage donations",
-    href: "/ngo/donations"
+      icon: Heart,
+      title: "Donations",
+      description: `Track ${donationStats.totalDonations} donations`,
+      href: "/ngo/donations"
     },
     {
-    icon: BookOpen,
-    title: "Success Stories",
-    description: "Share impact stories",
-    href: "/ngo/stories"
+      icon: BookOpen,
+      title: "Success Stories",
+      description: `Share ${stories.length} impact stories`,
+      href: "/ngo/stories"
     },
     {
-    icon: CalendarDays,
-    title: "Events",
-    description: "Manage upcoming events",
-    href: "/ngo/events"
+      icon: CalendarDays,
+      title: "Events",
+      description: "Manage upcoming events",
+      href: "/ngo/events"
     }
-];
+  ];
 
-const handleCreateProject = () => {
-    router.push('/ngo/projects/new');
-};
-
-return (
+  return (
     <div className="min-h-screen bg-background">
-    {/* Hero Section */}
-    <div className="relative bg-primary/5 pb-20 pt-10">
+      <div className="relative bg-primary/5 pb-20 pt-10">
         <div className="container mx-auto px-6">
-        {/* Search Bar - TO DO: Implement search functionality */}
-        <div className="absolute top-4 right-6 w-72">
+          <div className="absolute top-4 right-6 w-72">
             <div className="relative">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground z-10" />
+              <Input
                 placeholder="Search projects..."
                 className="pl-8"
-                // TODO: Implement search in useNGOProjectStore hook
-                onChange={(e) => console.log('Search not implemented:', e.target.value)}
-            />
+              />
             </div>
-        </div>
+          </div>
 
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-6">
-            <h1 className="text-4xl font-bold tracking-tight lg:text-5xl">
+              <h1 className="text-4xl font-bold tracking-tight lg:text-5xl">
                 Making a Difference Together
-            </h1>
-            <p className="text-xl text-muted-foreground">
-                Managing {projects.length} projects and impacting {impactSummary.donations.toLocaleString()} lives
-            </p>
-            <div className="flex gap-4">
+              </h1>
+              <p className="text-xl text-muted-foreground">
+                Managing {projects.length} projects with {impactSummary.totalImpact.toLocaleString()} lives impacted
+              </p>
+              <div className="flex gap-4">
                 <Button 
-                size="lg" 
-                onClick={handleCreateProject}
-                disabled={isLoading}
+                  size="lg" 
+                  onClick={() => router.push('/ngo/get-involved')}
+                  disabled={isLoading}
                 >
-                Create Project
+                  Get Involved
                 </Button>
                 <Button 
-                size="lg" 
-                variant="outline"
-                onClick={() => router.push('/ngo/impact')}
+                  size="lg" 
+                  variant="outline"
+                  onClick={() => router.push('/ngo/sucess-stories')}
                 >
-                View Impact
+                  View Succes Stories
                 </Button>
-            </div>
+              </div>
             </div>
             
             <div className="lg:block relative z-10">
-            <div className="relative">
+              <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-primary/5 rounded-2xl" />
                 <Card className="bg-card/50 backdrop-blur">
-                <CardHeader>
+                  <CardHeader>
                     <CardTitle>Impact Overview</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <ImpactDashboard 
-                    metrics={impactSummary}
-                    stories={[]}
-                    projectId="overview"
-                    className="h-64"
-                    />
-                </CardContent>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Total Impact</p>
+                        <p className="text-2xl font-bold">{impactSummary.totalImpact}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Volunteer Hours</p>
+                        <p className="text-2xl font-bold">{impactSummary.volunteerHours}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Total Donations</p>
+                        <p className="text-2xl font-bold">${donationStats.totalAmount.toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Success Stories</p>
+                        <p className="text-2xl font-bold">{stories.length}</p>
+                      </div>
+                    </div>
+                  </CardContent>
                 </Card>
+              </div>
             </div>
+            <Card className="w-full lg:col-span-2">
+          <CardContent className="p-6">
+            <div className="grid md:grid-cols-2 gap-6 items-center">
+              <div>
+                <h2 className="text-2xl font-bold mb-2">Help Us Create More Impact</h2>
+                <p className="text-muted-foreground">
+                  Join us in our mission to create positive change. Every contribution
+                  makes a difference.
+                </p>
+              </div>
+              <div className="flex justify-end gap-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => router.push('/ngo/volunteers/join')}
+                >
+                  Volunteer
+                </Button>
+                <Button onClick={() => router.push('/ngo/donations/new')}>
+                  Donate Now
+                </Button>
+              </div>
             </div>
+          </CardContent>
+        </Card>
+          </div>
         </div>
-        </div>
-    </div>
+      </div>
 
-    {/* Main Content */}
-    <div className="container mx-auto px-6 -mt-10 relative z-20">
+      {/* <div className="container mx-auto px-6 -mt-10 relative z-20">
         <div className="grid gap-6">
-        {/* Quick Actions */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
             {quickActions.map((action, i) => (
-            <QuickActionCard key={i} {...action} />
+              <QuickActionCard key={i} {...action} />
             ))}
+          </div>
         </div>
+      </div> */}
 
-        {/* Metrics Overview */}
-        <Suspense fallback={<div className="h-[120px] bg-muted animate-pulse rounded-lg" />}>
+      <div className="container px-6">
+          {/* Metrics Overview */}
+          <div className="pb-6">
+          <Suspense fallback={<div className="h-[120px] bg-muted animate-pulse rounded-lg" />}>
             <MetricsOverview />
-        </Suspense>
+          </Suspense>
+          </div>
 
-        {/* Project Summary and Events */}
-        <div className="grid lg:grid-cols-2 gap-6">
+          {/* Project Summary and Events */}
+          <div className="grid lg:grid-cols-2 gap-6">
             <Suspense fallback={<div className="h-[400px] bg-muted animate-pulse rounded-lg" />}>
-            <ProjectsSummary projects={projects} />
+              <ProjectsSummary projects={[]} />
             </Suspense>
             
             <Suspense fallback={<div className="h-[400px] bg-muted animate-pulse rounded-lg" />}>
-            <UpcomingEvents />
+              <UpcomingEvents />
             </Suspense>
-        </div>
-        </div>
+          </div>
+
+  
+          </div >
     </div>
-    </div>
-);
+  );
 }
-
-// import React from 'react';
-// import { Suspense } from 'react';
-// import { 
-//   BarChart, Users, Heart, Target, 
-//   ArrowRight, CalendarDays, BookOpen 
-// } from 'lucide-react';
-// import { Button } from '@/components/ui/button';
-// import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-// import { MetricsOverview } from './dashboard/MetricsOverview';
-// import { ProjectsSummary } from './dashboard/ProjectsSummary';
-// import { UpcomingEvents } from './dashboard/UpcomingEvents';
-// import { ImpactDashboard } from './components/ImpactDashBoard';
-
-// const QuickActionCard = ({ icon: Icon, title, description, href }) => (
-//   <Card className="hover:shadow-lg transition-all cursor-pointer">
-//     <CardContent className="p-6">
-//       <div className="flex items-start gap-4">
-//         <div className="p-2 bg-primary/10 rounded-lg">
-//           <Icon className="h-6 w-6 text-primary" />
-//         </div>
-//         <div className="flex-1 space-y-1">
-//           <h3 className="font-medium">{title}</h3>
-//           <p className="text-sm text-muted-foreground">{description}</p>
-//         </div>
-//         <ArrowRight className="h-5 w-5 text-muted-foreground" />
-//       </div>
-//     </CardContent>
-//   </Card>
-// );
-
-// export function NGODashboard() {
-//   const quickActions = [
-//     {
-//       icon: Users,
-//       title: "Manage Volunteers",
-//       description: "Coordinate and track volunteer activities",
-//       href: "/ngo/volunteers"
-//     },
-//     {
-//       icon: Heart,
-//       title: "Donations",
-//       description: "Track and manage donations",
-//       href: "/ngo/donations"
-//     },
-//     {
-//       icon: BookOpen,
-//       title: "Success Stories",
-//       description: "Share impact stories",
-//       href: "/ngo/stories"
-//     },
-//     {
-//       icon: CalendarDays,
-//       title: "Events",
-//       description: "Manage upcoming events",
-//       href: "/ngo/events"
-//     }
-//   ];
-
-//   return (
-//     <div className="min-h-screen bg-background">
-//       {/* Hero Section */}
-//       <div className="relative bg-primary/5 pb-20 pt-10">
-//         <div className="container mx-auto px-6">
-//           <div className="grid lg:grid-cols-2 gap-12 items-center">
-//             <div className="space-y-6">
-//               <h1 className="text-4xl font-bold tracking-tight lg:text-5xl">
-//                 Making a Difference Together
-//               </h1>
-//               <p className="text-xl text-muted-foreground">
-//                 Track your impact, manage projects, and coordinate volunteers all in one place.
-//               </p>
-//               <div className="flex gap-4">
-//                 <Button size="lg">Create Project</Button>
-//                 <Button size="lg" variant="outline">View Impact</Button>
-//               </div>
-//             </div>
-            
-//             <div className="lg:block">
-//               <div className="relative">
-//                 <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-primary/5 rounded-2xl" />
-//                 <Card className="bg-card/50 backdrop-blur">
-//                   <CardHeader>
-//                     <CardTitle>Impact Overview</CardTitle>
-//                   </CardHeader>
-//                   <CardContent>
-//                     <ImpactDashboard 
-//                       metrics={{
-//                         impactScore: 85,
-//                         volunteers: 250,
-//                         donations: 50000,
-//                         socialShares: 1200,
-//                         costPerBeneficiary: 45,
-//                         volunteerImpactRatio: 2.5,
-//                         fundingUtilization: 80,
-//                         correlationData: []
-//                       }}
-//                       stories={[]}
-//                       projectId="overview"
-//                       className="h-64"
-//                     />
-//                   </CardContent>
-//                 </Card>
-//               </div>
-//             </div>
-//           </div>
-//         </div>
-//       </div>
-
-//       {/* Main Content */}
-//       <div className="container mx-auto px-6 -mt-10">
-//         <div className="grid gap-6">
-//           {/* Quick Actions */}
-//           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-//             {quickActions.map((action, i) => (
-//               <QuickActionCard key={i} {...action} />
-//             ))}
-//           </div>
-
-//           {/* Metrics Overview */}
-//           <Suspense fallback={<div className="h-[120px] bg-muted animate-pulse rounded-lg" />}>
-//             <MetricsOverview />
-//           </Suspense>
-
-//           {/* Project Summary and Events */}
-//           <div className="grid lg:grid-cols-2 gap-6">
-//             <Suspense fallback={<div className="h-[400px] bg-muted animate-pulse rounded-lg" />}>
-//               <ProjectsSummary projects={[]} />
-//             </Suspense>
-            
-//             <Suspense fallback={<div className="h-[400px] bg-muted animate-pulse rounded-lg" />}>
-//               <UpcomingEvents />
-//             </Suspense>
-//           </div>
-
-//           {/* Success Stories Preview */}
-//           <Card>
-//             <CardHeader>
-//               <div className="flex justify-between items-center">
-//                 <CardTitle>Success Stories</CardTitle>
-//                 <Button variant="ghost">View All</Button>
-//               </div>
-//             </CardHeader>
-//             <CardContent>
-//               <div className="grid md:grid-cols-3 gap-6">
-//                 {/* Story previews would go here */}
-//               </div>
-//             </CardContent>
-//           </Card>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }

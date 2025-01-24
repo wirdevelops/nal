@@ -10,19 +10,20 @@ import {
 import { Plus, Loader2 } from 'lucide-react';
 import { ProductCreationForm } from './components/ProductCreationForm';
 import { useUser } from '@/hooks/useUser';
-import { useProducts } from '@/hooks/useProducts';
+import { useProductStore } from '@/stores/useProductStore';
 import ProductCard from './components/ProductCard';
 import EmptyProjects from './components/EmptyProjects';
+import ProductListingPage from './components/ProductListingPage';
 
 export default function ProjectListingPage() {
   const [open, setOpen] = useState(false);
   const { user, userActions } = useUser();
-  const { isLoading, filteredProducts: products } = useProducts();
+  const { isLoading, filteredProducts: products } = useProductStore();
 
-  const canCreateProject = user && (
-    userActions.hasRole('project-owner') || 
-    userActions.hasRole('admin')
-  );
+  // const canCreateProject = user && (
+  //   userActions.hasRole('project-owner') || 
+  //   userActions.hasRole('admin')
+  // );
 
   const handleCreateClick = () => setOpen(true);
 
@@ -41,7 +42,7 @@ export default function ProjectListingPage() {
           <h1 className="text-3xl font-bold">Projects</h1>
           {user && <p className="text-muted-foreground">Welcome back, {user.name.first}</p>}
         </div>
-        {canCreateProject && products.length > 0 && (
+        {/* {canCreateProject && products.length > 0 && ( */}
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
               <Button size="lg">
@@ -53,7 +54,7 @@ export default function ProjectListingPage() {
               <ProductCreationForm onClose={() => setOpen(false)} />
             </SheetContent>
           </Sheet>
-        )}
+        {/* )} */}
       </div>
 
       {products.length > 0 ? (
@@ -67,14 +68,14 @@ export default function ProjectListingPage() {
         </div>
       ) : (
         <>
-          <EmptyProjects onCreateClick={handleCreateClick} canCreate={canCreateProject} />
-          {canCreateProject && open && (
+          <EmptyProjects onCreateClick={handleCreateClick} canCreate={false} />
+          {/* {canCreateProject && open && ( */}
             <Sheet open={open} onOpenChange={setOpen}>
               <SheetContent side="right" className="w-[100vw] sm:w-[540px]">
                 <ProductCreationForm onClose={() => setOpen(false)} />
               </SheetContent>
             </Sheet>
-          )}
+          {/* )} */}
         </>
       )}
     </div>

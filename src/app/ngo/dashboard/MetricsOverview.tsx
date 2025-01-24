@@ -52,7 +52,7 @@ export function MetricsOverview() {
           </div>
         </CardContent>
       </Card>
-
+{/* 
       <Card>
         <CardContent className="pt-6">
           <div className="flex items-center gap-4">
@@ -65,8 +65,8 @@ export function MetricsOverview() {
             </div>
           </div>
         </CardContent>
-      </Card>
-
+      </Card> */}
+{/* 
       <Card>
         <CardContent className="pt-6">
           <div className="flex items-center gap-4">
@@ -79,7 +79,7 @@ export function MetricsOverview() {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       <Card>
         <CardContent className="pt-6">
