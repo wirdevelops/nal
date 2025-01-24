@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import type { NGOProject, ProjectMedia } from '@/types/ngo/project';
+import type { NGOProject} from '@/types/ngo/project';
 import { ProjectHeader } from '.././components/Header';
 import { Overview } from '.././components/Overview';
 import { Team } from '.././components/Team';
@@ -154,7 +154,7 @@ export function ProjectDetailsClient({ project }: { project: NGOProject }) {
 
         <TabsContent value="team">
           <Team 
-            members={project.team}
+            projectId={project.team}
             onAddMember={() => router.push(`/ngo/projects/${project.id}/team/add`)}
           />
         </TabsContent>
@@ -176,8 +176,8 @@ export function ProjectDetailsClient({ project }: { project: NGOProject }) {
 
         <TabsContent value="donors">
           <DonorWall
-            donors={project.donors}
-            projectId={project.id}
+          projectId={project.id}
+          donors={project.donors}   
           />
         </TabsContent>
 
@@ -198,10 +198,11 @@ export function ProjectDetailsClient({ project }: { project: NGOProject }) {
             <>
               <DialogTitle>Support {project.name}</DialogTitle>
               <DonationForm
-                projectId={project.id}
-                onSuccess={() => handleSuccess('donate')}
-                onCancel={handleDialogClose}
-              />
+  projectId={project.id}
+  currentUser={currentUser} // Pass from parent component
+  onSuccess={() => handleSuccess('donate')}
+  onCancel={handleDialogClose}
+/>
             </>
           )}
           
@@ -220,7 +221,7 @@ export function ProjectDetailsClient({ project }: { project: NGOProject }) {
               <DialogTitle>Generate Report</DialogTitle>
               <ReportGenerator
                 projectId={project.id}
-                onGenerate={() => handleSuccess('report')}
+                onGenerate={async () => handleSuccess('report')}
               />
             </>
           )}

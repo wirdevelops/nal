@@ -256,29 +256,28 @@ updateProject: (id, updates) => {
         }));
       },
 
-      // Media Management
-      // Media Management
-      addProjectMedia: (projectId, media) => {
-        set(state => ({
-          projects: state.projects.map(project => 
-            project.id === projectId 
-              ? {
-                  ...project,
-                  gallery: [
-                    ...project.gallery, 
-                    {
-                      ...media,
-                      id: uuidv4(),
-                      // Ensure type is properly cast
-                      type: media.type as MediaType
-                    }
-                  ],
-                  updatedAt: new Date().toISOString()
-                }
-              : project
-          )
-        }));
-      },
+      // Update in useNGOProjectStore.ts
+addProjectMedia: (projectId: string, files: File[]) => {
+  set(state => ({
+    projects: state.projects.map(project => 
+      project.id === projectId 
+        ? {
+            ...project,
+            media: [
+              ...project.media,
+              ...files.map(file => ({
+                id: uuidv4(),
+                url: URL.createObjectURL(file),
+                type: file.type.startsWith('image/') ? 'image' :
+                      file.type.startsWith('video/') ? 'video' : 'document',
+                caption: ''
+              }))
+            ]
+          }
+        : project
+    )
+  }));
+},
 
       removeProjectMedia: (projectId, mediaId) => {
         set(state => ({

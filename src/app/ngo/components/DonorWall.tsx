@@ -1,12 +1,10 @@
 // src/components/DonorWall.tsx
-import React from 'react';
+import { useNGOProjectStore } from '@/stores/useNGOProjectStore';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { formatDistance } from 'date-fns';
-import { useNGOProject } from '@/hooks/useNGOProject';
-import type { NGOProject } from '@/types/ngo/project';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const TIER_COLORS = {
@@ -21,9 +19,9 @@ interface DonorWallProps {
 }
 
 export function DonorWall({ projectId }: DonorWallProps) {
-  const { getProjectById, isLoading } = useNGOProject();
-  const project = getProjectById(projectId) as NGOProject;
-
+  const { getProjectById, isLoading } = useNGOProjectStore();
+  const project = getProjectById(projectId);
+  
   if (isLoading) return <DonorWall.Skeleton />;
 
   if (!project?.donations?.length) {

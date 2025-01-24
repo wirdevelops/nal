@@ -1,12 +1,8 @@
-import { useNGOProject } from '@/hooks/useNGOProject';
+// src/components/Team.tsx
+import { useNGOProjectStore } from '@/stores/useNGOProjectStore';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDate } from '@/lib/utils';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
@@ -17,7 +13,7 @@ interface TeamProps {
 }
 
 export function Team({ projectId, onAddMember }: TeamProps) {
-  const { getProjectById, isLoading } = useNGOProject();
+  const { getProjectById, isLoading } = useNGOProjectStore();
   const project = getProjectById(projectId);
   const members = project?.team || [];
 

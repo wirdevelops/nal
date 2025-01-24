@@ -1,10 +1,16 @@
+// src/components/ReportGenerator.tsx
+import { useState, useCallback } from 'react';
 import { DialogContent } from '@/components/ui/dialog';
-import { useNGOProject } from '@/hooks/useNGOProject';
-import { NGOProject, ProjectMetrics, TeamMember } from '@/types/ngo/project';
-import { useCallback } from 'react';
+import { useNGOProjectStore } from '@/stores/useNGOProjectStore';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { DayPicker } from 'react-day-picker';
+import 'react-day-picker/dist/style.css';
 
 interface ReportGeneratorProps {
   projectId: string;
+  onGenerate: (options: ReportOptions) => Promise<void>;
 }
 
 interface ReportOptions {
@@ -14,138 +20,105 @@ interface ReportOptions {
   format: 'pdf' | 'excel';
 }
 
-export function ReportGenerator({ projectId }: ReportGeneratorProps) {
-  const { getProjectById, calculateMetrics } = useNGOProject();
-  const project = getProjectById(projectId);
-  const globalMetrics = calculateMetrics();
-
-  const getReportData = useCallback((options: ReportOptions) => {
-    if (!project) return null;
-
-    const filterByDate = (dateString: string) => {
-      const date = new Date(dateString);
-      return date >= options.dateRange.from && date <= options.dateRange.to;
-    };
-
-    switch (options.type) {
-      case 'impact':
-        return {
-          metrics: project.metrics,
-          impactStories: project.impactStories,
-          correlationData: project.metrics.correlationData
-            .filter(d => filterByDate(d.date))
-        };
-      case 'financial':
-        return {
-          donations: project.donations.filter(d => filterByDate(d.date)),
-          budget: project.budget,
-          expenses: project.impact.filter(i => i.type === 'expense' && filterByDate(i.date))
-        };
-      case 'volunteer':
-        return {
-          team: project.team,
-          hours: project.team.reduce((sum, member) => sum + member.hoursContributed, 0),
-          activities: project.updates.filter(u => filterByDate(u.date))
-        };
-      case 'donor':
-        return {
-          donors: project.donors,
-          donations: project.donations.filter(d => filterByDate(d.date)),
-          tiers: project.donations.reduce((acc, d) => {
-            acc[d.tier] = (acc[d.tier] || 0) + 1;
-            return acc;
-          }, {} as Record<string, number>)
-        };
-      default:
-        return null;
-    }
-  }, [project]);
-
-  const handleGenerate = useCallback(async (options: ReportOptions) => {
-    const data = getReportData(options);
-    if (!data) return;
-
-    // Generate report based on data
-    if (options.format === 'pdf') {
-      await generatePdfReport(data, options);
-    } else {
-      await generateExcelReport(data, options);
-    }
-  }, [getReportData]);
-
-  // ... rest of the component remains similar, using handleGenerate
-
-  // Update preview content to show real data
-  const renderPreviewContent = (options: ReportOptions) => {
-    const data = getReportData(options);
-    if (!data) return null;
-
-    return (
-      <div className="space-y-6">
-        <h1 className="text-2xl font-bold">
-          {reportTypes.find(r => r.id === options.type)?.label}
-        </h1>
-        <div className="text-sm text-muted-foreground">
-          Generated for period: {options.dateRange.from.toLocaleDateString()} - {options.dateRange.to.toLocaleDateString()}
-        </div>
-
-        {options.sections.map((section) => (
-          <div key={section} className="space-y-2">
-            <h2 className="text-xl font-semibold">{section}</h2>
-            <PreviewSection 
-              section={section}
-              data={data}
-              options={options}
-              project={project!}
-              globalMetrics={globalMetrics}
-            />
-          </div>
-        ))}
-      </div>
-    );
-  };
-
-  // Update dialog content
-  <DialogContent className="max-w-4xl">
-    {/* ... */}
-    {renderPreviewContent(reportOptions)}
-    {/* ... */}
-  </DialogContent>
-}
-
-const PreviewSection = ({ section, data, options, project, globalMetrics }: {
-  section: string;
-  data: any;
-  options: ReportOptions;
-  project: NGOProject;
-  globalMetrics: ProjectMetrics;
-}) => {
-  switch (section) {
-    case 'Impact Summary':
-      return (
-        <div>
-          <p>Total Impact Score: {project.metrics.impactScore}</p>
-          <p>Beneficiaries Reached: {project.beneficiaries.reduce((sum, b) => sum + b.count, 0)}</p>
-        </div>
-      );
-    case 'Financial Overview':
-      return (
-        <div>
-          <p>Total Donations: ${project.metrics.donations.toLocaleString()}</p>
-          <p>Budget Utilization: {project.metrics.fundingUtilization.toFixed(1)}%</p>
-        </div>
-      );
-    // Add more cases for other sections
-    default:
-      return <p>Preview content for {section} section...</p>;
-  }
+const sectionOptions = {
+  impact: ['Impact Summary', 'Detailed Metrics', 'Charts & Graphs', 'Beneficiary Stories'],
+  financial: ['Financial Overview', 'Donations', 'Expenses', 'Projections'],
+  volunteer: ['Volunteer Summary', 'Hours Logged', 'Activities', 'Impact'],
+  donor: ['Donor List', 'Donation History', 'Recognition', 'Impact'],
 };
 
-// Helper functions for report generation
-async function generatePdfReport(data: any, options: ReportOptions) {
-  // Implementation using pdfmake or similar
-}
+export function ReportGenerator({ projectId, onGenerate }: ReportGeneratorProps) {
+  const { getProjectById } = useNGOProjectStore();
+  const [options, setOptions] = useState<ReportOptions>({
+    type: 'impact',
+    dateRange: { from: new Date(), to: new Date() },
+    sections: ['Impact Summary'],
+    format: 'pdf'
+  });
 
-async function generateExcelReport(data: any, options: ReportOptions) {
-  // Implementation using xlsx or similar
+  const handleDateChange = useCallback((range: any) => {
+    if (range?.from && range?.to) {
+      setOptions(prev => ({ ...prev, dateRange: range }));
+    }
+  }, []);
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>Report Type</Label>
+          <Select
+            value={options.type}
+            onValueChange={(value) => setOptions(prev => ({
+              ...prev,
+              type: value as typeof options.type,
+              sections: [sectionOptions[value as keyof typeof sectionOptions][0]]
+            }))}
+          >
+            <SelectContent>
+              <SelectItem value="impact">Impact Report</SelectItem>
+              <SelectItem value="financial">Financial Report</SelectItem>
+              <SelectItem value="volunteer">Volunteer Report</SelectItem>
+              <SelectItem value="donor">Donor Report</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="space-y-2">
+          <Label>Date Range</Label>
+          <DayPicker
+            mode="range"
+            selected={options.dateRange}
+            onSelect={handleDateChange}
+          />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label>Sections</Label>
+        <div className="grid grid-cols-2 gap-2">
+          {sectionOptions[options.type].map((section) => (
+            <div key={section} className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={options.sections.includes(section)}
+                onChange={(e) => {
+                  setOptions(prev => ({
+                    ...prev,
+                    sections: e.target.checked
+                      ? [...prev.sections, section]
+                      : prev.sections.filter(s => s !== section)
+                  }));
+                }}
+              />
+              <Label>{section}</Label>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label>Format</Label>
+        <Select
+          value={options.format}
+          onValueChange={(value) => setOptions(prev => ({
+            ...prev,
+            format: value as typeof options.format
+          }))}
+        >
+          <SelectContent>
+            <SelectItem value="pdf">PDF</SelectItem>
+            <SelectItem value="excel">Excel</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <Button 
+        onClick={() => onGenerate(options)}
+        className="w-full"
+      >
+        Generate Report
+      </Button>
+    </div>
+  );
 }
