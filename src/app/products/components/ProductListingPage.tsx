@@ -28,12 +28,12 @@ import {
   List,
   Heart
 } from 'lucide-react';
-import type { Product, ProductType, ProductCategory, PhysicalProduct } from '@/types/store';
+import type { ProductCategory, PhysicalProduct } from '@/types/store';
 
 
 // Filter type definition
 interface FilterState {
-  type: ProductType[];
+  type: ('digital' | 'physical')[];
   category: ProductCategory[];
   priceRange: [number, number];
   condition: string[];
@@ -82,8 +82,8 @@ export default function ProductListingPage() {
       // Apply inStock filter for physical products
     if (filters.inStock !== undefined && product.type === 'physical') {
         const physicalProduct = product as PhysicalProduct;
-         if(filters.inStock && physicalProduct.stock <= 0) return false;
-         if(!filters.inStock && physicalProduct.stock > 0) return false;
+         if(filters.inStock && physicalProduct.inventory.stock <= 0) return false;
+         if(!filters.inStock && physicalProduct.inventory.stock > 0) return false;
         }
 
     // Apply search

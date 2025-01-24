@@ -1,258 +1,166 @@
 // hooks/useUser.ts
-
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useUserStore } from '@/stores/useUserStore';
-import type { UserProfile, UserSettings, UserRole, CreatorSpecialty } from '@/types/user';
+import { useProductStore } from '@/stores/useProductStore';
+import { toast } from 'react-hot-toast';
+import type { User, UserRole, OnboardingStage } from '@/types/user';
 
-export function useUser(userId: string) {
-  const store = useUserStore();
+export const useUser = () => {
+  const {
+    user,
+    isLoading,
+    error,
+    initializeUser,
+    updateProfile,
+    addRole,
+    updateOnboarding,
+    updateSettings,
+    logout // Removed linkToNGO
+  } = useUserStore();
+  
+  const { products } = useProductStore();
 
-  // Profile management
-    const updateProfile = useCallback(async (updates: Partial<UserProfile>) => {
-    try {
-      store.updateProfile(updates);
-      // Later: API integration - EXAMPLE
-      // await fetch('/api/users/profile', {
-      //   method: 'PATCH',
-      //   body: JSON.stringify(updates)
-      // });
-    } catch (error) {
-      console.error('Failed to update profile:', error);
-      throw error;
-    }
+  const isAuthenticated = useMemo(() => !!user, [user]);
+  const currentRole = useMemo(() => user?.roles[0], [user]);
+  const onboardingProgress = useMemo(() => {
+    if (!user) return 0;
+    return Math.round(
+      (user.onboarding.completed.length / Object.keys(user.onboarding.data).length) * 100
+    );
+  }, [user]);
+
+  const handleError = useCallback((error: unknown, defaultMessage: string) => {
+    const message = error instanceof Error ? error.message : defaultMessage;
+    toast.error(message);
   }, []);
 
-  // Role management
-  const addRole = useCallback(async (role: UserRole) => {
-    try {
-      store.addRole(role);
-      // Later: API integration
-    } catch (error) {
-      console.error('Failed to add role:', error);
-      throw error;
-    }
-  }, []);
-
-  // Project management
-  const addProjectCollaboration = useCallback(async (
-    projectId: string, 
-    role: string
+  const signUp = useCallback(async (
+    email: string,
+    name: { first: string; last: string }
   ) => {
     try {
-      store.addCollaboration(projectId, role);
-      // Later: API integration
+      initializeUser(email, name);
+      toast.success('Account created successfully');
     } catch (error) {
-      console.error('Failed to add collaboration:', error);
-      throw error;
+      handleError(error, 'Failed to create account');
     }
-  }, []);
+  }, [initializeUser, handleError]);
 
-  // Seller features
-  const enableSellerFeatures = useCallback(async () => {
+  const completeOnboardingStep = useCallback(async (data: Record<string, unknown>) => {
+    if (!user) return;
+    
     try {
-      store.enableSellerFeatures();
-      store.addRole('seller');
-      // Later: API integration
-    } catch (error) {
-      console.error('Failed to enable seller features:', error);
-      throw error;
-    }
-  }, []);
-
-  // Settings management
-  const updateSettings = useCallback(async (settings: Partial<UserSettings>) => {
-    try {
-      store.updateSettings(settings);
-      // Later: API integration
-    } catch (error) {
-      console.error('Failed to update settings:', error);
-      throw error;
-    }
-  }, []);
-
-  // Specialty management
-  const updateSpecialties = useCallback(async (specialties: CreatorSpecialty[]) => {
-    try {
-      // Remove all existing specialties first
-      store.currentUser?.specialties?.forEach(specialty => {
-        store.removeSpecialty(specialty);
-      });
+      const currentStage = user.onboarding.stage;
+      updateOnboarding(currentStage, data);
       
-      // Add new specialties
-      specialties.forEach(specialty => {
-        store.addSpecialty(specialty);
-      });
-      // Later: API integration
-    } catch (error) {
-      console.error('Failed to update specialties:', error);
-      throw error;
-    }
-  }, []);
-
-  // Professional details
-  const updateProfessionalDetails = useCallback(async (
-    details: Partial<UserProfile['professionalDetails']>
-  ) => {
-    try {
-      store.updateProfile({
-        professionalDetails: {
-          ...store.currentUser?.professionalDetails,
-          ...details
-        }
-      });
-      // Later: API integration
-    } catch (error) {
-      console.error('Failed to update professional details:', error);
-      throw error;
-    }
-  }, []);
-
- 
-
-
-  // Portfolio management
-  const updatePortfolio = useCallback(async (
-    portfolio: Partial<UserProfile['portfolio']>
-  ) => {
-    try {
-      store.updateProfile({
-        portfolio: {
-          ...store.currentUser?.portfolio,
-          ...portfolio
-        }
-      });
-      // Later: API integration
-    } catch (error) {
-      console.error('Failed to update portfolio:', error);
-      throw error;
-    }
-  }, []);
-
-  // Stats and metrics
-  const updateStats = useCallback(async (
-    stats: Partial<UserProfile['stats']>
-  ) => {
-    try {
-      store.updateProfile({
-        stats: {
-          ...store.currentUser?.stats,
-          ...stats
-        }
-      });
-      // Later: API integration
-    } catch (error) {
-      console.error('Failed to update stats:', error);
-      throw error;
-    }
-  }, []);
-
-  // Project associations
-  const linkToProject = useCallback(async (
-    projectId: string, 
-    { isOwner = false, role }: { isOwner?: boolean; role?: string }
-  ) => {
-    try {
-      store.addProject(projectId, isOwner);
-      if (role) {
-        store.addCollaboration(projectId, role);
+      if (currentStage !== 'completed') {
+        const nextStage = getNextOnboardingStage(currentStage);
+        updateOnboarding(nextStage);
       }
-      // Later: API integration
+      
+      toast.success('Progress saved');
     } catch (error) {
-      console.error('Failed to link project:', error);
-      throw error;
+      handleError(error, 'Failed to save progress');
     }
+  }, [user, updateOnboarding, handleError]);
+
+  const getNextOnboardingStage = useCallback((
+    current: OnboardingStage
+  ): OnboardingStage => {
+    const stageOrder: OnboardingStage[] = [
+      'role-selection',
+      'basic-info',
+      'role-details',
+      'portfolio',
+      'verification',
+      'completed'
+    ];
+    
+    const currentIndex = stageOrder.indexOf(current);
+    return currentIndex === stageOrder.length - 1 ? current : stageOrder[currentIndex + 1];
   }, []);
 
-  // Availability management
-  const updateAvailability = useCallback(async (
-    availability: UserProfile['professionalDetails']['availability']
+  // Fixed type constraint for valid profile keys
+  const updateUserProfile = useCallback(async <T extends keyof User['profiles']>(
+    role: T,
+    data: Partial<User['profiles'][T]>
   ) => {
     try {
-      store.updateProfile({
-        professionalDetails: {
-          ...store.currentUser?.professionalDetails,
-          availability
-        }
-      });
-      // Later: API integration
+      if (!user) throw new Error('User not authenticated');
+      
+      updateProfile(role, data);
+      toast.success('Profile updated successfully');
     } catch (error) {
-      console.error('Failed to update availability:', error);
-      throw error;
+      handleError(error, 'Failed to update profile');
     }
-  }, []);
+  }, [user, updateProfile, handleError]);
 
-  // Seller profile management
-  const updateSellerProfile = useCallback(async (
-    updates: Partial<UserProfile['sellerProfile']>
-  ) => {
+  const addUserRole = useCallback(async (role: UserRole) => {
     try {
-      store.updateSellerProfile(updates);
-      // Later: API integration
+      if (!user) throw new Error('User not authenticated');
+      
+      addRole(role);
+      toast.success(`Added ${role} role`);
     } catch (error) {
-      console.error('Failed to update seller profile:', error);
-      throw error;
+      handleError(error, 'Failed to add role');
     }
-  }, []);
+  }, [user, addRole, handleError]);
 
-    // Preferences management
-    const updatePreferences = useCallback(async (
-        preferences: Partial<UserProfile['preferences']>
-      ) => {
-        try {
-          store.updateProfile({
-            preferences: {
-              ...store.currentUser?.preferences,
-              ...preferences
-            }
-          });
-          // Later: API integration
-        } catch (error) {
-          console.error('Failed to update preferences:', error);
-          throw error;
-        }
-      }, []);
+  const verifyAccount = useCallback(async () => {
+    try {
+      if (!user) throw new Error('User not authenticated');
+      
+      toast.success('Account verified successfully');
+    } catch (error) {
+      handleError(error, 'Verification failed');
+    }
+  }, [user, handleError]);
 
-  // Helper functions
-  const isRole = useCallback((role: UserRole) => {
-    return store.currentUser?.roles.includes(role);
-  }, [store.currentUser]);
+  const signOut = useCallback(async () => {
+    try {
+      logout();
+      toast.success('Signed out successfully');
+    } catch (error) {
+      handleError(error, 'Logout failed');
+    }
+  }, [logout, handleError]);
 
-  const hasSpecialty = useCallback((specialty: CreatorSpecialty) => {
-    return store.currentUser?.specialties?.includes(specialty);
-  }, [store.currentUser]);
+  const getUserProducts = useMemo(() => {
+    if (!user) return [];
+    return products.filter(p => p.sellerId === user.id);
+  }, [user, products]);
+
+  const hasRole = useCallback((role: UserRole) => {
+    return user?.roles.includes(role) ?? false;
+  }, [user]);
+
+  const userActions = useMemo(() => ({
+    signUp,
+    signOut,
+    verifyAccount,
+    updateProfile: updateUserProfile,
+    addRole: addUserRole,
+    completeOnboardingStep,
+    updateSettings,
+    hasRole
+  }), [
+    signUp,
+    signOut,
+    verifyAccount,
+    updateUserProfile,
+    addUserRole,
+    completeOnboardingStep,
+    updateSettings,
+    hasRole
+  ]);
 
   return {
-    // User data
-    user: store.currentUser,
-    settings: store.userSettings,
-    isLoading: store.isLoading,
-    error: store.error,
-
-    // Core profile operations
-    updateProfile,
-    updateSettings,
-
-    // Role and specialty management
-    addRole,
-    isRole,
-    hasSpecialty,
-    updateSpecialties,
-
-    // Professional features
-    updateProfessionalDetails,
-    updatePortfolio,
-    updateStats,
-    updateAvailability,
-
-    // Project management
-    linkToProject,
-    addProjectCollaboration,
-
-    // Seller features
-    enableSellerFeatures,
-    updateSellerProfile,
-
-    // Preferences
-    updatePreferences
+    user,
+    isAuthenticated,
+    onboardingProgress,
+    isLoading,
+    error,
+    userProducts: getUserProducts,
+    userActions
   };
-}
+};

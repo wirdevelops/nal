@@ -176,9 +176,9 @@
 //     };
 // }
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useProductStore } from '@/stores/useProductStore';
-import type { Product, ProductCategory, DigitalProduct, PhysicalProduct } from '@/types/store';
+import type { Product, ProductCategory } from '@/types/store';
 import { toast } from 'react-hot-toast';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -206,8 +206,7 @@ interface UseProductHook {
   batchUpdateProducts: (updates: Array<{id: string, changes: Partial<Product>}>) => Promise<void>;
   batchRemoveProducts: (ids: string[]) => Promise<void>;
 }
-
-export function useProduct(): UseProductHook {
+export function useProducts() {
   const store = useProductStore();
 
   const handleAsyncOperation = useCallback(async (
@@ -216,8 +215,7 @@ export function useProduct(): UseProductHook {
   ) => {
     store.startLoading();
     try {
-      const result = await operation();
-      return result;
+      return await operation();
     } catch (error) {
       console.error(errorMessage, error);
       store.setError(errorMessage);
@@ -231,28 +229,61 @@ export function useProduct(): UseProductHook {
   const createProduct = useCallback(async (
     product: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'sellerId' | 'status'>
   ): Promise<Product> => {
-    const newProduct = {
+    const baseProduct = {
       ...product,
       id: uuidv4(),
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       sellerId: 'test',
-      status: 'active'
-    } as Product;
-
+      status: 'active' as const,
+    };
+  
+    // Explicitly type as Product union
+    const newProduct: Product = product.type === 'physical' ? {
+      ...baseProduct,
+      type: 'physical',
+      condition: 'new',
+      brand: '',
+      model: '',
+      specifications: {},
+      includedItems: [],
+      shippingOptions: [],
+      inventory: {
+        stock: 0,
+        backorder: false,
+        alerts: undefined,
+        restockDate: undefined
+      },
+      returnPolicy: {
+        days: 0,
+        condition: 'new'
+      },
+      weight: undefined,
+      dimensions: undefined,
+      promotions: undefined
+    } : {
+      ...baseProduct,
+      type: 'digital',
+      fileType: 'zip',
+      fileSize: 0,
+      compatibility: [],
+      version: '1.0.0',
+      downloadUrl: 'https://example.com/download',
+      previewUrl: undefined,
+      requirements: undefined,
+      licenseType: 'single-use',
+      downloadLimit: undefined,
+      accessPeriod: undefined,
+      updatesIncluded: false
+    };
+  
     return handleAsyncOperation(async () => {
-      // Later: API integration
-      // await fetch('/api/products', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(newProduct)
-      // });
       store.addProduct(newProduct);
       toast.success('Product Created');
       return newProduct;
     }, 'Failed to add product');
-  }, [store, handleAsyncOperation]);
-
+  }, [handleAsyncOperation, store]);
+  
   const updateProduct = useCallback(async (
     id: string,
     updates: Partial<Product>
@@ -313,6 +344,7 @@ export function useProduct(): UseProductHook {
   }, [store, handleAsyncOperation]);
 
   return {
+    // State
     products: store.products,
     filteredProducts: store.filteredProducts,
     isLoading: store.isLoading,
@@ -321,9 +353,11 @@ export function useProduct(): UseProductHook {
     hasNextPage: store.hasNextPage,
     currentPage: store.currentPage,
     totalItems: store.totalItems,
+    
+    // Actions
     createProduct,
-    updateProduct,
-    removeProduct,
+    updateProduct: store.updateProduct,
+    removeProduct: store.removeProduct,
     searchProducts: store.searchProducts,
     toggleFavorite: store.toggleFavorite,
     filterByCategory: store.filterByCategory,
@@ -336,7 +370,7 @@ export function useProduct(): UseProductHook {
     batchRemoveProducts
   };
 }
-
+ 
 // // hooks/useProduct.ts
 // import { useCallback } from 'react';
 // import { useProductStore } from '@/stores/useProductStore';
