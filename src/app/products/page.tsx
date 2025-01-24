@@ -1,42 +1,85 @@
-// app/page.tsx
 'use client'
-import React, {useState} from 'react';
-import  ProductListingPage  from './components/ProductListingPage';
+
+import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import {
-    Sheet,
-    SheetContent,
-    SheetTrigger,
+  Sheet,
+  SheetContent,
+  SheetTrigger,
 } from "@/components/ui/sheet";
-import { Plus } from 'lucide-react';
+import { Plus, Loader2 } from 'lucide-react';
 import { ProductCreationForm } from './components/ProductCreationForm';
+import { useUser } from '@/hooks/useUser';
+import { useProducts } from '@/hooks/useProducts';
+import ProductCard from './components/ProductCard';
+import EmptyProjects from './components/EmptyProjects';
 
+export default function ProjectListingPage() {
+  const [open, setOpen] = useState(false);
+  const { user, userActions } = useUser();
+  const { isLoading, filteredProducts: products } = useProducts();
 
+  const canCreateProject = user && (
+    userActions.hasRole('project-owner') || 
+    userActions.hasRole('admin')
+  );
 
-export default function HomePage() {
-    const [open, setOpen] = useState(false);
+  const handleCreateClick = () => setOpen(true);
+
+  if (isLoading) {
     return (
-        <div className="container mx-auto py-8">
-            <div className="flex justify-between items-center mb-6">
-               <h1 className="text-3xl font-bold ">Welcome to the Marketplace</h1>
-                  <Sheet open={open} onOpenChange={setOpen}>
-                    <SheetTrigger asChild>
-                       <Button>
-                           <Plus className="h-4 w-4 mr-2" />
-                           Create New Product
-                      </Button>
-                    </SheetTrigger>
-                    <SheetContent>
-                       <ProductCreationForm onClose={() => setOpen(false)} />
-                  </SheetContent>
-                 </Sheet>
-             </div>
-            <ProductListingPage />
-         </div>
-    )
+      <div className="flex justify-center items-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto py-8">
+      <div className="flex justify-between items-center mb-6">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold">Projects</h1>
+          {user && <p className="text-muted-foreground">Welcome back, {user.name.first}</p>}
+        </div>
+        {canCreateProject && products.length > 0 && (
+          <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger asChild>
+              <Button size="lg">
+                <Plus className="h-4 w-4 mr-2" />
+                New Project
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-[100vw] sm:w-[540px]">
+              <ProductCreationForm onClose={() => setOpen(false)} />
+            </SheetContent>
+          </Sheet>
+        )}
+      </div>
+
+      {products.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {products.map(product => (
+            <ProductCard 
+              key={product.id} 
+              product={product}
+            />
+          ))}
+        </div>
+      ) : (
+        <>
+          <EmptyProjects onCreateClick={handleCreateClick} canCreate={canCreateProject} />
+          {canCreateProject && open && (
+            <Sheet open={open} onOpenChange={setOpen}>
+              <SheetContent side="right" className="w-[100vw] sm:w-[540px]">
+                <ProductCreationForm onClose={() => setOpen(false)} />
+              </SheetContent>
+            </Sheet>
+          )}
+        </>
+      )}
+    </div>
+  );
 }
-
-
 // 'use client'
 
 // import { useState } from 'react'

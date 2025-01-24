@@ -10,7 +10,36 @@ import { useUser } from '@/hooks/useUser';
 import { useProducts } from '@/hooks/useProducts';
 import  useCart  from '@/hooks/useCart';
 import { toast } from 'react-hot-toast';
-import type { Product } from '@/types/store';
+import type { PhysicalProduct, Product } from '@/types/store';
+
+export function isPhysicalProduct(product: Product): product is PhysicalProduct {
+  return product.type === 'physical';
+}
+
+export function getInventoryStatus(product: Product) {
+  if (!isPhysicalProduct(product)) {
+    return {
+      isOutOfStock: false,
+      showLowStockBadge: false,
+      stock: undefined,
+      backorder: undefined,
+      alerts: undefined
+    };
+  }
+
+  const inventory = product.inventory;
+  const isOutOfStock = inventory?.stock <= 0 && !inventory?.backorder;
+  const showLowStockBadge = inventory?.alerts?.enabled && 
+    inventory.stock <= (inventory.alerts.threshold || 0);
+
+  return {
+    isOutOfStock,
+    showLowStockBadge,
+    stock: inventory?.stock,
+    backorder: inventory?.backorder,
+    alerts: inventory?.alerts
+  };
+}
 
 interface ProductCardProps {
   product: Product;
@@ -25,6 +54,15 @@ export default function ProductCard({ product, view }: ProductCardProps) {
   const isProductOwner = user?.id === product.sellerId;
   const isVendor = userActions.hasRole('vendor');
   const canEdit = isProductOwner || isVendor;
+  
+  const physicalProduct = product.type === 'physical' ? (product as PhysicalProduct) : null;
+  const inventory = physicalProduct?.inventory;
+  const isOutOfStock = inventory ? 
+    (inventory.stock <= 0 && !inventory.backorder) : false;
+
+  const showLowStockBadge = inventory?.alerts && 
+    inventory.alerts.enabled && 
+    inventory.stock <= inventory.alerts.threshold;
 
   const handleAddToCart = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -47,11 +85,7 @@ export default function ProductCard({ product, view }: ProductCardProps) {
     toggleFavorite(product.id);
   };
 
-  const isPhysicalProduct = product.type === 'physical';
-  const isOutOfStock = isPhysicalProduct && 
-    product.inventory.stock <= 0 && 
-    !product.inventory.backorder;
-
+ 
   return (
     <Link href={`/products/${product.id}`} className="block">
       <Card className={cn(
@@ -105,11 +139,9 @@ export default function ProductCard({ product, view }: ProductCardProps) {
             )}
           </div>
 
-          {isPhysicalProduct && product.inventory.alerts?.enabled && (
+          {showLowStockBadge && (
             <Badge variant="destructive" className="absolute bottom-2 left-2">
-              {product.inventory.stock <= product.inventory.alerts.threshold
-                ? 'Low Stock'
-                : 'In Stock'}
+              Low Stock
             </Badge>
           )}
         </div>
@@ -124,20 +156,11 @@ export default function ProductCard({ product, view }: ProductCardProps) {
                 ${product.price.toLocaleString('en-US')}
               </p>
             </div>
-            {isPhysicalProduct ? (
-              <div className="flex gap-2 items-center mt-1">
-                <Badge variant="outline" className="text-xs">
-                  {product.condition}
-                </Badge>
-                <span className="text-sm text-muted-foreground">
-                  {product.brand}
-                </span>
-              </div>
-            ) : (
-              <Badge variant="outline" className="text-xs mt-1">
-                {product.fileType}
-              </Badge>
-            )}
+            {showLowStockBadge && (
+            <Badge variant="destructive" className="absolute bottom-2 left-2">
+              Low Stock
+            </Badge>
+          )}
           </CardHeader>
 
           <CardContent className="pb-2 flex-1">

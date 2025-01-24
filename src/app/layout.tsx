@@ -1,9 +1,9 @@
-//layout.tsx
 import './globals.css'
 import { GeistSans } from 'geist/font/sans'
 import { ThemeProvider } from "@/components/theme-provider"
-import {StoreProvider} from '@/components/providers/StoreProvider';
+import { StoreProvider } from '@/components/providers/StoreProvider';
 import AppProvider from '@/components/providers/AppProvider';
+import { AppLayout } from '@/components/layout/ResponsiveLayout';
 
 export const metadata = {
   title: 'Nalevel Empire',
@@ -22,17 +22,19 @@ export default function RootLayout({
         <meta name="theme-color" content="#E31837" />
       </head>
       <body>
-      <StoreProvider>
-      <AppProvider>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-        </ThemeProvider>
-      </AppProvider>
+        <StoreProvider>
+          <AppProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <AppLayout>
+                {children}
+              </AppLayout>
+            </ThemeProvider>
+          </AppProvider>
         </StoreProvider>
       </body>
     </html>

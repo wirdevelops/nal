@@ -7,7 +7,8 @@ import {
     Schedule,
     TimeLog,
     BackgroundCheck,
-  } from '../types/ngo';
+  } from '../types/ngo/volunteer';
+import { VolunteerProfile } from '@/types/ngo/volunteer';
 
 
 interface VolunteerState {
@@ -21,7 +22,19 @@ interface VolunteerState {
   addTimeLog: (volunteerId: string, log: Omit<TimeLog, 'id'>) => void;
   addSkill: (volunteerId: string, skill: Omit<Skill, 'id'>) => void;
   updateAvailability: (volunteerId: string, schedule: Schedule) => void;
-  updateBackgroundCheck: (volunteerId: string, status: BackgroundCheck) => void;
+
+  initializeVolunteer: (userId: string) => VolunteerProfile;
+  updateProfile: (userId: string, updates: Partial<VolunteerProfile>) => void;
+  logHours: (userId: string, log: Omit<TimeLog, 'id' | 'verified'>) => void;
+  verifyHours: (userId: string, logId: string) => void;
+  updateBackgroundCheck: (userId: string, status: BackgroundCheck) => void;
+  addTraining: (userId: string, training: { name: string; duration: number }) => void;
+  completeTraining: (userId: string, trainingId: string) => void;
+  getVolunteerMetrics: (userId: string) => {
+    totalHours: number;
+    completedTrainings: number;
+    activeProjects: number;
+  };
 }
 
 export const useVolunteerStore = create<VolunteerState>()(

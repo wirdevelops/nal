@@ -44,6 +44,10 @@ interface ProductActions {
   batchUpdateProducts: (updates: Array<{id: string, changes: Partial<Product>}>) => void;
   batchRemoveProducts: (ids: string[]) => void;
   applyFilters: () => void;
+
+  decrementStock: (productId: string, quantity: number) => void;
+  incrementStock: (productId: string, quantity: number) => void;
+  validateStock: (productId: string, quantity: number) => boolean;
 }
 
 function isPhysicalProduct(product: any): product is PhysicalProduct {
@@ -376,7 +380,53 @@ export const useProductStore = create<ProductState & ProductActions>()(
           hasNextPage: filtered.length > endIndex
         });
       },
-    }),
+      decrementStock: (productId, quantity) => {
+        set((state) => ({
+          products: state.products.map(product => {
+            if (product.id !== productId || !isPhysicalProduct(product)) return product;
+            
+            const newStock = Math.max(0, product.inventory.stock - quantity);
+            return {
+              ...product,
+              inventory: {
+                ...product.inventory,
+                stock: newStock,
+                backorder: newStock <= 0 ? true : product.inventory.backorder
+              }
+            };
+          })
+        }));
+        get().applyFilters();
+      },
+      
+      incrementStock: (productId, quantity) => {
+        set((state) => ({
+          products: state.products.map(product => {
+            if (product.id !== productId || !isPhysicalProduct(product)) return product;
+            
+            return {
+              ...product,
+              inventory: {
+                ...product.inventory,
+                stock: product.inventory.stock + quantity,
+                backorder: false
+              }
+            };
+          })
+        }));
+        get().applyFilters();
+      },
+      
+      validateStock: (productId, quantity) => {
+        const product = get().products.find(p => p.id === productId);
+        if (!product || !isPhysicalProduct(product)) return false;
+        
+        return product.inventory.stock >= quantity || 
+              (product.inventory.backorder && !!product.inventory.restockDate);
+      }
+    }
+  ),
+    
     {
       name: 'product-storage',
       partialize: (state) => ({

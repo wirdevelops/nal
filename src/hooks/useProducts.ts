@@ -367,7 +367,11 @@ export function useProducts() {
     loadNextPage: store.loadNextPage,
     refreshProduct,
     batchUpdateProducts,
-    batchRemoveProducts
+    batchRemoveProducts,
+
+    decrementStock: store.decrementStock,
+    incrementStock: store.incrementStock,
+    validateStock: store.validateStock
   };
 }
  

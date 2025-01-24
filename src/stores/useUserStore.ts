@@ -51,6 +51,18 @@ export const useUserStore = create<UserState & UserActions>()(
       isLoading: false,
       error: null,
 
+/*************  ✨ Codeium Command ⭐  *************/
+/**
+ * Initializes a new user with the provided email and name.
+ * Sets up a default user object with a unique ID, empty roles,
+ * undefined profiles, and initial onboarding and settings data.
+ * The user status is set to 'pending' and verification is marked as false.
+ *
+ * @param email - The email address for the new user.
+ * @param name - The name object containing first and last name of the user.
+ */
+
+/******  8abd44ad-ae41-4ed8-9988-3ecd934af273  *******/
       initializeUser: (email, name) => {
         set({
           user: {

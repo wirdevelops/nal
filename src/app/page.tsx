@@ -4,7 +4,6 @@ import dynamic from 'next/dynamic';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Suspense, useEffect, type ComponentType } from 'react';
 import { useLandingStore } from '@/stores/useLandingStore';
-import { AppLayout } from '@/components/layout/ResponsiveLayout';
 
 interface HeroContent {
   title: string;
@@ -72,7 +71,6 @@ export default function Home() {
   }
 
   return (
-    <AppLayout>
     <main className="flex flex-col min-h-screen">
       {/* Hero Section */}
       <Suspense fallback={<Skeleton className="w-full aspect-[21/9]" />}>
@@ -108,7 +106,6 @@ export default function Home() {
         <MarketSection products={products} />
       </Suspense>
     </main>
-    </AppLayout>
   );
 }
 
