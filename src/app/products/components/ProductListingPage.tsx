@@ -1,15 +1,15 @@
-'use client'
-
 import { useState, useEffect } from 'react';
 import { useProducts } from '@/hooks/useProducts';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useUser } from '@/hooks/useUser';
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { FilterState } from '@/types/store';
-import ProductFilters from './ProductFilters'; // Import FilterState from ProductFilters
+import ProductFilters from './ProductFilters';
 import ProductCard from './ProductCard';
 import ActiveFilters from './ActiveFilters';
+import EmptyProjects from './EmptyProjects';
 import {
   Select,
   SelectContent,
@@ -28,18 +28,20 @@ import {
   Grid,
   List,
   Heart,
-  Loader2
+  Loader2, 
+  Plus
 } from 'lucide-react';
-import type { ProductCategory, ProductCondition } from '@/types/store';
 
 export default function ProductListingPage() {
+  const { user, userActions } = useUser();
   const [view, setView] = useState<'grid' | 'list'>('grid');
   const [activeTab, setActiveTab] = useState<'all' | 'favorites'>('all');
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
     type: [],
     category: [],
     priceRange: [0, 5000],
-    condition: [], // Now correctly typed as ProductCondition[]
+    condition: [],
     inStock: undefined,
     sortBy: 'newest',
     search: ''
@@ -58,8 +60,12 @@ export default function ProductListingPage() {
     resetFilters,
     loadNextPage,
     hasNextPage,
-    currentPage
   } = useProducts();
+
+  const canCreate = user && (
+    userActions.hasRole('vendor') || 
+    userActions.hasRole('admin')
+  );
 
   useEffect(() => {
     if (debouncedSearch) {
@@ -67,23 +73,22 @@ export default function ProductListingPage() {
     }
   }, [debouncedSearch, searchProducts]);
 
-  useEffect(() => {
-    if (filters.category.length) {
-      filterByCategory(filters.category[0]);
-    }
-  }, [filters.category, filterByCategory]);
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-[200px]">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
-  useEffect(() => {
-    filterByPriceRange(filters.priceRange[0], filters.priceRange[1]);
-  }, [filters.priceRange, filterByPriceRange]);
-
-  useEffect(() => {
-    if (filters.sortBy === 'price-low' || filters.sortBy === 'price-high') {
-      sortProducts('price');
-    } else if (filters.sortBy === 'newest') {
-      sortProducts('date');
-    }
-  }, [filters.sortBy, sortProducts]);
+  if (!isLoading && filteredProducts.length === 0 && !filters.search) {
+    return (
+      <EmptyProjects 
+        onCreateClick={() => setIsCreateModalOpen(true)}
+        canCreate={canCreate}
+      />
+    );
+  }
 
   const productsToDisplay = activeTab === 'all'
     ? filteredProducts

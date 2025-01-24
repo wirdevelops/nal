@@ -1,14 +1,13 @@
 'use client'
 import React, { useState, useMemo } from 'react';
-import { ImpactStory } from '@/types/ngo';
+import { ImpactStory } from '@/types/ngo/impactStory';
 import { ProjectMetrics } from '@/types/ngo/project';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DateRangePicker } from '@/components/ui/date-range-picker';
 import { Button } from '@/components/ui/button';
 import { Download, Share2, TrendingUp, Users, Clock, Target } from 'lucide-react';
 import { MetricCard } from './MetricCard';
-import { AnalyticCard } from './AnalysisChart'; // Fixed import name
+import { AnalyticCard } from './AnalyticCard'; // Fixed import name
 import { useImpact } from '@/hooks/useImpact';
 import { exportToJson } from '@/lib/export';
 import { ImpactMetrics } from './ImpactMetrics';

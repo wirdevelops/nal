@@ -2,18 +2,25 @@
 import { useCallback, useState } from 'react';
 import { useNGOProjectStore } from '@/stores/useNGOProjectStore';
 import { 
-  Milestone, 
-  Budget, 
-  Update, 
-  Report, 
   NGOProject,
   ProjectMedia,
-  Volunteer,
   TeamMember
-} from '@/types/ngo';
+} from '@/types/ngo/project';
+import {Volunteer} from '@/types/ngo/volunteer';
 import { toast } from '@/hooks/use-toast';
 
 export function useNGOProject() {
+
+  const { 
+    projects,
+    isLoading: storeLoading,
+    error
+  } = useNGOProjectStore(state => ({
+    projects: state.projects,
+    isLoading: state.isLoading,
+    error: state.error
+  }));
+
   const store = useNGOProjectStore();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -50,6 +57,14 @@ export function useNGOProject() {
     }
   }, [store]);
 
+  const fetchProjects = useCallback(async () => {
+    try {
+      await store.fetchProjects();
+    } catch (error) {
+      toast({ variant: 'destructive', ...  error } );
+    }
+  }, [store]);
+
   // Add volunteer management
   const addVolunteer = useCallback(async (
     projectId: string,
@@ -70,19 +85,27 @@ export function useNGOProject() {
 
   // Update return values
   return {
-    projects: store.projects,
-    isLoading,
-    createProject,
-    updateProject: store.updateProject,
-    addProjectMilestone: store.addMilestone,
-    updateBudget: store.updateBudget,
-    addProjectUpdate: store.addUpdate,
-    addProjectReport: store.addReport,
-    addProjectMedia, // Added media handler
-    addVolunteer,    // Added volunteer handler
-    getProjectById: store.getProjectById,
-    getProjectsByStatus: store.getProjectsByStatus,
-    getProjectsByLocation: store.getProjectsByLocation,
+    projects,
+  isLoading: storeLoading,
+  error,
+  createProject,
+  updateProject: store.updateProject,
+  deleteProject: store.deleteProject,
+  addProjectMilestone: store.addMilestone,
+  updateBudget: store.updateBudget,
+  addProjectUpdate: store.addUpdate,
+  addProjectReport: store.addReport,
+  addProjectMedia,
+  removeProjectMedia: store.removeProjectMedia,
+  updateBeneficiaryCount: store.updateBeneficiaryCount,
+  addVolunteer,
+  updateVolunteerHours: store.updateVolunteerHours,
+  calculateMetrics: store.calculateMetrics,
+  getProjectMetrics: store.getProjectMetrics,
+  getProjectById: store.getProjectById,
+  getProjectsByStatus: store.getProjectsByStatus,
+  getProjectsByLocation: store.getProjectsByLocation,
+  fetchProjects
   };
 }
 

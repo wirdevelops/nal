@@ -5,7 +5,7 @@ import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { formatDistance } from 'date-fns';
-import type { ProjectUpdate } from '@/types/ngo';
+import type { ProjectUpdate } from '@/types/ngo/project';
 
 interface UpdatesProps {
   updates: ProjectUpdate[];

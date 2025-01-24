@@ -8,18 +8,18 @@ import { FileUpload } from '@/components/shared/FileUpload';
 import { Trash2, Plus, ArrowLeft, ArrowRight } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { NGOProjectMedia } from '@/types/ngo/project';
+import type { ProjectMedia } from '@/types/ngo/project';
 
 interface ProjectGalleryProps {
   projectId: string;
-  images: NGOProjectMedia[];
+  images: ProjectMedia[];
   onUpload: (files: File[]) => Promise<void>;
   onDelete: (imageId: string) => Promise<void>;
   isLoading?: boolean;
 }
 
 interface GalleryCardProps {
-  image: NGOProjectMedia;
+  image: ProjectMedia;
   onDelete: (imageId: string) => void;
   deleteLoading: string | null;
   onClick: () => void;

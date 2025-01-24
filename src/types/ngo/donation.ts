@@ -37,6 +37,7 @@ export const DonationAllocationSchema = Type.Object({
 });
 
 export const DonorInfoSchema = Type.Object({
+  avatar: Type.Optional(Type.String({ format: 'uri' })),
   name: Type.String(),
   email: Type.String({ format: 'email' }),
   anonymous: Type.Boolean()
@@ -57,7 +58,11 @@ export const DonationSchema = Type.Object({
   updatedAt: Type.String({ format: 'date-time' }),
   currency: Type.String({ minLength: 3, maxLength: 3 }),
   allocation: Type.Array(DonationAllocationSchema),
-  donor: DonorInfoSchema
+  donor: DonorInfoSchema,
+  anonymous: Type.Boolean(),
+  tier: Type.Optional(Type.String()),
+  message: Type.Optional(Type.String()),
+  date: Type.String({ format: 'date-time' })
 });
 
 // ===== Derived Types =====

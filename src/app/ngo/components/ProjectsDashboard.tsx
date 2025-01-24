@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useProjects } from '@/hooks/useNGOProject';
+import { useNGOProjectStore } from '@/stores/useNGOProjectStore';
 import { ProjectFilters } from './ProjectFilters';
 import { ProjectCard } from './ProjectCard';
 import { formatCurrency } from '@/lib/utils';
-import { ProjectStatus, ProjectCategory } from '@/types/ngo/project';
+import type { ProjectStatus, ProjectCategory, NGOProject } from '@/types/ngo/project';
 
 interface ProjectFiltersState {
   search: string;
@@ -21,8 +21,36 @@ export const ProjectsDashboard = () => {
     location: 'all'
   });
 
-  const { projects, metrics, loading, error } = useProjects(filters);
+  // Get store data
+  const { projects, isLoading, error } = useNGOProjectStore();
   
+  // Filter projects based on current filters
+  const filteredProjects = useMemo(() => {
+    return projects.filter(project => {
+      const matchesSearch = project.name.toLowerCase().includes(filters.search.toLowerCase()) ||
+        project.description.toLowerCase().includes(filters.search.toLowerCase());
+
+      const matchesStatus = filters.status === 'all' || project.status === filters.status;
+      const matchesCategory = filters.category === 'all' || project.category === filters.category;
+      
+      // Location filter logic (example using US as local country)
+      const isUSProject = project.location.country === 'United States';
+      const matchesLocation = filters.location === 'all' || 
+        (filters.location === 'local' && isUSProject) ||
+        (filters.location === 'national' && isUSProject) || // Adjust as needed
+        (filters.location === 'international' && !isUSProject);
+
+      return matchesSearch && matchesStatus && matchesCategory && matchesLocation;
+    });
+  }, [projects, filters]);
+
+  // Calculate metrics from filtered projects
+  const metrics = useMemo(() => ({
+    totalProjects: filteredProjects.length,
+    totalBudget: filteredProjects.reduce((sum, p) => sum + p.budget.total, 0),
+    activeProjects: filteredProjects.filter(p => p.status === 'ongoing').length
+  }), [filteredProjects]);
+
   if (error) {
     return (
       <div className="text-center py-12 text-destructive">
@@ -33,41 +61,38 @@ export const ProjectsDashboard = () => {
 
   return (
     <div className="space-y-8">
-      {/* Filters Section */}
       <ProjectFilters 
         filters={filters}
         onFilterChange={setFilters}
       />
 
-      {/* Metrics Section */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <MetricCard
           title="Total Projects"
           value={metrics.totalProjects}
-          loading={loading}
+          loading={isLoading}
         />
         <MetricCard
           title="Total Budget"
           value={formatCurrency(metrics.totalBudget)}
-          loading={loading}
+          loading={isLoading}
         />
         <MetricCard
           title="Active Projects"
           value={metrics.activeProjects}
-          loading={loading}
+          loading={isLoading}
         />
       </div>
 
-      {/* Projects Grid */}
-      {loading ? (
+      {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {Array.from({ length: 6 }).map((_, i) => (
             <Skeleton key={i} className="h-64 w-full rounded-lg" />
           ))}
         </div>
-      ) : projects.length > 0 ? (
+      ) : filteredProjects.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {projects.map((project) => (
+          {filteredProjects.map((project) => (
             <ProjectCard key={project.id} project={project} />
           ))}
         </div>

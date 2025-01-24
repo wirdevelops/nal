@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { NGOProject } from '@/types/ngo';
+import { NGOProject } from '@/types/ngo/project';
 import { Header } from '../../components/Header';
 import { Overview } from '../../components/Overview';
 import { Team } from '../../components/Team';
@@ -28,7 +28,7 @@ import {
   AlertTriangle,
   Camera
 } from 'lucide-react';
-import { VolunteerSignupForm } from '@/app/volunteers/volunteer/VolunteerSignupForm';
+import { VolunteerSignupForm } from '@/app/users/volunteer/VolunteerSignupForm';
 
 interface ProjectDetailsClientProps {
   project: NGOProject;

@@ -3,7 +3,7 @@ import { Type, Static } from '@sinclair/typebox';
 import { UUID_PATTERN } from '../common';
 import { User } from '../user';
 import { ImpactStory } from './impactStory';
-import { ImpactMetric } from './donation';
+import { Donation, ImpactMetric } from './donation';
 
 // ===== Enums =====
 export const ProjectCategorySchema = Type.Union([
@@ -169,6 +169,7 @@ export interface Beneficiary {
   }
   
  export interface NGOProject {
+   donations: Donation[];
     url: string;
       metrics: ProjectMetrics;
       impactStories: ImpactStory[];

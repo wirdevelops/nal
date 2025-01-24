@@ -8,20 +8,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ProjectStatus, ProjectCategory, ProjectLocation } from '@/types/ngo';
+import { ProjectStatus, ProjectCategory, Location } from '@/types/ngo/project';
 
 interface ProjectFiltersProps {
   onFilterChange: (filters: {
     search: string;
     status: ProjectStatus | 'all';
     category: ProjectCategory | 'all';
-    location: ProjectLocation;
+    location: Location;
   }) => void;
   filters: {
     search: string;
     status: ProjectStatus | 'all';
     category: ProjectCategory | 'all';
-    location: ProjectLocation;
+    location: Location;
   };
 }
 

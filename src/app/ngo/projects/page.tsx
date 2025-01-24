@@ -1,187 +1,237 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
-import { useProjects } from '@/hooks/useNGOProject';
-import { ProjectCard } from '../components/ProjectCard';
-import { ProjectFilters } from '../components/ProjectFilters';
-
+import type { NGOProject, ProjectMedia } from '@/types/ngo/project';
+import { ProjectHeader } from '.././components/Header';
+import { Overview } from '.././components/Overview';
+import { Team } from '.././components/Team';
+import { Updates } from '.././components/Updates';
+import { DonationForm } from '.././components/DonationForm';
+import { ImpactDashboard } from '.././components/ImpactDashBoard';
+import { ProjectGallery } from '.././components/ProjectGallery';
+import { DonorWall } from '.././components/DonorWall';
+import { ReportGenerator } from '.././components/ReportGenerator';
 import { Button } from '@/components/ui/button';
-import { Plus, Filter } from 'lucide-react';
-import { Card } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  Dialog, 
+  DialogContent, 
   DialogTitle,
 } from '@/components/ui/dialog';
-import { ProjectStatus, ProjectCategory, ProjectLocation } from '@/types/ngo/project';
 import { useToast } from '@/components/ui/use-toast';
-import { StatsCards } from '../components/StatsCards';
-import { DonationForm } from '../components/DonationForm';
+import { 
+  Share2, 
+  FileText,
+  Loader2
+} from 'lucide-react';
+import { VolunteerSignupForm } from '@/app/users/volunteer/VolunteerSignupForm';
+import { useNGOProjectStore } from '@/stores/useNGOProjectStore';
 
+type DialogType = 'donate' | 'volunteer' | 'report' | null;
+type SuccessType = 'donate' | 'volunteer' | 'report';
 
-interface ProjectFiltersState {
-  search: string;
-  status: ProjectStatus | 'all';
-  category: ProjectCategory | 'all';
-  location: ProjectLocation;
-}
-
-export default function ProjectsPage() {
+export function ProjectDetailsClient({ project }: { project: NGOProject }) {
   const router = useRouter();
   const { toast } = useToast();
-  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
-  const [showDonateDialog, setShowDonateDialog] = useState(false);
-  const [filters, setFilters] = useState<ProjectFiltersState>({
-    search: '',
-    status: 'all',
-    category: 'all',
-    location: { city: '', country: '' }
-  });
+  const [isPending, startTransition] = useTransition();
+  const [activeTab, setActiveTab] = useState('overview');
+  const [dialogType, setDialogType] = useState<DialogType>(null);
+  const { addProjectMedia, removeProjectMedia } = useNGOProjectStore();
+  
+  const handleEdit = useCallback(() => {
+    router.push(`/ngo/projects/${project.id}/update`);
+  }, [project.id, router]);
 
-  const { projects, metrics, loading, error } = useProjects({
-    search: filters.search,
-    status: filters.status,
-    category: filters.category,
-    location: filters.location
-  });
+  const handleShare = useCallback(async () => {
+    try {
+      await navigator.share({
+        title: project.name,
+        text: project.description,
+        url: window.location.href
+      });
+    } catch (error) {
+      if (!(error instanceof Error) || error.name !== 'AbortError') {
+        toast({
+          title: 'Sharing failed',
+          description: 'Please try copying the link instead',
+          variant: 'destructive'
+        });
+      }
+    }
+  }, [project, toast]);
 
-  const stats = {
-    total: metrics.projectCount,
-    ongoing: metrics.ongoingProjects,
-    completed: projects.filter(p => p.status === ProjectStatus.COMPLETED).length,
-    planned: projects.filter(p => p.status === ProjectStatus.PLANNED).length
-  };
+  const handleDialogOpen = useCallback((type: DialogType) => {
+    setDialogType(type);
+  }, []);
 
-  const handleCreateProject = () => {
-    router.push('/ngo/projects/new');
-  };
+  const handleDialogClose = useCallback(() => {
+    setDialogType(null);
+  }, []);
 
-  const handleProjectSelect = (projectId: string) => {
-    router.push(`/ngo/projects/${projectId}`);
-  };
-
-  const handleDonate = (projectId: string) => {
-    setSelectedProjectId(projectId);
-    setShowDonateDialog(true);
-  };
-
-  const handleVolunteer = (projectId: string) => {
-    router.push(`/ngo/projects/${projectId}/volunteer`);
-  };
-
-  const handleDonationSuccess = () => {
-    setShowDonateDialog(false);
+  const handleSuccess = useCallback((type: SuccessType) => {
+    handleDialogClose();
     toast({
-      title: "Thank you for your donation!",
-      description: "Your contribution will help make a difference.",
+      title: {
+        donate: 'Thank you for your donation!',
+        volunteer: 'Application submitted!',
+        report: 'Report generated!',
+      }[type],
+      description: 'We appreciate your support.',
     });
-  };
+  }, [toast, handleDialogClose]);
 
-  if (error) {
-    return (
-      <Card className="container mx-auto p-8 border-destructive">
-        <div className="text-center text-destructive space-y-2">
-          <h3 className="text-lg font-semibold">Error Loading Projects</h3>
-          <p>{error}</p>
-          <Button 
-            variant="outline" 
-            onClick={() => window.location.reload()}
-          >
-            Try Again
-          </Button>
-        </div>
-      </Card>
-    );
-  }
+  const handleImageUpload = useCallback(async (files: File[]) => {
+    startTransition(async () => {
+      try {
+        await addProjectMedia(project.id, files);
+        toast({
+          title: 'Upload successful',
+          description: `${files.length} media items added`,
+        });
+      } catch (error) {
+        toast({
+          title: 'Upload failed',
+          description: error instanceof Error ? error.message : 'Unknown error',
+          variant: 'destructive'
+        });
+      }
+    });
+  }, [project.id, addProjectMedia, toast]);
+
+  const handleImageDelete = useCallback(async (mediaId: string) => {
+    startTransition(async () => {
+      try {
+        await removeProjectMedia(project.id, mediaId);
+        toast({ title: 'Media removed successfully' });
+      } catch (error) {
+        toast({
+          title: 'Delete failed',
+          description: error instanceof Error ? error.message : 'Unknown error',
+          variant: 'destructive'
+        });
+      }
+    });
+  }, [project.id, removeProjectMedia, toast]);
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-8">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-4xl font-bold tracking-tight">NGO Projects</h1>
-          <p className="text-lg text-muted-foreground">
-            Manage and monitor all your organization's initiatives
-          </p>
-        </div>
-        <div className="flex items-center gap-4">
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="outline">
-                <Filter className="w-4 h-4 mr-2" />
-                Filters
-              </Button>
-            </SheetTrigger>
-            <SheetContent className="sm:max-w-[400px]">
-              <SheetHeader>
-                <SheetTitle>Filter Projects</SheetTitle>
-              </SheetHeader>
-              <div className="py-4">
-                <ProjectFilters 
-                  onFilterChange={setFilters}
-                  filters={filters}
-                />
-              </div>
-            </SheetContent>
-          </Sheet>
-          <Button onClick={handleCreateProject}>
-            <Plus className="w-4 h-4 mr-2" />
-            New Project
-          </Button>
-        </div>
+      <ProjectHeader 
+        projectId={project.id}
+        onEdit={handleEdit}
+        onDonate={() => handleDialogOpen('donate')}
+        onVolunteer={() => handleDialogOpen('volunteer')}
+      />
+
+      <div className="flex justify-end gap-4">
+        <Button variant="outline" onClick={handleShare}>
+          <Share2 className="w-4 h-4 mr-2" />
+          Share
+        </Button>
+        <Button 
+          variant="outline" 
+          onClick={() => handleDialogOpen('report')}
+          disabled={isPending}
+        >
+          <FileText className="w-4 h-4 mr-2" />
+          Generate Report
+        </Button>
       </div>
 
-      <StatsCards stats={stats} isLoading={loading} />
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-6">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="team">Team</TabsTrigger>
+          <TabsTrigger value="updates">Updates</TabsTrigger>
+          <TabsTrigger value="impact">Impact</TabsTrigger>
+          <TabsTrigger value="donors">Donors</TabsTrigger>
+          <TabsTrigger value="gallery">Gallery</TabsTrigger>
+        </TabsList>
 
-      {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-[420px] w-full rounded-xl" />
-          ))}
-        </div>
-      ) : projects.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {projects.map((project) => (
-            <ProjectCard
-              key={project.id}
-              project={project}
-              onClick={() => handleProjectSelect(project.id)}
-              onDonate={() => handleDonate(project.id)}
-              onVolunteer={() => handleVolunteer(project.id)}
-            />
-          ))}
-        </div>
-      ) : (
-        <Card className="p-8 text-center">
-          <h3 className="text-lg font-medium mb-2">No projects found</h3>
-          <p className="text-muted-foreground mb-4">
-            Try adjusting your filters or create a new project
-          </p>
-          <Button onClick={handleCreateProject}>Create Project</Button>
-        </Card>
-      )}
+        <TabsContent value="overview" className="mt-6">
+          <Overview project={project} />
+        </TabsContent>
 
-      <Dialog open={showDonateDialog} onOpenChange={setShowDonateDialog}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Make a Donation</DialogTitle>
-          </DialogHeader>
-          <DonationForm 
-            projectId={selectedProjectId ?? undefined}
-            onSuccess={handleDonationSuccess}
-            onCancel={() => setShowDonateDialog(false)}
+        <TabsContent value="team">
+          <Team 
+            members={project.team}
+            onAddMember={() => router.push(`/ngo/projects/${project.id}/team/add`)}
           />
+        </TabsContent>
+
+        <TabsContent value="updates">
+          <Updates 
+            updates={project.updates}
+            onAddUpdate={() => router.push(`/ngo/projects/${project.id}/updates/new`)}
+          />
+        </TabsContent>
+
+        <TabsContent value="impact">
+          <ImpactDashboard 
+            projectId={project.id}
+            metrics={project.metrics}
+            stories={project.impactStories}
+          />
+        </TabsContent>
+
+        <TabsContent value="donors">
+          <DonorWall
+            donors={project.donors}
+            projectId={project.id}
+          />
+        </TabsContent>
+
+        <TabsContent value="gallery">
+          <ProjectGallery 
+            projectId={project.id}
+            images={project.media}
+            onUpload={handleImageUpload}
+            onDelete={handleImageDelete}
+            isLoading={isPending}
+          />
+        </TabsContent>
+      </Tabs>
+
+      <Dialog open={!!dialogType} onOpenChange={handleDialogClose}>
+        <DialogContent className="sm:max-w-md">
+          {dialogType === 'donate' && (
+            <>
+              <DialogTitle>Support {project.name}</DialogTitle>
+              <DonationForm
+                projectId={project.id}
+                onSuccess={() => handleSuccess('donate')}
+                onCancel={handleDialogClose}
+              />
+            </>
+          )}
+          
+          {dialogType === 'volunteer' && (
+            <>
+              <DialogTitle>Join Our Team</DialogTitle>
+              <VolunteerSignupForm
+                onSuccess={() => handleSuccess('volunteer')}
+                onCancel={handleDialogClose}
+              />
+            </>
+          )}
+
+          {dialogType === 'report' && (
+            <>
+              <DialogTitle>Generate Report</DialogTitle>
+              <ReportGenerator
+                projectId={project.id}
+                onGenerate={() => handleSuccess('report')}
+              />
+            </>
+          )}
         </DialogContent>
       </Dialog>
+
+      {isPending && (
+        <div className="fixed inset-0 bg-background/80 flex items-center justify-center">
+          <Loader2 className="h-16 w-16 animate-spin" />
+        </div>
+      )}
     </div>
   );
 }
