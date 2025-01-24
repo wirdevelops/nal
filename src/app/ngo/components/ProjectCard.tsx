@@ -1,17 +1,17 @@
-import { NGOProject, ProjectStatus } from '@/types/ngo';
+import { NGOProject, ProjectStatus } from '@/types/ngo/project';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
-import { Heart, Users, ExternalLink } from 'lucide-react';
+import { Heart, Users } from 'lucide-react';
 import { formatDate, formatCurrency, formatDistance } from '@/lib/utils';
 
-const statusVariant: Record<ProjectStatus, 'default' | 'secondary' | 'destructive' | 'outline'> = {
-  [ProjectStatus.PLANNED]: 'secondary',
-  [ProjectStatus.ONGOING]: 'default',
-  [ProjectStatus.COMPLETED]: 'default',
-  [ProjectStatus.ON_HOLD]: 'outline',
-  [ProjectStatus.CANCELLED]: 'destructive',
+const statusVariant: Record<string, 'default' | 'secondary' | 'destructive' | 'outline'> = {
+  'planned': 'secondary',
+  'ongoing': 'default',
+  'completed': 'default',
+  'on_hold': 'outline',
+  'cancelled': 'destructive',
 };
 
 interface ProjectCardProps {
@@ -33,8 +33,13 @@ export const ProjectCard = ({ project, onDonate, onVolunteer, onClick }: Project
     media
   } = project;
 
-  const progress = (budget.used / budget.total) * 100;
+  const progress = budget.total > 0 ? (budget.used / budget.total) * 100 : 0;
   const hasActions = onDonate || onVolunteer;
+
+  const handleAction = (e: React.MouseEvent, action?: () => void) => {
+    e.stopPropagation();
+    action?.();
+  };
 
   return (
     <Card 
@@ -98,13 +103,20 @@ export const ProjectCard = ({ project, onDonate, onVolunteer, onClick }: Project
       {hasActions && (
         <CardFooter className="flex gap-2 p-4 pt-0">
           {onDonate && (
-            <Button onClick={onDonate} className="flex-1">
+            <Button 
+              onClick={(e) => handleAction(e, onDonate)} 
+              className="flex-1"
+            >
               <Heart className="w-4 h-4 mr-2" />
               Donate
             </Button>
           )}
           {onVolunteer && (
-            <Button variant="outline" onClick={onVolunteer} className="flex-1">
+            <Button 
+              variant="outline" 
+              onClick={(e) => handleAction(e, onVolunteer)}
+              className="flex-1"
+            >
               <Users className="w-4 h-4 mr-2" />
               Volunteer
             </Button>

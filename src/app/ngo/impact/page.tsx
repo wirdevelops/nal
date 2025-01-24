@@ -55,7 +55,7 @@ export default function ImpactPage() {
         {/* Overview Tab */}
         <TabsContent value="overview">
           <div className="space-y-8">
-            <ImpactMetrics />
+            <ImpactMetrics summary={undefined} categories={[]} />
 
             {/* Focus Areas */}
             <Card>

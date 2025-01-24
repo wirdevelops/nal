@@ -3,7 +3,6 @@
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { NGOProject } from '@/types/ngo/project';
-import { Header } from '../../components/Header';
 import { Overview } from '../../components/Overview';
 import { Team } from '../../components/Team';
 import { Updates } from '../../components/Updates';
@@ -29,6 +28,7 @@ import {
   Camera
 } from 'lucide-react';
 import { VolunteerSignupForm } from '@/app/users/volunteer/VolunteerSignupForm';
+import { ProjectHeader } from '@/components/project/ProjectHeader';
 
 interface ProjectDetailsClientProps {
   project: NGOProject;
@@ -129,7 +129,7 @@ export function ProjectDetailsClient({ project }: ProjectDetailsClientProps) {
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-8">
-      <Header 
+      <ProjectHeader 
         project={project}
         onEdit={handleEdit}
         onDonate={() => handleDialogOpen('donate')}

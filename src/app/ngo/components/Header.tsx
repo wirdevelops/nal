@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Edit2, Heart, Users } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { NGOProject } from '@/types/ngo/project';
+import { useCallback } from 'react';
 
 interface ProjectHeaderProps {
   projectId: string;
@@ -20,6 +21,18 @@ export function ProjectHeader({ projectId, onEdit, onDonate, onVolunteer }: Proj
   if (isLoading) return <ProjectHeader.Skeleton />;
 
   if (!project) return null;
+
+  const handleDonateClick = useCallback(() => {
+    onDonate?.();
+  }, [onDonate]);
+
+    const handleVolunteerClick = useCallback(() => {
+        onVolunteer?.();
+      }, [onVolunteer]);
+  
+    const handleEditClick = useCallback(() => {
+        onEdit?.();
+    }, [onEdit])
 
   return (
     <div className="space-y-4">
@@ -46,19 +59,19 @@ export function ProjectHeader({ projectId, onEdit, onDonate, onVolunteer }: Proj
         
         <div className="flex gap-2 flex-shrink-0">
           {onDonate && (
-            <Button onClick={onDonate} size="sm">
+            <Button onClick={handleDonateClick} size="sm">
               <Heart className="w-4 h-4 mr-2" />
               Support Project
             </Button>
           )}
           {onVolunteer && (
-            <Button variant="outline" onClick={onVolunteer} size="sm">
+            <Button variant="outline" onClick={handleVolunteerClick} size="sm">
               <Users className="w-4 h-4 mr-2" />
               Join Team
             </Button>
           )}
           {onEdit && (
-            <Button variant="outline" onClick={onEdit} size="sm">
+            <Button variant="outline" onClick={handleEditClick} size="sm">
               <Edit2 className="w-4 h-4 mr-2" />
               Edit
             </Button>

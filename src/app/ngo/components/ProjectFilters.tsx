@@ -10,6 +10,17 @@ import {
 } from '@/components/ui/select';
 import { ProjectStatus, ProjectCategory, Location } from '@/types/ngo/project';
 
+// Add these runtime value arrays based on your schema
+const ProjectStatusValues = ['planned', 'ongoing', 'completed', 'on_hold', 'cancelled'] as const;
+const ProjectCategoryValues = [
+  'education',
+  'health',
+  'environment',
+  'community_development',
+  'emergency_relief',
+  'other'
+] as const;
+
 interface ProjectFiltersProps {
   onFilterChange: (filters: {
     search: string;
@@ -35,27 +46,27 @@ export function ProjectFilters({ onFilterChange, filters }: ProjectFiltersProps)
       />
 
       <div className="grid grid-cols-1 gap-4">
-        <div className="space-y-2">
-          <Label>Status</Label>
-          <Select
-            value={filters.status}
-            onValueChange={(value: ProjectStatus | 'all') => 
-              onFilterChange({ ...filters, status: value })
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Status</SelectItem>
-              {Object.values(ProjectStatus).map((status) => (
-                <SelectItem key={status} value={status}>
-                  {status.replace('_', ' ')}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+      <div className="space-y-2">
+  <Label>Status</Label>
+  <Select
+    value={filters.status}
+    onValueChange={(value: ProjectStatus | 'all') => 
+      onFilterChange({ ...filters, status: value })
+    }
+  >
+    <SelectTrigger>
+      <SelectValue placeholder="Select status" />
+    </SelectTrigger>
+    <SelectContent>
+      <SelectItem value="all">All Status</SelectItem>
+      {ProjectStatusValues.map((status) => (
+        <SelectItem key={status} value={status}>
+          {status.replace(/_/g, ' ')}
+        </SelectItem>
+      ))}
+    </SelectContent>
+  </Select>
+</div>
 
         <div className="space-y-2">
           <Label>Category</Label>
@@ -66,13 +77,15 @@ export function ProjectFilters({ onFilterChange, filters }: ProjectFiltersProps)
             }
           >
             <SelectTrigger>
-              <SelectValue placeholder="Select category" />
+              <SelectValue placeholder="Select category">
+                {filters.category === 'all' ? 'All Categories' : filters.category.replace(/_/g, ' ')}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Categories</SelectItem>
-              {Object.values(ProjectCategory).map((category) => (
+              {ProjectCategoryValues.map((category) => (
                 <SelectItem key={category} value={category}>
-                  {category.replace('_', ' ')}
+                  {category.replace(/_/g, ' ')}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -106,39 +119,3 @@ export function ProjectFilters({ onFilterChange, filters }: ProjectFiltersProps)
     </div>
   );
 }
-
-
-// // src/app/ngo/
-// ├── page.tsx                    // NGO Dashboard Page (Landing)
-// ├── projects/
-// │   ├── page.tsx               // Projects List View
-// │   ├── [projectId]/
-// │   │   ├── page.tsx          // Project Details
-// │   │   ├── update/
-// │   │   │   └── page.tsx      // Project Update Form
-// │   │   ├── report/
-// │   │   │   └── page.tsx      // Project Report Generator
-// │   │   └── gallery/
-// │   │       └── page.tsx      // Project Gallery
-// ├── volunteers/
-// │   ├── page.tsx               // Volunteers List View
-// │   ├── signup/
-// │   │   └── page.tsx          // Volunteer Signup
-// │   └── [volunteerId]/
-// │       └── page.tsx          // Volunteer Details
-// ├── donate/
-// │   └── page.tsx              // Donation Page
-// ├── impact/
-// │   └── page.tsx              // Impact Dashboard
-// ├── blog/
-// │   ├── page.tsx              // Blog/News List
-// │   └── [postId]/
-// │       └── page.tsx          // Blog Post Detail
-// ├── stories/
-// │   └── page.tsx              // Success Stories
-// ├── events/
-// │   └── page.tsx              // Event Calendar
-// ├── partners/
-// │   └── page.tsx              // Partners & Sponsors
-// └── get-involved/
-//     └── page.tsx              // Get Involved Landing
