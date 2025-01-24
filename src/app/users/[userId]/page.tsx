@@ -1,13 +1,12 @@
-// src/app/volunteers/[volunteerId]/page.tsx
 'use client';
 
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
-import { VolunteerProfile } from '../volunteer/VolunteerProfile';
 import { useVolunteer } from '@/hooks/useVolunteer';
 import { useNGOProject } from '@/hooks/useNGOProject';
-import { ArrowLeft, Edit2, Archive } from 'lucide-react';
+import { ArrowLeft, Edit2, Archive, Type } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { VolunteerProfile } from '@/types/user';
 
 export default function VolunteerDetailsPage({ params }: { params: { volunteerId: string } }) {
   const router = useRouter();
@@ -97,3 +96,4 @@ export default function VolunteerDetailsPage({ params }: { params: { volunteerId
     </div>
   );
 }
+

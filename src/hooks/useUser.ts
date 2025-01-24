@@ -4,7 +4,7 @@ import { useCallback } from 'react';
 import { useUserStore } from '@/stores/useUserStore';
 import type { UserProfile, UserSettings, UserRole, CreatorSpecialty } from '@/types/user';
 
-export function useUser() {
+export function useUser(userId: string) {
   const store = useUserStore();
 
   // Profile management

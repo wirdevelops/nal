@@ -176,112 +176,165 @@
 //     };
 // }
 
-// hooks/useProduct.ts
 import { useCallback } from 'react';
 import { useProductStore } from '@/stores/useProductStore';
-import type { Product, ProductCategory } from '@/types/store/product';
+import type { Product, ProductCategory, DigitalProduct, PhysicalProduct } from '@/types/store';
 import { toast } from 'react-hot-toast';
 import { v4 as uuidv4 } from 'uuid';
 
 interface UseProductHook {
-    products: Product[];
-    isLoading: boolean;
-    error: string | null;
-    createProduct: (product: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'sellerId' | 'status'>) => Promise<Product>;
-    searchProducts: (search: string) => void;
-    toggleFavorite: (productId: string) => void;
-    favoriteIds: string[];
+  products: Product[];
+  filteredProducts: Product[];
+  isLoading: boolean;
+  error: string | null;
+  favoriteIds: string[];
+  hasNextPage: boolean;
+  currentPage: number;
+  totalItems: number;
+  
+  createProduct: (product: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'sellerId' | 'status'>) => Promise<Product>;
+  updateProduct: (id: string, updates: Partial<Product>) => Promise<void>;
+  removeProduct: (id: string) => Promise<void>;
+  searchProducts: (query: string) => void;
+  toggleFavorite: (productId: string) => void;
+  filterByCategory: (category: ProductCategory) => void;
+  filterByPriceRange: (min: number, max: number) => void;
+  sortProducts: (by: 'price' | 'date' | 'popularity') => void;
+  resetFilters: () => void;
+  loadNextPage: () => void;
+  refreshProduct: (productId: string) => Promise<void>;
+  batchUpdateProducts: (updates: Array<{id: string, changes: Partial<Product>}>) => Promise<void>;
+  batchRemoveProducts: (ids: string[]) => Promise<void>;
 }
 
 export function useProduct(): UseProductHook {
-    const store = useProductStore();
+  const store = useProductStore();
 
-    const createProduct = useCallback(async (product: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'sellerId' | 'status'>): Promise<Product> => {
-        try {
-          const newProduct = { ...product, id: uuidv4(), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), sellerId: 'test', status: 'active' } as Product;
-            store.addProduct(newProduct);
-             // Later: API integration
-             // const res = await fetch('/api/products', {
-                // method: 'POST',
-                // headers: { 'Content-Type': 'application/json' },
-                // body: JSON.stringify(newProduct)
-            // });
-             toast.success('Product Created')
-           return newProduct;
-        } catch (error) {
-            console.error('Failed to add product:', error);
-            store.setError('Failed to add product');
-            toast.error('Failed to add product:');
-            throw error;
-        }
-    }, [store]);
+  const handleAsyncOperation = useCallback(async (
+    operation: () => Promise<any>,
+    errorMessage: string
+  ) => {
+    store.startLoading();
+    try {
+      const result = await operation();
+      return result;
+    } catch (error) {
+      console.error(errorMessage, error);
+      store.setError(errorMessage);
+      toast.error(errorMessage);
+      throw error;
+    } finally {
+      store.stopLoading();
+    }
+  }, [store]);
 
-    const updateProduct = useCallback(async (id: string, updates: Partial<Product>) => {
-        try {
-            store.updateProduct(id, updates);
-             // Later: API integration
-              // await fetch(`/api/products/${id}`, {
-            //     method: 'PATCH',
-            //     headers: { 'Content-Type': 'application/json' },
-            //     body: JSON.stringify(updates),
-            // });
-        } catch (error) {
-            console.error('Failed to update product:', error);
-            store.setError('Failed to update product');
-             toast.error('Failed to update product:');
-            throw error;
-        }
-    }, [store]);
+  const createProduct = useCallback(async (
+    product: Omit<Product, 'id' | 'createdAt' | 'updatedAt' | 'sellerId' | 'status'>
+  ): Promise<Product> => {
+    const newProduct = {
+      ...product,
+      id: uuidv4(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      sellerId: 'test',
+      status: 'active'
+    } as Product;
 
-    const removeProduct = useCallback(async (id: string) => {
-        try {
-            store.removeProduct(id);
-             // Later: API integration
-             // await fetch(`/api/products/${id}`, { method: 'DELETE' });
-        } catch (error) {
-            console.error('Failed to remove product:', error);
-             store.setError('Failed to remove product');
-             toast.error('Failed to remove product:');
-            throw error;
-        }
-    }, [store]);
+    return handleAsyncOperation(async () => {
+      // Later: API integration
+      // await fetch('/api/products', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(newProduct)
+      // });
+      store.addProduct(newProduct);
+      toast.success('Product Created');
+      return newProduct;
+    }, 'Failed to add product');
+  }, [store, handleAsyncOperation]);
 
-    const setProducts = useCallback(async(products: Product[]) => {
-        try {
-            store.setProducts(products)
-            // API integration later
-            // const res = await fetch('/api/products')
-            // if (res.ok) {
-            //     const data = await res.json()
-            //     store.setProducts(data);
-            // }
-        } catch (error) {
-          console.log("could not set the products", error)
-            store.setError("could not set the products");
-             toast.error('could not set the products');
-          throw error;
-        }
-    }, [store])
+  const updateProduct = useCallback(async (
+    id: string,
+    updates: Partial<Product>
+  ) => {
+    await handleAsyncOperation(async () => {
+      // Later: API integration
+      // await fetch(`/api/products/${id}`, {
+      //   method: 'PATCH',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(updates)
+      // });
+      store.updateProduct(id, updates);
+    }, 'Failed to update product');
+  }, [store, handleAsyncOperation]);
 
-    const searchProducts = useCallback(async (search: string) => {
-         //TODO: Add API search logic here
-    }, []);
+  const removeProduct = useCallback(async (id: string) => {
+    await handleAsyncOperation(async () => {
+      // Later: API integration
+      // await fetch(`/api/products/${id}`, { method: 'DELETE' });
+      store.removeProduct(id);
+    }, 'Failed to remove product');
+  }, [store, handleAsyncOperation]);
 
+  const batchUpdateProducts = useCallback(async (
+    updates: Array<{id: string, changes: Partial<Product>}>
+  ) => {
+    await handleAsyncOperation(async () => {
+      // Later: API integration
+      // await fetch('/api/products/batch', {
+      //   method: 'PATCH',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ updates })
+      // });
+      store.batchUpdateProducts(updates);
+    }, 'Failed to update products');
+  }, [store, handleAsyncOperation]);
 
-   const toggleFavorite = useCallback((productId: string) => {
-     store.toggleFavorite(productId);
-   }, [store]);
+  const batchRemoveProducts = useCallback(async (ids: string[]) => {
+    await handleAsyncOperation(async () => {
+      // Later: API integration
+      // await fetch('/api/products/batch', {
+      //   method: 'DELETE',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ ids })
+      // });
+      store.batchRemoveProducts(ids);
+    }, 'Failed to remove products');
+  }, [store, handleAsyncOperation]);
 
+  const refreshProduct = useCallback(async (productId: string) => {
+    await handleAsyncOperation(async () => {
+      // Later: API integration
+      // const response = await fetch(`/api/products/${productId}`);
+      // const product = await response.json();
+      // store.updateProduct(productId, product);
+      await store.refreshProduct(productId);
+    }, 'Failed to refresh product');
+  }, [store, handleAsyncOperation]);
 
-    return {
-        products: store.products,
-        isLoading: store.isLoading,
-        error: store.error,
-        createProduct,
-        searchProducts,
-        toggleFavorite,
-        favoriteIds: store.favoriteIds,
-    };
+  return {
+    products: store.products,
+    filteredProducts: store.filteredProducts,
+    isLoading: store.isLoading,
+    error: store.error,
+    favoriteIds: store.favoriteIds,
+    hasNextPage: store.hasNextPage,
+    currentPage: store.currentPage,
+    totalItems: store.totalItems,
+    createProduct,
+    updateProduct,
+    removeProduct,
+    searchProducts: store.searchProducts,
+    toggleFavorite: store.toggleFavorite,
+    filterByCategory: store.filterByCategory,
+    filterByPriceRange: store.filterByPriceRange,
+    sortProducts: store.sortProducts,
+    resetFilters: store.resetFilters,
+    loadNextPage: store.loadNextPage,
+    refreshProduct,
+    batchUpdateProducts,
+    batchRemoveProducts
+  };
 }
 
 // // hooks/useProduct.ts
