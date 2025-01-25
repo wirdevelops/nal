@@ -1,28 +1,59 @@
-// app/auth/onboarding/page.tsx
 'use client';
 
-import { RoleSelector } from "@/components/auth/RoleSelector";
-import { useRouter } from "next/navigation";
+import { useState } from 'react';
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useRouter } from 'next/navigation';
 import { useUser } from "@/hooks/useUser";
-import { UserRole } from "@/types/user";
+import { RoleSelector } from "@/components/auth/RoleSelector";
+import { OnboardingProgress } from "@/components/auth/OnboardingProcess";
 
-export default function RoleSelectionPage() {
+const STAGES = [
+  'role-selection',
+  'basic-info',
+  'role-details',
+  'verification',
+  'completed'
+] as const;
+
+export default function OnboardingPage() {
   const router = useRouter();
-  const { user, addRole } = useUser();
+  const { user, updateUser } = useUser();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleRoleSelection = async (roles: UserRole[]) => {
-    await Promise.all(roles.map(role => addRole(role)));
-    router.push('/auth/onboarding/basic-info');
+  const handleRoleSubmit = async (data) => {
+    try {
+      setIsSubmitting(true);
+      await updateUser({
+        roles: data.roles,
+        onboarding: {
+          ...user?.onboarding,
+          stage: 'basic-info',
+          completed: [...(user?.onboarding.completed || []), 'role-selection']
+        }
+      });
+      router.push('/auth/onboarding/basic-info');
+    } catch (error) {
+      console.error('Failed to save roles:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <RoleSelector
-        selectedRoles={user?.roles || []}
-        onChange={handleRoleSelection}
-        maxSelections={2}
+    <div className="max-w-2xl mx-auto space-y-8">
+      <OnboardingProgress
+        currentStage="role-selection"
+        completedStages={user?.onboarding.completed || []}
       />
+
+      <Card className="p-6">
+        <RoleSelector
+          selectedRoles={user?.roles || []}
+          onChange={handleRoleSubmit}
+          isLoading={isSubmitting}
+        />
+      </Card>
     </div>
   );
 }
-
