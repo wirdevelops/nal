@@ -60,7 +60,7 @@ const SECTIONS = {
 };
 
 const PRIMARY_NAV = [
-  { label: 'Projects', href: '/dashboard', icon: Film, section: 'projects' },
+  { label: 'Projects', href: '/projects', icon: Film, section: 'projects' },
   { label: 'Opportunities', href: '/jobs', icon: Briefcase, section: 'opportunities' },
   { label: 'Communication', href: '/chats', icon: MessageSquare, section: 'communication' },
   { label: 'Marketplace', href: '/market', icon: Globe, section: 'marketplace' }

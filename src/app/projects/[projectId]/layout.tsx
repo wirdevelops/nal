@@ -1,223 +1,47 @@
-// 'use client';
+'use client'
 
-// import { useState, useRef, useEffect } from 'react';
-// import { useParams } from 'next/navigation';
-// import { ProjectNavigation } from '../components/ProjectNavigation';
-// import { ProjectSwitcher } from '../components/ProjectSwitcher';
-// import { ProjectHeader } from '../components/ProjectHeader';
-// import { ThemeToggle } from '@/components/shared/ThemeToggle';
-// import { Button } from '@/components/ui/button';
-// import { ChevronLeft, Menu, Bell, MoreVertical } from 'lucide-react';
-// import {
-//     DropdownMenu,
-//     DropdownMenuContent,
-//     DropdownMenuItem,
-//     DropdownMenuLabel,
-//     DropdownMenuSeparator,
-//     DropdownMenuTrigger,
-// } from '@/components/ui/dropdown-menu';
-// import { useProject } from '@/hooks/useProjectHooks';
-// import { Badge } from '@/components/ui/badge';
-// import { cn } from '@/lib/utils';
-
-// interface ProjectLayoutProps {
-//     children: React.ReactNode;
-// }
-
-// export default function ProjectLayout({ children }: ProjectLayoutProps) {
-//     const params = useParams();
-//     const projectId = params.projectId as string;
-//     const { project } = useProject(projectId);
-//     const [mobileNavOpen, setMobileNavOpen] = useState(false);
-//     const sidebarRef = useRef<HTMLElement>(null);
-
-//     const [sidebarCollapsed, setSidebarCollapsed] = useState(false); // Initialize to false for open by default
-
-
-//     useEffect(() => {
-//         const handleClickOutside = (event: MouseEvent) => {
-//             if (mobileNavOpen && sidebarRef.current && !sidebarRef.current.contains(event.target as Node)) {
-//                 setMobileNavOpen(false);
-//             }
-//         };
-
-//         document.addEventListener('mousedown', handleClickOutside);
-
-//         return () => {
-//             document.removeEventListener('mousedown', handleClickOutside);
-//         };
-//     }, [mobileNavOpen]);
-
-//     const handleSidebarCollapse = () => {
-//        if (!sidebarCollapsed) {
-//            setSidebarCollapsed(true);
-//        }
-//         setMobileNavOpen(false);
-
-//     };
-
-
-//     if (!project) return null;
-
-//     return (
-//         <div className="min-h-screen bg-background">
-//             {/* Header */}
-//             <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-//                 <div className="container flex h-14 items-center px-4 sm:px-6">
-//                     {/* Mobile menu button */}
-//                     <Button
-//                         variant="ghost"
-//                         size="icon"
-//                         className="md:hidden mr-2"
-//                         onClick={() => setMobileNavOpen(!mobileNavOpen)}
-//                         aria-label="Toggle navigation"
-//                     >
-//                         <Menu className="h-5 w-5" />
-//                     </Button>
-
-//                     <div className="flex flex-1 items-center gap-4">
-//                         {/* Project Switcher */}
-//                         <ProjectSwitcher currentProjectId={projectId} />
-
-//                         {/* Project Status Badges - Hidden on mobile */}
-//                         <div className="hidden md:flex items-center gap-2">
-//                             <Badge variant="outline">{project.phase}</Badge>
-//                             <Badge variant={project.status === 'active' ? 'default' : 'secondary'}>
-//                                 {project.status}
-//                             </Badge>
-//                         </div>
-//                     </div>
-
-//                     {/* Right side controls */}
-//                     <div className="flex items-center gap-2">
-//                         <Button
-//                             variant="ghost"
-//                             size="icon"
-//                             className="hidden sm:inline-flex"
-//                             aria-label="Notifications"
-//                         >
-//                             <Bell className="h-5 w-5" />
-//                         </Button>
-//                         <ThemeToggle />
-//                         <DropdownMenu>
-//                             <DropdownMenuTrigger asChild>
-//                                 <Button
-//                                     variant="ghost"
-//                                     size="icon"
-//                                     aria-label="More options"
-//                                 >
-//                                     <MoreVertical className="h-5 w-5" />
-//                                 </Button>
-//                             </DropdownMenuTrigger>
-//                             <DropdownMenuContent align="end" className="min-w-[200px]">
-//                                 <DropdownMenuLabel>Project Actions</DropdownMenuLabel>
-//                                 <DropdownMenuItem
-//                                     onSelect={() => window.location.href = '/projects'}
-//                                     className="cursor-pointer"
-//                                 >
-//                                     All Projects
-//                                 </DropdownMenuItem>
-//                                 <DropdownMenuItem
-//                                     onSelect={() => window.location.href = `/projects/${projectId}/settings`}
-//                                     className="cursor-pointer"
-//                                 >
-//                                     Project Settings
-//                                 </DropdownMenuItem>
-//                                 <DropdownMenuSeparator />
-//                                 <DropdownMenuLabel>Support</DropdownMenuLabel>
-//                                 <DropdownMenuItem className="cursor-pointer">
-//                                     Help Center
-//                                 </DropdownMenuItem>
-//                                 <DropdownMenuItem className="cursor-pointer">
-//                                     Documentation
-//                                 </DropdownMenuItem>
-//                                 <DropdownMenuSeparator />
-//                                 <DropdownMenuItem className="cursor-pointer text-red-600">
-//                                     Sign out
-//                                 </DropdownMenuItem>
-//                             </DropdownMenuContent>
-//                         </DropdownMenu>
-//                     </div>
-//                 </div>
-//             </header>
-
-//             {/* Main Content Area */}
-//             <div className="flex min-h-[calc(100vh-3.5rem)]">
-//                 {/* Responsive Sidebar */}
-//                 <aside
-//                     ref={sidebarRef}
-//                     className={cn(
-//                         "fixed inset-y-0 left-0 z-30 w-64 border-r bg-background transition-all duration-300",
-//                         mobileNavOpen ? "translate-x-0" : "-translate-x-full",
-//                     )}
-//                 >
-//                     {/* Collapse Control */}
-//                     <div className="absolute right-0 top-2 hidden md:block">
-//                         <Button
-//                             variant="ghost"
-//                             size="icon"
-//                             className="h-8 w-8 rounded-full"
-//                             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-//                             aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-//                         >
-//                             <ChevronLeft className={cn(
-//                                 "h-4 w-4 transition-transform",
-//                                 sidebarCollapsed && "rotate-180"
-//                             )} />
-//                         </Button>
-//                     </div>
-//                     {/* Navigation */}
-//                     <ProjectNavigation
-//                         projectId={projectId}
-//                         collapsed={sidebarCollapsed}
-//                          onCollapse={handleSidebarCollapse}
-//                     />
-//                 </aside>
-
-//                 {/* Main Content */}
-//                 <main className="flex-1 overflow-x-hidden">
-//                     <div className="p-4 md:p-6 lg:p-8">
-//                         <ProjectHeader project={project} />
-//                         {children}
-//                     </div>
-//                 </main>
-//             </div>
-
-//             {/* Mobile Overlay */}
-//             {mobileNavOpen && (
-//                 <div
-//                     className="fixed inset-0 z-20 bg-black/50 md:hidden"
-//                     onClick={() => setMobileNavOpen(false)}
-//                     aria-hidden="true"
-//                 />
-//             )}
-//         </div>
-//     );
-// }
-
-'use client';
-
-import { useState } from 'react';
-import { useParams } from 'next/navigation';
-import { ProjectNavigation } from '../components/ProjectNavigation';
+import { useState, useEffect } from 'react';
+import { useParams, usePathname } from 'next/navigation';
+import Link from 'next/link';
 import { ProjectSwitcher } from '../components/ProjectSwitcher';
-import { ThemeToggle } from '../../../components/shared/ThemeToggle';
-import { Button } from '@/components/ui/button';
-import { ChevronLeft, Menu, Bell, MoreVertical } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { useProject } from '@/hooks/useProjectHooks';
-import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
-
 import { ProjectHeader } from '../components/ProjectHeader';
+import { useProject } from '@/hooks/useProjectHooks';
+import { Button } from '@/components/ui/button';
+import { UserMenu } from '@/components/layout/UserMenu';
+import { ThemeToggle } from '@/components/shared/ThemeToggle';
+import { cn } from '@/lib/utils';
+import { 
+  ChevronLeft, Menu, Bell, MoreVertical,
+  Film, Users, FileText, Calendar, Settings,
+  MessageSquare, DollarSign, Palette
+} from 'lucide-react';
 
+const getProjectNavigation = (projectType: string) => {
+  const commonNav = [
+    { label: 'Overview', href: '', icon: Film },
+    { label: 'Team', href: '/team', icon: Users },
+    { label: 'Files', href: '/files', icon: FileText },
+    { label: 'Schedule', href: '/schedule', icon: Calendar },
+    { label: 'Chat', href: '/chat', icon: MessageSquare },
+    { label: 'Settings', href: '/settings', icon: Settings },
+  ];
+
+  const typeSpecificNav = {
+    'film': [
+      { label: 'Script', href: '/script', icon: FileText },
+      { label: 'Cast', href: '/cast', icon: Users },
+      { label: 'Budget', href: '/budget', icon: DollarSign },
+      { label: 'Moodboard', href: '/moodboard', icon: Palette },
+    ],
+    'series': [
+      { label: 'Episodes', href: '/episodes', icon: FileText },
+      { label: 'Cast', href: '/cast', icon: Users },
+      { label: 'Budget', href: '/budget', icon: DollarSign },
+    ],
+  };
+
+  return [...commonNav, ...(typeSpecificNav[projectType] || [])];
+};
 
 interface ProjectLayoutProps {
   children: React.ReactNode;
@@ -225,6 +49,7 @@ interface ProjectLayoutProps {
 
 export default function ProjectLayout({ children }: ProjectLayoutProps) {
   const params = useParams();
+  const pathname = usePathname();
   const projectId = params.projectId as string;
   const { project } = useProject(projectId);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -232,12 +57,13 @@ export default function ProjectLayout({ children }: ProjectLayoutProps) {
 
   if (!project) return null;
 
+  const navigation = getProjectNavigation(project.type);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-14 items-center">
-          {/* Mobile menu button */}
           <Button
             variant="ghost"
             size="icon"
@@ -247,61 +73,38 @@ export default function ProjectLayout({ children }: ProjectLayoutProps) {
             <Menu className="h-5 w-5" />
           </Button>
 
-          {/* Project Switcher */}
-          <div className="mr-4">
-            <ProjectSwitcher 
-              currentProjectId={projectId}
-            />
+          <div className="flex-1 flex items-center gap-4">
+            <ProjectSwitcher currentProjectId={projectId} />
+            <nav className="hidden md:flex items-center gap-6">
+              {navigation.slice(0, 4).map((item) => (
+                <Link
+                  key={item.href}
+                  href={`/projects/${projectId}${item.href}`}
+                  className={cn(
+                    "flex items-center gap-2 text-sm font-medium transition-colors hover:text-primary",
+                    pathname === `/projects/${projectId}${item.href}` ? "text-primary" : "text-muted-foreground"
+                  )}
+                >
+                  <item.icon className="h-4 w-4" />
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
           </div>
 
-          {/* Project Status Badges */}
-          <div className="hidden md:flex items-center gap-2">
-            <Badge variant="outline">{project.phase}</Badge>
-            <Badge 
-              variant={project.status === 'active' ? 'default' : 'secondary'}
-            >
-              {project.status}
-            </Badge>
-          </div>
-
-          {/* Right side items */}
-          <div className="ml-auto flex items-center gap-2">
-            <Button variant="ghost" size="icon">
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" className="relative">
               <Bell className="h-5 w-5" />
             </Button>
+            <Button variant="ghost" size="icon" className="relative">
+              <MessageSquare className="h-5 w-5" />
+            </Button>
             <ThemeToggle />
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <MoreVertical className="h-5 w-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuItem onClick={() => window.location.href = '/projects'}>
-                  All Projects
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => window.location.href = `/projects/${projectId}/settings`}>
-                  Project Settings
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  Help Center
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  Documentation
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  Sign out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <UserMenu />
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
       <div className="flex min-h-[calc(100vh-3.5rem)]">
         {/* Sidebar */}
         <aside className={cn(
@@ -309,7 +112,6 @@ export default function ProjectLayout({ children }: ProjectLayoutProps) {
           sidebarCollapsed && "w-16",
           mobileNavOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         )}>
-          {/* Collapse button */}
           <Button
             variant="ghost"
             size="icon"
@@ -322,23 +124,33 @@ export default function ProjectLayout({ children }: ProjectLayoutProps) {
             )} />
           </Button>
 
-          {/* Navigation */}
-          <ProjectNavigation
-            projectId={projectId}
-            collapsed={sidebarCollapsed}
-          />
+          <nav className="space-y-1 p-4">
+            {navigation.map((item) => (
+              <Link
+                key={item.href}
+                href={`/projects/${projectId}${item.href}`}
+                className={cn(
+                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+                  pathname === `/projects/${projectId}${item.href}`
+                    ? "bg-secondary text-secondary-foreground"
+                    : "text-muted-foreground hover:bg-secondary/50"
+                )}
+              >
+                <item.icon className="h-4 w-4" />
+                {!sidebarCollapsed && <span>{item.label}</span>}
+              </Link>
+            ))}
+          </nav>
         </aside>
 
-        {/* Main Content Area */}
-        <main className="flex-1 overflow-x-hidden ">
+        <main className="flex-1 overflow-x-hidden">
           <div className="p-4 md:p-6 lg:p-8">
             <ProjectHeader project={project} />
             {children}
           </div>
-      </main>
+        </main>
       </div>
 
-      {/* Mobile Navigation Overlay */}
       {mobileNavOpen && (
         <div 
           className="fixed inset-0 z-20 bg-black/80 md:hidden"
@@ -348,6 +160,160 @@ export default function ProjectLayout({ children }: ProjectLayoutProps) {
     </div>
   );
 }
+
+// 'use client';
+
+// import { useState } from 'react';
+// import { useParams } from 'next/navigation';
+// import { ProjectNavigation } from '../components/ProjectNavigation';
+// import { ProjectSwitcher } from '../components/ProjectSwitcher';
+// import { ThemeToggle } from '../../../components/shared/ThemeToggle';
+// import { Button } from '@/components/ui/button';
+// import { ChevronLeft, Menu, Bell, MoreVertical } from 'lucide-react';
+// import {
+//   DropdownMenu,
+//   DropdownMenuContent,
+//   DropdownMenuItem,
+//   DropdownMenuLabel,
+//   DropdownMenuSeparator,
+//   DropdownMenuTrigger,
+// } from '@/components/ui/dropdown-menu';
+// import { useProject } from '@/hooks/useProjectHooks';
+// import { Badge } from '@/components/ui/badge';
+// import { cn } from '@/lib/utils';
+
+// import { ProjectHeader } from '../components/ProjectHeader';
+
+
+// interface ProjectLayoutProps {
+//   children: React.ReactNode;
+// }
+
+// export default function ProjectLayout({ children }: ProjectLayoutProps) {
+//   const params = useParams();
+//   const projectId = params.projectId as string;
+//   const { project } = useProject(projectId);
+//   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+//   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+//   if (!project) return null;
+
+//   return (
+//     <div className="min-h-screen bg-background">
+//       {/* Header */}
+//       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+//         <div className="container flex h-14 items-center">
+//           {/* Mobile menu button */}
+//           <Button
+//             variant="ghost"
+//             size="icon"
+//             className="md:hidden mr-2"
+//             onClick={() => setMobileNavOpen(!mobileNavOpen)}
+//           >
+//             <Menu className="h-5 w-5" />
+//           </Button>
+
+//           {/* Project Switcher */}
+//           <div className="mr-4">
+//             <ProjectSwitcher 
+//               currentProjectId={projectId}
+//             />
+//           </div>
+
+//           {/* Project Status Badges */}
+//           <div className="hidden md:flex items-center gap-2">
+//             <Badge variant="outline">{project.phase}</Badge>
+//             <Badge 
+//               variant={project.status === 'active' ? 'default' : 'secondary'}
+//             >
+//               {project.status}
+//             </Badge>
+//           </div>
+
+//           {/* Right side items */}
+//           <div className="ml-auto flex items-center gap-2">
+//             <Button variant="ghost" size="icon">
+//               <Bell className="h-5 w-5" />
+//             </Button>
+//             <ThemeToggle />
+//             <DropdownMenu>
+//               <DropdownMenuTrigger asChild>
+//                 <Button variant="ghost" size="icon">
+//                   <MoreVertical className="h-5 w-5" />
+//                 </Button>
+//               </DropdownMenuTrigger>
+//               <DropdownMenuContent align="end">
+//                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
+//                 <DropdownMenuItem onClick={() => window.location.href = '/projects'}>
+//                   All Projects
+//                 </DropdownMenuItem>
+//                 <DropdownMenuItem onClick={() => window.location.href = `/projects/${projectId}/settings`}>
+//                   Project Settings
+//                 </DropdownMenuItem>
+//                 <DropdownMenuSeparator />
+//                 <DropdownMenuItem>
+//                   Help Center
+//                 </DropdownMenuItem>
+//                 <DropdownMenuItem>
+//                   Documentation
+//                 </DropdownMenuItem>
+//                 <DropdownMenuSeparator />
+//                 <DropdownMenuItem>
+//                   Sign out
+//                 </DropdownMenuItem>
+//               </DropdownMenuContent>
+//             </DropdownMenu>
+//           </div>
+//         </div>
+//       </header>
+
+//       {/* Main Content */}
+//       <div className="flex min-h-[calc(100vh-3.5rem)]">
+//         {/* Sidebar */}
+//         <aside className={cn(
+//           "fixed left-0 top-14 z-30 h-[calc(100vh-3.5rem)] w-64 border-r bg-background transition-all duration-300 md:sticky",
+//           sidebarCollapsed && "w-16",
+//           mobileNavOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+//         )}>
+//           {/* Collapse button */}
+//           <Button
+//             variant="ghost"
+//             size="icon"
+//             className="absolute right-2 top-2 hidden md:flex"
+//             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+//           >
+//             <ChevronLeft className={cn(
+//               "h-4 w-4 transition-transform",
+//               sidebarCollapsed && "rotate-180"
+//             )} />
+//           </Button>
+
+//           {/* Navigation */}
+//           <ProjectNavigation
+//             projectId={projectId}
+//             collapsed={sidebarCollapsed}
+//           />
+//         </aside>
+
+//         {/* Main Content Area */}
+//         <main className="flex-1 overflow-x-hidden ">
+//           <div className="p-4 md:p-6 lg:p-8">
+//             <ProjectHeader project={project} />
+//             {children}
+//           </div>
+//       </main>
+//       </div>
+
+//       {/* Mobile Navigation Overlay */}
+//       {mobileNavOpen && (
+//         <div 
+//           className="fixed inset-0 z-20 bg-black/80 md:hidden"
+//           onClick={() => setMobileNavOpen(false)}
+//         />
+//       )}
+//     </div>
+//   );
+// }
 
 // // app/projects/[projectId]/layout.tsx
 // 'use client';

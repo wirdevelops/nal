@@ -26,7 +26,7 @@ interface OrderState {
 
 interface OrderActions {
   // Order Management
-  createOrder: (items: OrderItem[], paymentDetails: PaymentMethodDetails) => void;
+  createOrder: (items: OrderItem[], paymentDetails: PaymentMethodDetails) => Order;
   setOrders: (orders: Order[]) => void;
   updateOrder: (id: string, updates: Partial<Order>) => void;
   removeOrder: (id: string) => void;
@@ -92,22 +92,32 @@ export const useOrderStore = create<OrderState & OrderActions>()(
         dateRange: null
       },
 
-      createOrder: (items, paymentDetails) => {
-        const newOrder: Order = {
-          id: crypto.randomUUID(),
-          userId: 'current-user',
-          items,
-          appliedCoupons: [],
-          currency: 'USD',
-          priceLocked: true,
-          paymentMethodDetails: paymentDetails
-        };
-        
-        set(state => ({
-          orders: [...state.orders, newOrder],
-          currentOrder: newOrder
-        }));
-      },
+      // In the store implementation:
+createOrder: (items, paymentDetails) => {
+  const newOrder: Order = {
+    id: crypto.randomUUID(),
+    userId: 'current-user',
+    date: new Date().toISOString(),
+    total: 0, // Will be calculated from items
+    items,
+    appliedCoupons: [],
+    currency: 'USD',
+    priceLocked: true,
+    paymentMethodDetails: paymentDetails
+  };
+
+  // Calculate actual total
+  newOrder.total = items.reduce((sum, item) => 
+    sum + (item.priceAtTime * item.quantity), 0
+  );
+
+  set(state => ({
+    orders: [...state.orders, newOrder],
+    currentOrder: newOrder
+  }));
+  
+  return newOrder; // Return the created order
+},
 
       setOrders: (orders) => set({ orders }),
       

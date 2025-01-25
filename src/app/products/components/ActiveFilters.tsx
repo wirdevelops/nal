@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import type { FilterState } from '@/stores/useProductStore';
+import  { FilterState } from '@/types/store';
 
 interface ActiveFiltersProps {
   filters: FilterState;

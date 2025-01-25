@@ -4,11 +4,7 @@ import { Coupon, UUID_PATTERN, ShippingOption } from './common';
 
 
 export const PaymentMethodDetails = Type.Object({
-  gateway: Type.Union([
-    Type.Literal('stripe'),
-    Type.Literal('paypal'),
-    Type.Literal('square')
-  ]),
+  gateway: Type.String(),
   transactionId: Type.String(),
   last4: Type.Optional(Type.String({ pattern: '^\\d{4}$' })),
   brand: Type.Optional(Type.String()),
@@ -71,6 +67,8 @@ export type OrderItem = Static<typeof OrderItem>;
 export const Order = Type.Object({
   id: Type.RegExp(UUID_PATTERN),
   userId: Type.RegExp(UUID_PATTERN),
+  date: Type.String({ format: 'date-time' }),
+  total: Type.Number(),
   appliedCoupons: Type.Array(Coupon),
   currency: Type.String({ pattern: '^[A-Z]{3}$' }),
   priceLocked: Type.Boolean(),

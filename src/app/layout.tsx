@@ -3,7 +3,8 @@ import { GeistSans } from 'geist/font/sans'
 import { ThemeProvider } from "@/components/theme-provider"
 import { StoreProvider } from '@/components/providers/StoreProvider';
 import AppProvider from '@/components/providers/AppProvider';
-import { DynamicHeader } from '@/components/layout/DynamicHeader';
+// import { DynamicHeader } from '@/components/layout/DynamicHeader';
+import { HeaderWrapper } from '@/components/layout/HeaderWrapper'
 
 export const metadata = {
   title: 'Nalevel Empire',
@@ -31,7 +32,7 @@ export default function RootLayout({
               disableTransitionOnChange
             >
               <div className="relative min-h-screen">
-              <DynamicHeader />
+              <HeaderWrapper />
               <main className="container py-6">
                 {children}
               </main>
