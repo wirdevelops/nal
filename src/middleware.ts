@@ -13,6 +13,7 @@ const publicPaths = new Set([
   '/auth/reset-password',
   '/auth/verify'
 ]);
+
 const onboardingPaths = [
   '/onboarding/role-selection',
   '/onboarding/basic-info',

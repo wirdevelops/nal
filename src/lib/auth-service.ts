@@ -1,6 +1,6 @@
 // lib/auth-service.ts
 import { AuthCredentials, AuthCredentialsSchema } from '@/types/auth';
-import { User, OnboardingStage, UserRole } from '@/types/user';
+import { User, OnboardingStage, UserRole, ProfileRole } from '@/types/user';
 import { useUserStore } from '@/stores/useUserStore';
 
 const SESSION_EXPIRATION = 7 * 24 * 60 * 60 * 1000; // 7 days
@@ -72,18 +72,20 @@ export class AuthService {
     };
   }
 
-  static updateUserProfile<T extends UserRole>(
+  static updateUserProfile<T extends ProfileRole>(
     role: T,
     data: Partial<User['profiles'][T]>
   ) {
     const user = useUserStore.getState().user;
     if (!user) throw new Error('User not authenticated');
 
+    const currentProfile = user.profiles[role] || {} as User['profiles'][T];
+
     const updated = {
       ...user,
       profiles: {
         ...user.profiles,
-        [role]: { ...user.profiles[role], ...data }
+        [role]: { ...currentProfile, ...data }
       },
       metadata: {
         ...user.metadata,
@@ -262,4 +264,91 @@ function timingSafeEqual(a: string, b: string): boolean {
     result |= aBuf[i] ^ bBuf[i];
   }
   return result === 0;
+}
+
+// // types/user.ts updates
+// //export type ProfileRole = 'actor' | 'crew' | 'vendor' | 'producer';
+// //export type UserRole = ProfileRole | 'admin' | 'project-owner' | 'ngo';
+
+// export interface User {
+//   id: string;
+//   email: string;
+//   name: {
+//     first: string;
+//     last: string;
+//   };
+//   isVerified: boolean;
+//   roles: UserRole[];
+//   profiles: {
+//     [K in ProfileRole]?: K extends 'actor' ? ActorProfile :
+//     K extends 'crew' ? CrewProfile :
+//     K extends 'vendor' ? VendorProfile :
+//     K extends 'producer' ? ProducerProfile : never;
+//   };
+//   onboarding: {
+//     stage: OnboardingStage;
+//     completed: OnboardingStage[];
+//     data: Record<string, unknown>;
+//   };
+//   settings: {
+//     notifications: {
+//       email: boolean;
+//       projects: boolean;
+//       messages: boolean;
+//     };
+//     privacy: {
+//       profile: 'public' | 'private' | 'connections';
+//       contactInfo: boolean;
+//     };
+//   };
+//   status: 'active' | 'inactive' | 'pending';
+//   metadata: {
+//     createdAt: string;
+//     updatedAt: string;
+//     lastActive?: string;
+//   };
+// }
+
+interface ActorProfile {
+  skills: string[];
+  experience: Array<{
+    title: string;
+    role: string;
+    duration: string;
+    description?: string;
+  }>;
+  portfolio: string[];
+  availability?: string;
+  actingStyles: string[];
+  reels: string[];
+  unionStatus?: string;
+}
+
+interface CrewProfile {
+  department: string;
+  certifications: string[];
+  equipment: string[];
+  experience: Array<{
+    title: string;
+    role: string;
+    duration: string;
+    description?: string;
+  }>;
+  portfolio: string[];
+}
+
+interface VendorProfile {
+  businessName: string;
+  services: string[];
+  paymentMethods: string[];
+  inventory: Array<{
+    category: string;
+    items: string[];
+  }>;
+}
+
+interface ProducerProfile {
+  projects: string[];
+  collaborations: string[];
+  certifications: string[];
 }

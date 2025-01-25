@@ -1,6 +1,7 @@
 // types/user.ts
 import { Type, Static } from '@sinclair/typebox';
 import { UUID_PATTERN } from './store/common';
+export type ProfileRole = 'actor' | 'crew' | 'vendor' | 'producer';
 
 // Define schemas with 'Schema' suffix
 export const UserRoleSchema = Type.Union([
@@ -79,7 +80,8 @@ export const User = Type.Object({
   profiles: Type.Object({
     actor: Type.Optional(ActorProfile),
     crew: Type.Optional(CrewProfile),
-    vendor: Type.Optional(VendorProfile)
+    vendor: Type.Optional(VendorProfile),
+    producer: Type.Optional(Type.Object({})) // Add producer profile
   }),
   onboarding: Type.Object({
     stage: OnboardingStageSchema,
