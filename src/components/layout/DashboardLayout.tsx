@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { ThemeToggle } from '@/components/shared/ThemeToggle';
-import { Badge } from '@/components/ui/badge';
 import {
   Card,
   CardContent,
@@ -15,7 +13,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
@@ -27,16 +24,10 @@ import {
   Calendar,
   BarChart,
   Plus,
-  Settings,
   Menu,
   Search,
   MoreVertical,
-  Mic,
   MessageCircle,
-  Clock,
-  FileText,
-  DollarSign,
-  Briefcase,
   Video,
   ArrowUpRight,
   BellRing,

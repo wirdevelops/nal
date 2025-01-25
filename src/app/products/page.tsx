@@ -7,117 +7,121 @@ import {
   SheetContent,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { Plus, Loader2 } from 'lucide-react';
-import { ProductCreationForm } from './components/ProductCreationForm';
-import { useUser } from '@/hooks/useUser';
-import { useProductStore } from '@/stores/useProductStore';
+import { Input } from "@/components/ui/input";
+import { 
+  Filter, 
+  Search,
+  Grid, 
+  List,
+  Plus,
+} from 'lucide-react';
+// import { MarketplaceHeader } from './components/MarketplaceHeader';
+import ProductFilters from './components/ProductFilters';
 import ProductCard from './components/ProductCard';
-import EmptyProjects from './components/EmptyProjects';
-import ProductListingPage from './components/ProductListingPage';
+import ActiveFilters from './components/ActiveFilters';
+import { CategoryNav } from './components/CategoryNav';
+import { useProductStore } from '@/stores/useProductStore';
+import type { FilterState, ProductCategory, ProductCondition } from '@/types/store';
 
-export default function ProjectListingPage() {
-  const [open, setOpen] = useState(false);
-  const { user, userActions } = useUser();
-  const { isLoading, filteredProducts: products } = useProductStore();
+export default function MarketplacePage() {
+  const [view, setView] = useState('grid');
+  const [filters, setFilters] = useState<FilterState>({
+    type: [] as ('physical' | 'digital')[],
+    category: [] as ProductCategory[],
+    priceRange: [0, 5000] as [number, number],
+    condition: [] as ProductCondition[],
+    inStock: undefined,
+    sortBy: 'newest',
+    search: ''
+  });
 
-  // const canCreateProject = user && (
-  //   userActions.hasRole('project-owner') || 
-  //   userActions.hasRole('admin')
-  // );
-
-  const handleCreateClick = () => setOpen(true);
-
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
-  }
+  const { products, isLoading } = useProductStore();
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="flex justify-between items-center mb-6">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-bold">Projects</h1>
-          {user && <p className="text-muted-foreground">Welcome back, {user.name.first}</p>}
+    <div className="min-h-screen">
+      {/* <MarketplaceHeader /> */}
+      
+      {/* Categories Navigation */}
+      <div className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="container py-2">
+          <CategoryNav />
         </div>
-        {/* {canCreateProject && products.length > 0 && ( */}
-          <Sheet open={open} onOpenChange={setOpen}>
-            <SheetTrigger asChild>
-              <Button size="lg">
-                <Plus className="h-4 w-4 mr-2" />
-                New Project
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="right" className="w-[100vw] sm:w-[540px]">
-              <ProductCreationForm onClose={() => setOpen(false)} />
-            </SheetContent>
-          </Sheet>
-        {/* )} */}
       </div>
 
-      {products.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {products.map(product => (
+      <div className="container py-6 space-y-6">
+        {/* Search and Filters Bar */}
+        <div className="flex items-center gap-4 flex-wrap">
+          <div className="flex-1 relative min-w-[200px]">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+            <Input
+              className="pl-10"
+              placeholder="Search products..."
+              value={filters.search}
+              onChange={(e) => setFilters(prev => ({...prev, search: e.target.value}))}
+            />
+          </div>
+
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="outline">
+                <Filter className="w-4 h-4 mr-2" />
+                Filters
+              </Button>
+            </SheetTrigger>
+            <SheetContent>
+              <ProductFilters 
+                filters={filters}
+                onChange={setFilters}
+                isLoading={isLoading}
+              />
+            </SheetContent>
+          </Sheet>
+
+          <div className="flex items-center gap-4">
+            <div className="flex gap-2">
+              <Button
+                variant={view === 'grid' ? 'default' : 'outline'}
+                size="icon"
+                onClick={() => setView('grid')}
+              >
+                <Grid className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={view === 'list' ? 'default' : 'outline'}
+                size="icon"
+                onClick={() => setView('list')}
+              >
+                <List className="h-4 w-4" />
+              </Button>
+            </div>
+            <Button className="flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              New Product
+            </Button>
+          </div>
+        </div>
+
+        <ActiveFilters 
+          filters={filters} 
+          onChange={setFilters}
+          isLoading={isLoading}
+        />
+
+        {/* Product Grid */}
+        <div className={
+          view === 'grid' 
+            ? "grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6"
+            : "space-y-4"
+        }>
+          {products.map((product) => (
             <ProductCard 
-              key={product.id} 
+              key={product.id}
               product={product}
+              view={view === 'grid' ? 'grid' : 'list'}
             />
           ))}
         </div>
-      ) : (
-        <>
-          <EmptyProjects onCreateClick={handleCreateClick} canCreate={false} />
-          {/* {canCreateProject && open && ( */}
-            <Sheet open={open} onOpenChange={setOpen}>
-              <SheetContent side="right" className="w-[100vw] sm:w-[540px]">
-                <ProductCreationForm onClose={() => setOpen(false)} />
-              </SheetContent>
-            </Sheet>
-          {/* )} */}
-        </>
-      )}
+      </div>
     </div>
   );
 }
-// 'use client'
-
-// import { useState } from 'react'
-// import { Header } from "@/components/home/header"
-// import { BottomNav } from "@/components/home/bottom-nav"
-// import { ShopFilters } from "@/components/shop/shop-filters"
-// import { ProductList } from "@/components/shop/product-list"
-// import { FloatingCart } from "@/components/shop/floating-cart"
-
-// export default function ShopPage() {
-//   const [currentPage, setCurrentPage] = useState(1)
-//   const [sortOption, setSortOption] = useState('newest')
-//   const [categoryFilter, setCategoryFilter] = useState('all')
-
-//   return (
-//     <div className="min-h-screen bg-[#f8f5f2] pb-16">
-//       <Header />
-//       <main className="container px-4 py-6 md:px-6">
-//         <div className="flex items-center justify-between mb-6">
-//           <h1 className="text-3xl font-serif font-medium text-[#1a472a]">Shop</h1>
-//         </div>
-//         <ShopFilters
-//           sortOption={sortOption}
-//           onSortChange={setSortOption}
-//           categoryFilter={categoryFilter}
-//           onCategoryChange={setCategoryFilter}
-//         />
-//         <ProductList
-//           sortOption={sortOption}
-//           categoryFilter={categoryFilter}
-//           currentPage={currentPage}
-//           onPageChange={setCurrentPage}
-//         />
-//       </main>
-//       <FloatingCart />
-//       <BottomNav />
-//     </div>
-//   )
-// }
-

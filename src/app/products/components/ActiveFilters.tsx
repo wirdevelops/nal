@@ -1,7 +1,7 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import type { FilterState } from '@/types/store';
+import type { FilterState } from '@/stores/useProductStore';
 
 interface ActiveFiltersProps {
   filters: FilterState;
@@ -31,8 +31,8 @@ const hasActiveFilters = (filters: FilterState): boolean => {
   );
 };
 
-function ActiveFilters({ filters, onChange, isLoading = false }: ActiveFiltersProps) {
-  const handleRemoveFilter = useCallback((key: keyof FilterState, value?: any) => {
+export default function ActiveFilters({ filters, onChange, isLoading = false }: ActiveFiltersProps) {
+  const handleRemoveFilter = (key: keyof FilterState, value?: any) => {
     const newFilters = { ...filters };
     
     switch (key) {
@@ -56,22 +56,18 @@ function ActiveFilters({ filters, onChange, isLoading = false }: ActiveFiltersPr
     }
     
     onChange(newFilters);
-  }, [filters, onChange]);
+  };
 
-  const handleClearAll = useCallback(() => {
+  const handleClearAll = () => {
     onChange(DEFAULT_FILTERS);
-  }, [onChange]);
+  };
 
   if (!hasActiveFilters(filters)) {
     return null;
   }
 
   return (
-    <div 
-      className="flex flex-wrap gap-2" 
-      role="region" 
-      aria-label="Active filters"
-    >
+    <div className="flex flex-wrap gap-2">
       {filters.type.map(type => (
         <Badge 
           key={`type-${type}`}
@@ -108,24 +104,6 @@ function ActiveFilters({ filters, onChange, isLoading = false }: ActiveFiltersPr
         </Badge>
       ))}
       
-      {filters.condition.map(condition => (
-        <Badge
-          key={`condition-${condition}`}
-          variant="secondary"
-          className="flex items-center gap-1"
-        >
-          <span className="capitalize">{condition}</span>
-          <button
-            onClick={() => handleRemoveFilter('condition', condition)}
-            className="ml-1 hover:bg-muted rounded-full p-1"
-            aria-label={`Remove ${condition} condition filter`}
-            disabled={isLoading}
-          >
-            <span aria-hidden="true">×</span>
-          </button>
-        </Badge>
-      ))}
-
       {(filters.priceRange[0] !== DEFAULT_PRICE_RANGE[0] || 
         filters.priceRange[1] !== DEFAULT_PRICE_RANGE[1]) && (
         <Badge 
@@ -168,12 +146,9 @@ function ActiveFilters({ filters, onChange, isLoading = false }: ActiveFiltersPr
         size="sm"
         onClick={handleClearAll}
         disabled={isLoading}
-        aria-label="Clear all filters"
       >
         Clear all
       </Button>
     </div>
   );
 }
-
-export default ActiveFilters;

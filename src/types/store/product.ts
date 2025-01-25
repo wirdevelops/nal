@@ -103,9 +103,9 @@ export const DigitalProduct = Type.Composite([
 ]);
 
 export interface FilterState {
-  type: ('digital' | 'physical')[];
+  type: ('physical' | 'digital')[];
   category: ProductCategory[];
-  priceRange: [number, number];
+  priceRange: [number, number];  // Tuple type for min and max
   condition: ProductCondition[];
   inStock: boolean | undefined;
   sortBy: string;

@@ -5,16 +5,12 @@ import {
   Menu,
   X,
   MessageCircle,
-  PanelLeft,
-  PanelRight,
   Pencil,
   Video,
   Image as ImageIcon,
   PencilRuler,
   BookOpen,
-  Search,
   BellDot,
-  Plus,
   Pin,
   Palette,
   ClipboardList,
@@ -28,13 +24,6 @@ import {
   Inbox,
   ChevronDown
 } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';

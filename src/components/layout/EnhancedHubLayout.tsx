@@ -5,14 +5,6 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { ThemeToggle } from '@/components/shared/ThemeToggle';
 import { Badge } from '@/components/ui/badge';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
   Film,
   Newspaper,
   Users,
@@ -24,8 +16,6 @@ import {
   Bell,
   Plus,
   MessageCircle,
-  Settings,
-  Home,
   Briefcase,
   Mic,
   Pencil,
@@ -35,7 +25,6 @@ import {
   LayoutGrid,
   Palette,
   ChevronRight,
-  ChevronDown,
   ArrowRight
 } from 'lucide-react';
 import { cn } from '@/lib/utils';

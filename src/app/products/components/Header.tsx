@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart } from 'lucide-react';
-import  CartItemList from './CartItem';
+import  CartItemList from '../../../components/layout/CartItem';
 import  useCart  from '@/hooks/useCart';
 
 export const Header = () => {
