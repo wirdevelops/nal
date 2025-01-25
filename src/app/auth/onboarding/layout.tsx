@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { useUser } from "@/hooks/useUserere";
+import { useUserStore } from "@/stores/useUserStore";
 
 export default function OnboardingLayout({
   children
@@ -9,7 +9,7 @@ export default function OnboardingLayout({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { user } = useUser();
+  const { user } = useUserStore();
 
   useEffect(() => {
     if (!user) {

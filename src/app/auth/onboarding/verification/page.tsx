@@ -2,7 +2,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useUser } from "@/hooks/useUserere";
+import { useUserStore } from "@/stores/useUserStore";
 import { Card } from "@/components/ui/card";
 import { OnboardingProgress } from "@/components/auth/OnboardingProcess";
 import { VerificationForm } from '@/components/auth/VerificationForm';
@@ -11,19 +11,18 @@ import { Loader2 } from 'lucide-react';
 
 export default function VerificationPage() {
   const router = useRouter();
-  const { user, updateUser } = useUser();
+  const { user, updateProfile } = useUserStore();
 
   const handleVerificationComplete = async (data: any) => {
     try {
-      await updateUser({
-        ...user,
-        onboarding: {
-          stage: 'completed',
-          completed: [...user.onboarding.completed, 'verification'],
-          data: { ...user.onboarding.data, verification: data }
-        },
-        verificationStatus: 'pending'
-      });
+      const role = user.roles[0];
+      if (role === 'actor' || role === 'crew' || 
+          role === 'vendor' || role === 'producer') {
+        await updateProfile(role, {
+          verificationData: data,
+          status: 'pending'
+        });
+      }
       router.push('/auth/onboarding/completed');
     } catch (error) {
       console.error('Verification submission failed:', error);

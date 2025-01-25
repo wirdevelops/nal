@@ -17,6 +17,7 @@ import { Loader2 } from 'lucide-react';
 import { AuthService } from '@/lib/auth-service';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useUserStore } from '@/stores/useUserStore';
 
 const registerSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
@@ -53,26 +54,33 @@ export function RegisterForm() {
   });
 
   const onSubmit = async (values: RegisterFormValues) => {
+    console.log('Starting registration with:', { ...values, password: '[REDACTED]' });
     try {
       setIsLoading(true);
       const { confirmPassword, ...credentials } = values;
-
-      await AuthService.signUp(
+  
+      const user = await AuthService.signUp(
         { email: credentials.email, password: credentials.password },
         { first: credentials.firstName, last: credentials.lastName }
       );
-
-      // Send verification email
-    await AuthService.sendVerificationEmail(credentials.email);
-
+      
+      console.log('Registration successful:', { userId: user.id, email: user.email });
+      
+      // Automatically log in after registration
+      useUserStore.getState().setUser(user);
+      
       toast({
         title: "Account created successfully",
-        description: "Please verify your email to continue",
+        description: "Redirecting to dashboard...",
       });
-
-      // Redirect to verification page
-    router.push(`/auth/verify?email=${encodeURIComponent(credentials.email)}`);
+  
+      // Check localStorage for immediate validation
+      console.log('Stored user data:', localStorage.getItem(`user:${user.id}`));
+      console.log('Session cookie:', document.cookie);
+  
+      router.push(user.onboarding.stage === 'completed' ? '/dashboard' : '/onboarding');
     } catch (error) {
+      console.error('Registration failed:', error);
       toast({
         title: "Registration failed",
         description: error instanceof Error ? error.message : "Something went wrong",

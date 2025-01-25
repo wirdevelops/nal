@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser } from "@/hooks/useUserere";
+import { useUserStore } from "@/stores/useUserStore";
 import { RoleDetailsForm } from '@/components/auth/RoleDetailsForm';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,13 +11,16 @@ import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 export default function RoleDetailsPage() {
   const router = useRouter();
-  const { user, updateProfile } = useUser();
+  const { user, updateProfile } = useUserStore();
   const [currentRoleIndex, setCurrentRoleIndex] = useState(0);
 
   const handleSubmit = async (data: any) => {
     const currentRole = user?.roles[currentRoleIndex];
-    await updateProfile(currentRole, data);
-
+    if (currentRole === 'actor' || currentRole === 'crew' || 
+        currentRole === 'vendor' || currentRole === 'producer') {
+      await updateProfile(currentRole, data);
+    }
+  
     if (currentRoleIndex < (user?.roles.length ?? 0) - 1) {
       setCurrentRoleIndex(prev => prev + 1);
     } else {

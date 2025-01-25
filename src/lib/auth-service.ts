@@ -1,167 +1,116 @@
 // lib/auth-service.ts
-import { AuthCredentials, AuthCredentialsSchema } from '@/types/auth';
-import { User, OnboardingStage, UserRole, ProfileRole } from '@/types/user';
+import { AuthCredentials } from '@/types/auth';
+import { User, OnboardingStage, UserRole } from '@/types/user';
 import { useUserStore } from '@/stores/useUserStore';
 
 const SESSION_EXPIRATION = 7 * 24 * 60 * 60 * 1000; // 7 days
 const PBKDF2_ITERATIONS = 100000;
 
 export class AuthService {
-  // --- Authentication Methods --- //
-  static async signUp(credentials: AuthCredentials, name: User['name']) {
-    const { email, password } = AuthCredentialsSchema.parse(credentials);
-    
-    if (this.userExists(email)) {
-      throw new Error('User already exists');
+  private static async refreshToken(): Promise<void> {
+    const response = await fetch('/api/auth/refresh');
+    if (!response.ok) {
+      this.clearSession();
+      throw new Error('Session expired');
+    }
+  }
+  
+  static async handleApiError(error: unknown): Promise<never> {
+    if (error instanceof Response && error.status === 401) {
+      await this.refreshToken();
+    }
+    throw error;
+  }
+  
+    static async socialLogin(provider: 'google' | 'facebook'): Promise<User> {
+      try {
+        const popup = window.open(
+          `/api/auth/${provider}`,
+          `${provider}Login`,
+          'width=500,height=600'
+        );
+  
+        return new Promise((resolve, reject) => {
+          window.addEventListener('message', async (event) => {
+            if (event.origin !== window.location.origin) return;
+            
+            if (event.data?.type === 'social_auth_success') {
+              const { user } = event.data;
+              useUserStore.getState().setUser(user);
+              this.createSession(user.id);
+              popup?.close();
+              resolve(user);
+            }
+            
+            if (event.data?.type === 'social_auth_error') {
+              popup?.close();
+              reject(new Error(event.data.error));
+            }
+          });
+        });
+      } catch (error) {
+        throw new Error('Social login failed');
+      }
     }
 
-    const hashedPassword = await this.hashPassword(password);
-    const user = this.createNewUser(email, name);
+  // --- Authentication Methods --- //
+  static async signUp(credentials: AuthCredentials, name: User['name']): Promise<User> {
+    console.log('Creating new user...');
+    if (this.userExists(credentials.email)) {
+      throw new Error('User already exists');
+    }
+  
+    const hashedPassword = await this.hashPassword(credentials.password);
+    const user = this.createNewUser(credentials.email, name);
     
-    this.storeUserCredentials(email, hashedPassword, user.id);
-    useUserStore.getState().setUser(user);
+    // Add these lines to persist the user and create session
+    this.persistUser(user);
     this.createSession(user.id);
+    useUserStore.getState().setUser(user);
+    
+    console.log('User created:', user.id);
+    
+    this.storeUserCredentials(credentials.email, hashedPassword, user.id);
+    console.log('Stored credentials for:', credentials.email);
     
     return user;
   }
 
-  static async login(credentials: AuthCredentials) {
-    const { email, password } = AuthCredentialsSchema.parse(credentials);
+  static async login(credentials: AuthCredentials): Promise<User> {
+    console.log('AuthService.login called with:', { ...credentials, password: '[REDACTED]' });
+    const { email, password } = credentials;
+  
     const userCredential = this.getUserCredentials(email);
-    
+    console.log('Found user credentials:', { email: userCredential.email, userId: userCredential.userId });
+  
     const isValid = await this.verifyPassword(password, userCredential.password);
+    console.log('Password verification:', isValid);
+  
     if (!isValid) throw new Error('Invalid credentials');
-
+  
     const user = this.getUserData(userCredential.userId);
-    useUserStore.getState().setUser(user);
+    
+    // Add session creation and store update
     this.createSession(user.id);
+    useUserStore.getState().setUser(user);
     
     return user;
-  }
-
-  // --- User Management --- //
-  private static createNewUser(email: string, name: User['name']): User {
-    return {
-      id: crypto.randomUUID(),
-      email,
-      name,
-      isVerified: false,
-      roles: [],
-      profiles: {},
-      onboarding: {
-        stage: 'role-selection',
-        completed: [],
-        data: {}
-      },
-      settings: {
-        notifications: {
-          email: true,
-          projects: true,
-          messages: true
-        },
-        privacy: {
-          profile: 'public',
-          contactInfo: false
-        }
-      },
-      status: 'pending',
-      metadata: {
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }
-    };
-  }
-
-  static updateUserProfile<T extends ProfileRole>(
-    role: T,
-    data: Partial<User['profiles'][T]>
-  ) {
-    const user = useUserStore.getState().user;
-    if (!user) throw new Error('User not authenticated');
-
-    const currentProfile = user.profiles[role] || {} as User['profiles'][T];
-
-    const updated = {
-      ...user,
-      profiles: {
-        ...user.profiles,
-        [role]: { ...currentProfile, ...data }
-      },
-      metadata: {
-        ...user.metadata,
-        updatedAt: new Date().toISOString()
-      }
-    };
-
-    useUserStore.getState().setUser(updated);
-    this.persistUser(updated);
-  }
-
-  static addUserRole(role: UserRole) {
-    const user = useUserStore.getState().user;
-    if (!user) throw new Error('User not authenticated');
-    if (user.roles.includes(role)) return;
-
-    const updated = {
-      ...user,
-      roles: [...user.roles, role],
-      metadata: {
-        ...user.metadata,
-        updatedAt: new Date().toISOString()
-      }
-    };
-
-    useUserStore.getState().setUser(updated);
-    this.persistUser(updated);
-  }
-
-  static updateOnboardingProgress(stage: OnboardingStage, data?: Record<string, unknown>) {
-    const user = useUserStore.getState().user;
-    if (!user) throw new Error('User not authenticated');
-
-    const updated = {
-      ...user,
-      onboarding: {
-        stage,
-        completed: [...user.onboarding.completed, stage],
-        data: { ...user.onboarding.data, ...data }
-      },
-      metadata: {
-        ...user.metadata,
-        updatedAt: new Date().toISOString()
-      }
-    };
-
-    useUserStore.getState().setUser(updated);
-    this.persistUser(updated);
-  }
-
-  // --- Storage Integration --- //
-  private static persistUser(user: User) {
-    localStorage.setItem(`user:${user.id}`, JSON.stringify(user));
-    localStorage.setItem(`user-email:${user.email}`, user.id);
-  }
-
-  private static getUserData(userId: string): User {
-    const data = localStorage.getItem(`user:${userId}`);
-    if (!data) throw new Error('User not found');
-    return JSON.parse(data);
-  }
-
-  private static userExists(email: string): boolean {
-    return !!localStorage.getItem(`user-email:${email}`);
   }
 
   // --- Session Management --- //
-  static validateSession(): User | null {
+  private static createSession(userId: string): void {
+    const sessionToken = crypto.randomUUID();
+    const sessionData = {
+      userId,
+      expiresAt: Date.now() + SESSION_EXPIRATION
+    };
+
+    localStorage.setItem(`session:${sessionToken}`, JSON.stringify(sessionData));
+    document.cookie = `session=${sessionToken}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=${SESSION_EXPIRATION}`;
+  }
+
+  static validateSession(sessionToken: string): User | null {
     try {
-      const sessionToken = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('session='))
-        ?.split('=')[1];
-
-      if (!sessionToken) return null;
-
       const sessionData = localStorage.getItem(`session:${sessionToken}`);
       if (!sessionData) return null;
 
@@ -177,42 +126,13 @@ export class AuthService {
     }
   }
 
-  private static createSession(userId: string) {
-    const sessionToken = crypto.randomUUID();
-    const sessionData = {
-      userId,
-      expiresAt: Date.now() + SESSION_EXPIRATION
-    };
-
-    localStorage.setItem(`session:${sessionToken}`, JSON.stringify(sessionData));
-    document.cookie = `session=${sessionToken}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=${SESSION_EXPIRATION}`;
-  }
-
-  static clearSession() {
+  static clearSession(): void {
     document.cookie = 'session=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT';
     localStorage.removeItem('session');
     useUserStore.getState().logout();
   }
 
-  private static storeUserCredentials(email: string, passwordHash: string, userId: string) {
-    localStorage.setItem(`credentials:${email}`, JSON.stringify({
-      email,
-      password: passwordHash,
-      userId
-    }));
-  }
-  
-  private static getUserCredentials(email: string) {
-    const credentials = localStorage.getItem(`credentials:${email}`);
-    if (!credentials) throw new Error('User not found');
-    return JSON.parse(credentials) as {
-      email: string;
-      password: string;
-      userId: string;
-    };
-  }
-
-  // --- Security Methods --- //
+  // --- Password Handling --- //
   private static async hashPassword(password: string): Promise<string> {
     const encoder = new TextEncoder();
     const salt = crypto.getRandomValues(new Uint8Array(16));
@@ -245,6 +165,91 @@ export class AuthService {
     const hashed = await this.hashPassword(password);
     return timingSafeEqual(hashed, storedHash);
   }
+
+  // --- Storage Methods --- //
+  private static storeUserCredentials(email: string, passwordHash: string, userId: string): void {
+    localStorage.setItem(`credentials:${email}`, JSON.stringify({
+      email,
+      password: passwordHash,
+      userId
+    }));
+  }
+
+  static getUserCredentials(email: string) {
+    console.log('Checking credentials for email:', email);
+    const credentials = localStorage.getItem(`credentials:${email}`);
+    console.log('Found credentials:', credentials);
+    if (!credentials) throw new Error('User not found');
+    return JSON.parse(credentials);
+  }
+
+  private static createNewUser(email: string, name: User['name']): User {
+    return {
+      id: crypto.randomUUID(),
+      email,
+      name,
+      isVerified: false,
+      roles: [],
+      profiles: {},
+      onboarding: {
+        stage: 'role-selection',
+        completed: [],
+        data: {}
+      },
+      settings: {
+        notifications: {
+          email: true,
+          projects: true,
+          messages: true
+        },
+        privacy: {
+          profile: 'public',
+          contactInfo: false
+        }
+      },
+      status: 'pending',
+      metadata: {
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+    };
+  }
+
+  private static persistUser(user: User): void {
+    localStorage.setItem(`user:${user.id}`, JSON.stringify(user));
+    localStorage.setItem(`user-email:${user.email}`, user.id);
+  }
+
+  private static getUserData(userId: string): User {
+    const data = localStorage.getItem(`user:${userId}`);
+    if (!data) throw new Error('User not found');
+    return JSON.parse(data);
+  }
+
+  private static userExists(email: string): boolean {
+    return !!localStorage.getItem(`user-email:${email}`);
+  }
+
+  static debugStorage() {
+    return {
+      users: Object.entries(localStorage)
+        .filter(([key]) => key.startsWith('user:') || key.startsWith('user-email:')),
+      sessions: Object.entries(localStorage)
+        .filter(([key]) => key.startsWith('session:')),
+      credentials: Object.entries(localStorage)
+        .filter(([key]) => key.startsWith('credentials:'))
+    };
+  }
+  
+  static printDebugInfo() {
+    console.log('=== Auth Service Debug ===');
+    console.log('Users:', this.debugStorage().users);
+    console.log('Sessions:', this.debugStorage().sessions);
+    console.log('Credentials:', this.debugStorage().credentials);
+    console.log('Document Cookie:', document.cookie);
+    console.log('User Store State:', useUserStore.getState().user);
+    console.log('==========================');
+  }
 }
 
 // Utility functions
@@ -258,97 +263,10 @@ function timingSafeEqual(a: string, b: string): boolean {
   const aBuf = new TextEncoder().encode(a);
   const bBuf = new TextEncoder().encode(b);
   if (aBuf.length !== bBuf.length) return false;
-  
+
   let result = 0;
   for (let i = 0; i < aBuf.length; i++) {
     result |= aBuf[i] ^ bBuf[i];
   }
   return result === 0;
-}
-
-// // types/user.ts updates
-// //export type ProfileRole = 'actor' | 'crew' | 'vendor' | 'producer';
-// //export type UserRole = ProfileRole | 'admin' | 'project-owner' | 'ngo';
-
-// export interface User {
-//   id: string;
-//   email: string;
-//   name: {
-//     first: string;
-//     last: string;
-//   };
-//   isVerified: boolean;
-//   roles: UserRole[];
-//   profiles: {
-//     [K in ProfileRole]?: K extends 'actor' ? ActorProfile :
-//     K extends 'crew' ? CrewProfile :
-//     K extends 'vendor' ? VendorProfile :
-//     K extends 'producer' ? ProducerProfile : never;
-//   };
-//   onboarding: {
-//     stage: OnboardingStage;
-//     completed: OnboardingStage[];
-//     data: Record<string, unknown>;
-//   };
-//   settings: {
-//     notifications: {
-//       email: boolean;
-//       projects: boolean;
-//       messages: boolean;
-//     };
-//     privacy: {
-//       profile: 'public' | 'private' | 'connections';
-//       contactInfo: boolean;
-//     };
-//   };
-//   status: 'active' | 'inactive' | 'pending';
-//   metadata: {
-//     createdAt: string;
-//     updatedAt: string;
-//     lastActive?: string;
-//   };
-// }
-
-interface ActorProfile {
-  skills: string[];
-  experience: Array<{
-    title: string;
-    role: string;
-    duration: string;
-    description?: string;
-  }>;
-  portfolio: string[];
-  availability?: string;
-  actingStyles: string[];
-  reels: string[];
-  unionStatus?: string;
-}
-
-interface CrewProfile {
-  department: string;
-  certifications: string[];
-  equipment: string[];
-  experience: Array<{
-    title: string;
-    role: string;
-    duration: string;
-    description?: string;
-  }>;
-  portfolio: string[];
-}
-
-interface VendorProfile {
-  businessName: string;
-  services: string[];
-  paymentMethods: string[];
-  inventory: Array<{
-    category: string;
-    items: string[];
-  }>;
-}
-
-interface ProducerProfile {
-  projects: string[];
-  collaborations: string[];
-  certifications: string[];
 }

@@ -1,3 +1,4 @@
+// src/components/auth/login-form.tsx
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -11,17 +12,9 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2 } from 'lucide-react';
+import { Chrome as GoogleIcon, Facebook as FacebookIcon, Loader2 } from 'lucide-react';
 import { AuthService } from '@/lib/auth-service';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -34,150 +27,216 @@ const loginSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
-export function LoginForm() {
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
-  const router = useRouter();
+  export function LoginForm() {
+    const [isLoading, setIsLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const { toast } = useToast();
+    const router = useRouter();
+  
+    const form = useForm<LoginFormValues>({
+      resolver: zodResolver(loginSchema),
+      defaultValues: {
+        email: '',
+        password: '',
+        rememberMe: false
+      },
+    });
+  
+    const onSubmit = async (values: LoginFormValues) => {
+      console.log('Attempting login with:', { ...values, password: '[REDACTED]' });
+      try {
+        setIsLoading(true);
+        const { email, password, rememberMe } = values;
+        
+        const user = await AuthService.login({ email, password });
+        console.log('Login successful:', { userId: user.id, email: user.email });
+        
+        if (rememberMe) {
+          localStorage.setItem('rememberedEmail', email);
+          console.log('Email saved for remember me:', email);
+        }
+  
+        toast({
+          title: "Login successful",
+          description: `Welcome back, ${user.name.first}!`,
+        });
+  
+        const redirectPath = user.onboarding.stage === 'completed' ? '/dashboard' : '/onboarding';
+        console.log('Redirecting to:', redirectPath);
+        router.push(redirectPath);
+      } catch (error) {
+        console.error('Login failed:', error);
+        toast({
+          title: "Login failed",
+          description: error instanceof Error ? error.message : "Invalid credentials",
+          variant: "destructive",
+        });
+        if (error.message === 'User not found') {
+          toast({
+            title: "Account not found",
+            description: "Please register first",
+          });
+          router.push('/auth/register');
+          return;
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const form = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: '',
-      password: '',
-      rememberMe: false
-    },
-  });
+  return (
+    <div className="w-full max-w-md space-y-6">
+      <div className="text-center">
+        <h1 className="text-3xl font-bold">Welcome Back</h1>
+        <p className="text-muted-foreground mt-2">
+          Enter your credentials to access your account
+        </p>
+      </div>
 
-  const onSubmit = async (values: LoginFormValues) => {
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input 
+                    placeholder="john.doe@example.com" 
+                    type="email" 
+                    autoComplete="username"
+                    {...field} 
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Password</FormLabel>
+                <div className="relative">
+                  <FormControl>
+                    <Input
+                      placeholder="********"
+                      type={showPassword ? 'text' : 'password'}
+                      autoComplete="current-password"
+                      {...field}
+                    />
+                  </FormControl>
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-3 text-muted-foreground hover:text-primary"
+                  >
+                    {showPassword ? '👁️' : '👁️🗨️'}
+                  </button>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className="flex items-center justify-between">
+            <FormField
+              control={form.control}
+              name="rememberMe"
+              render={({ field }) => (
+                <FormItem className="flex items-center space-x-2">
+                  <FormControl>
+                    <input
+                      type="checkbox"
+                      checked={field.value}
+                      onChange={field.onChange}
+                      className="h-4 w-4 accent-primary rounded border-primary"
+                    />
+                  </FormControl>
+                  <FormLabel className="text-sm font-normal">Remember me</FormLabel>
+                </FormItem>
+              )}
+            />
+
+            <Link
+              href="/auth/forgot-password"
+              className="text-sm text-primary hover:underline"
+            >
+              Forgot password?
+            </Link>
+          </div>
+
+          <Button type="submit" className="w-full" disabled={isLoading}>
+  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+  Sign In
+</Button>
+        </form>
+      </Form>
+
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-background px-2 text-muted-foreground">
+            Or continue with
+          </span>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+  <Button 
+  variant="outline" 
+  type="button"
+  onClick={async () => {
     try {
-      setIsLoading(true);
-      const { email, password } = values;
-      
-      await AuthService.login({ email, password });
-      
-      toast({
-        title: "Login successful",
-        description: "Welcome back!",
-      });
-
-      // Check onboarding status and redirect accordingly
+      await AuthService.socialLogin('google');
       router.push('/dashboard');
     } catch (error) {
       toast({
         title: "Login failed",
-        description: error instanceof Error ? error.message : "Invalid credentials",
-        variant: "destructive",
+        description: error instanceof Error ? error.message : "Social login failed",
+        variant: "destructive"
       });
-    } finally {
-      setIsLoading(false);
     }
-  };
+  }}
+>
+  <GoogleIcon className="mr-2 h-4 w-4" />
+  Google
+</Button>
+  <Button 
+    variant="outline" 
+    type="button"
+    onClick={async () => {
+      try {
+        await AuthService.socialLogin('facebook');
+        router.push('/dashboard');
+      } catch (error) {
+        toast({
+          title: "Login failed",
+          description: error instanceof Error ? error.message : "Social login failed",
+          variant: "destructive"
+        });
+      }
+    }}
+  >
+    <FacebookIcon className="mr-2 h-4 w-4" />
+    Facebook
+  </Button>
+</div>
 
-  return (
-    <Card className="w-full max-w-md">
-      <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl text-center">Welcome back</CardTitle>
-        <CardDescription className="text-center">
-          Enter your credentials to sign in
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input placeholder="john.doe@example.com" type="email" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <Input placeholder="********" type="password" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="flex items-center justify-between">
-              <FormField
-                control={form.control}
-                name="rememberMe"
-                render={({ field }) => (
-                  <FormItem className="flex items-center space-x-2">
-                    <FormControl>
-                      <input
-                        type="checkbox"
-                        checked={field.value}
-                        onChange={field.onChange}
-                        className="accent-primary"
-                      />
-                    </FormControl>
-                    <FormLabel className="text-sm font-normal">Remember me</FormLabel>
-                  </FormItem>
-                )}
-              />
-
-              <Link
-                href="/auth/forgot-password"
-                className="text-sm text-primary hover:underline"
-              >
-                Forgot password?
-              </Link>
-            </div>
-
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Sign in
-            </Button>
-          </form>
-        </Form>
-      </CardContent>
-      <CardFooter className="flex flex-col space-y-4">
-        <div className="relative w-full">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">
-              Or continue with
-            </span>
-          </div>
-        </div>
-        
-        <div className="grid grid-cols-2 gap-4">
-          <Button variant="outline" type="button">
-            Google
-          </Button>
-          <Button variant="outline" type="button">
-            GitHub
-          </Button>
-        </div>
-
-        <div className="text-center text-sm">
-          Don't have an account?{" "}
-          <Link href="/auth/register" className="text-primary hover:underline">
-            Sign up
-          </Link>
-        </div>
-      </CardFooter>
-    </Card>
+      <p className="text-center text-sm text-muted-foreground">
+        Don't have an account?{" "}
+        <Link href="/auth/register" className="font-semibold text-primary hover:underline">
+          Create one now
+        </Link>
+      </p>
+    </div>
   );
 }
-
 
 // "use client";
 

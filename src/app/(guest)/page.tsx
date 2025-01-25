@@ -1,8 +1,26 @@
+'use client';
+
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Film, Users, Globe, Heart, Video, Briefcase } from "lucide-react";
 import Link from "next/link";
+import { useAuth } from "@/hooks/useAuth";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function GuestHome() {
+  const { isAuthenticated, user } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      if (!user?.onboarding.completed.includes('completed')) {
+        router.push(`/auth/onboarding/${user.onboarding.stage}`);
+      } else {
+        router.push('/dashboard');
+      }
+    }
+  }, [isAuthenticated, user, router]);
+
   const features = [
     {
       icon: <Film className="h-8 w-8" />,
@@ -62,7 +80,7 @@ export default function GuestHome() {
                 </Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
-                <Link href="/about">Learn More</Link>
+                <Link href="/auth/login">Sign In</Link>
               </Button>
             </div>
           </div>
@@ -104,22 +122,6 @@ export default function GuestHome() {
               </div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* Call to Action */}
-      <section className="py-20 px-6">
-        <div className="container mx-auto text-center max-w-2xl">
-          <h2 className="text-3xl font-bold mb-4">Ready to Start Your Journey?</h2>
-          <p className="text-xl text-muted-foreground mb-8">
-            Join Nalevel Empire today and be part of a growing community of filmmakers
-            and changemakers.
-          </p>
-          <Button size="lg" asChild>
-            <Link href="/auth/register">
-              Create Your Account <ArrowRight className="ml-2 h-5 w-5" />
-            </Link>
-          </Button>
         </div>
       </section>
 
@@ -167,6 +169,22 @@ export default function GuestHome() {
               />
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="py-20 px-6">
+        <div className="container mx-auto text-center max-w-2xl">
+          <h2 className="text-3xl font-bold mb-4">Ready to Start Your Journey?</h2>
+          <p className="text-xl text-muted-foreground mb-8">
+            Join our platform today and be part of a growing community of filmmakers
+            and changemakers.
+          </p>
+          <Button size="lg" asChild>
+            <Link href="/auth/register">
+              Create Your Account <ArrowRight className="ml-2 h-5 w-5" />
+            </Link>
+          </Button>
         </div>
       </section>
     </div>

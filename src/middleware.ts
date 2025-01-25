@@ -23,7 +23,12 @@ const onboardingPaths = [
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const session = await getSession(request);
+  const session = await getSession();
+
+  // Allow image and API routes to pass through
+  if (pathname.startsWith('/api/') || pathname.match(/\.(jpg|svg|json)$/)) {
+    return NextResponse.next();
+  }
 
   // Allow public paths
   if (publicPaths.has(pathname)) {
@@ -56,6 +61,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|public/|api/).*)',
+    '/((?!_next/static|_next/image|favicon.ico|public/|assets/).*)',
   ],
 };

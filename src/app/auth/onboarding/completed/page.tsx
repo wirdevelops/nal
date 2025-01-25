@@ -3,7 +3,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser } from "@/hooks/useUserere";
+import { useUserStore } from "@/stores/useUserStore";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CheckCircle, ArrowRight } from 'lucide-react';
@@ -11,7 +11,7 @@ import { OnboardingProgress } from "@/components/auth/OnboardingProcess";
 
 export default function CompletedPage() {
   const router = useRouter();
-  const { user } = useUser();
+  const { user } = useUserStore();
 
   useEffect(() => {
     if (!user || user.onboarding.stage !== 'completed') {

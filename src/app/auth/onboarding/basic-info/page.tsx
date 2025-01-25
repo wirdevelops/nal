@@ -4,14 +4,18 @@
 
 import { BasicInfoForm } from "@/components/auth/BasicInfoForm";
 import { useRouter } from "next/navigation";
-import { useUser } from "@/hooks/useUserere";
+import { useUserStore } from "@/stores/useUserStore";
 
 export default function BasicInfoPage() {
   const router = useRouter();
-  const { user, updateProfile } = useUser();
+  const { user, updateProfile } = useUserStore();
+
 
   const handleSubmit = async (data) => {
-    await updateProfile(user.roles[0], data);
+    const role = user.roles[0];
+    if (role === 'actor' || role === 'crew' || role === 'vendor' || role === 'producer') {
+      await updateProfile(role, data);
+    }
     router.push('/auth/onboarding/verification');
   };
 

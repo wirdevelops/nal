@@ -1,6 +1,6 @@
 
 // hooks/useOnboarding.ts
-import { useUser } from '@/hooks/useUserere';
+import { useUser } from '@/hooks/useUser';
 import { useRouter } from 'next/navigation';
 
 export function useOnboarding() {

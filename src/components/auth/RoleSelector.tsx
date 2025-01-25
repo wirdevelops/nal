@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Film, Camera, Users, Building, ShoppingBag, Heart } from 'lucide-react';
 import { cn } from "@/lib/utils";
+import { isLastDayOfMonth } from 'date-fns';
 
 const ROLES: {
   id: UserRole;
@@ -52,12 +53,14 @@ interface RoleSelectorProps {
   selectedRoles: UserRole[];
   onChange: (roles: UserRole[]) => void;
   maxSelections?: number;
+  isLoading?: boolean;
 }
 
 export function RoleSelector({ 
   selectedRoles, 
   onChange, 
-  maxSelections = 2 
+  maxSelections = 2,
+  isLoading = false 
 }: RoleSelectorProps) {
   const handleRoleToggle = (role: UserRole) => {
     if (selectedRoles.includes(role)) {

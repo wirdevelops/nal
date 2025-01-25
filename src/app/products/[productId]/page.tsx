@@ -17,9 +17,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { useProducts } from '@/hooks/useProducts';
-import useCart from '@/hooks/useCart';
-import { useUser } from '@/hooks/useUserere';
+import { useProductStore } from '@/stores/useProductStore';
+import {useCartStore} from '@/stores/useCartStore';
+import { useUserStore } from '@/stores/useUserStore';
 import type { PhysicalProduct, DigitalProduct } from '@/types/store';
 import { isPhysicalProduct, getInventoryStatus } from '@/utils/product-utils';
 import Link from 'next/link';
@@ -35,9 +35,9 @@ export default function ProductDetailPage({ params }: ProductDetailPageProps) {
   const { productId } = params;
   const router = useRouter();
   
-  const { filteredProducts: products, removeProduct, isLoading, error, toggleFavorite, favoriteIds } = useProducts();
-  const { addItem } = useCart();
-  const { user, userActions } = useUser();
+  const { filteredProducts: products, removeProduct, isLoading, error, toggleFavorite, favoriteIds } = useProductStore();
+  const { addItem } = useCartStore();
+  const { user, userActions } = useUserStore();
   
   const product = products.find(p => p.id === productId);
   const isFavorite = favoriteIds.includes(productId);
