@@ -1,32 +1,37 @@
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+// hooks/useAuth.ts
+import { useEffect } from 'react';
+import { useUserStore } from '@/stores/useUserStore';
+import { AuthService } from '@/lib/auth-service';
 
-export function useAuth(requiredRole?: "ADMIN" | "CREATOR" | "USER") {
-  const { data: session, status } = useSession();
-  const router = useRouter();
+export const useAuth = () => {
+  // Access store directly
+  const user = useUserStore(state => state.user);
+  const setUser = useUserStore(state => state.setUser);
+  const logout = useUserStore(state => state.logout);
 
   useEffect(() => {
-    if (status === "loading") return;
-
-    if (!session) {
-      router.push("/login");
-    } else if (requiredRole && session.user.role !== requiredRole) {
-      if (requiredRole === "ADMIN" && session.user.role !== "ADMIN") {
-        router.push("/dashboard");
-      } else if (
-        requiredRole === "CREATOR" &&
-        !["ADMIN", "CREATOR"].includes(session.user.role)
-      ) {
-        router.push("/dashboard");
+    const checkSession = () => {
+      if (!AuthService.validateSession()) {
+        logout();
       }
-    }
-  }, [session, status, requiredRole, router]);
+    };
+
+    window.addEventListener('storage', checkSession);
+    return () => window.removeEventListener('storage', checkSession);
+  }, [logout]);
 
   return {
-    session,
-    isLoading: status === "loading",
-    isAuthenticated: !!session,
-    role: session?.user?.role,
+    isAuthenticated: !!user,
+    isVerified: user?.isVerified || false,
+    roles: user?.roles || [],
+    user,
+    refreshUser: () => {
+      const session = localStorage.getItem('session');
+      if (session) {
+        const { userId } = JSON.parse(atob(session));
+        const userData = localStorage.getItem(`userdata:${userId}`);
+        if (userData) setUser(JSON.parse(userData));
+      }
+    }
   };
-}
+};
