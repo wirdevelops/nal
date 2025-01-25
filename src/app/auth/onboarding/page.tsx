@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useRouter } from 'next/navigation';
-import { useUser } from "@/hooks/useUser";
+import { useUser } from "@/hooks/useUserere";
 import { RoleSelector } from "@/components/auth/RoleSelector";
 import { OnboardingProgress } from "@/components/auth/OnboardingProcess";
 

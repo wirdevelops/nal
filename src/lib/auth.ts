@@ -1,77 +1,35 @@
-import { PrismaAdapter } from "@auth/prisma-adapter";
-import { NextAuthOptions } from "next-auth";
-import { prisma } from "@/lib/prisma";
-import CredentialsProvider from "next-auth/providers/credentials";
-import GoogleProvider from "next-auth/providers/google";
-import bcrypt from "bcryptjs";
+// lib/auth.ts
+import { AuthService } from './auth-service';
+import { NextRequest } from 'next/server';
+import { cookies } from 'next/headers';
 
-export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma),
-  session: {
-    strategy: "jwt",
-  },
-  pages: {
-    signIn: "/login",
-  },
-  providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    }),
-    CredentialsProvider({
-      name: "credentials",
-      credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
-      },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error("Invalid credentials");
-        }
+export interface Session {
+  user?: {
+    id: string;
+    email: string;
+    onboarding: {
+      stage: string;
+      completed: string[];
+    };
+    // Add other user properties as needed
+  };
+}
 
-        const user = await prisma.user.findUnique({
-          where: {
-            email: credentials.email,
-          },
-        });
+export async function getSession(request?: NextRequest): Promise<Session | null> {
+  const sessionCookie = cookies().get('session')?.value;
+  if (!sessionCookie) return null;
 
-        if (!user || !user.password) {
-          throw new Error("Invalid credentials");
-        }
+  try {
+    const sessionData = JSON.parse(
+      Buffer.from(sessionCookie, 'base64').toString('utf-8')
+    );
+    return AuthService.validateSession(sessionData.userId);
+  } catch (error) {
+    console.error('Session parsing error:', error);
+    return null;
+  }
+}
 
-        const isValid = await bcrypt.compare(credentials.password, user.password);
-
-        if (!isValid) {
-          throw new Error("Invalid credentials");
-        }
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-        };
-      },
-    }),
-  ],
-  callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        return {
-          ...token,
-          role: user.role,
-        };
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      return {
-        ...session,
-        user: {
-          ...session.user,
-          role: token.role,
-        },
-      };
-    },
-  },
-};
+export async function validateSession(userId: string): Promise<Session | null> {
+  return AuthService.validateSession(userId);
+}

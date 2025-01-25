@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { MultiRoleProfile } from './MultiRoleProfile';
-import { useUser } from '@/hooks/useUser';
+import { useUser } from '@/hooks/useUserere';
 import { ArrowLeft, Edit2, Archive } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { UserRole } from '@/types/user';

@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useProducts } from '@/hooks/useProducts';
 import useCart from '@/hooks/useCart';
-import { useUser } from '@/hooks/useUser';
+import { useUser } from '@/hooks/useUserere';
 import type { PhysicalProduct, DigitalProduct } from '@/types/store';
 import { isPhysicalProduct, getInventoryStatus } from '@/utils/product-utils';
 import Link from 'next/link';

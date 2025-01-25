@@ -2,7 +2,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useUser } from "@/hooks/useUser";
+import { useUser } from "@/hooks/useUserere";
 import { Card } from "@/components/ui/card";
 import { OnboardingProgress } from "@/components/auth/OnboardingProcess";
 import { VerificationForm } from '@/components/auth/VerificationForm';

@@ -62,12 +62,16 @@ export function RegisterForm() {
         { first: credentials.firstName, last: credentials.lastName }
       );
 
+      // Send verification email
+    await AuthService.sendVerificationEmail(credentials.email);
+
       toast({
         title: "Account created successfully",
         description: "Please verify your email to continue",
       });
 
-      router.push('/auth/verify-email');
+      // Redirect to verification page
+    router.push(`/auth/verify?email=${encodeURIComponent(credentials.email)}`);
     } catch (error) {
       toast({
         title: "Registration failed",

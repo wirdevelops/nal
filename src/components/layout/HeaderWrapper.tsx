@@ -4,11 +4,15 @@
 import { usePathname } from 'next/navigation'
 import { DynamicHeader } from './DynamicHeader'
 
+import { HIDDEN_HEADER_PATHS } from '@/config/navigation'
+
 export function HeaderWrapper() {
   const pathname = usePathname()
-  const isProjectPage = /^\/projects\/[^/]+/.test(pathname)
+  
+  // Check if current path matches any hidden paths
+  const shouldHideHeader = HIDDEN_HEADER_PATHS.some(pattern => 
+    pattern.test(pathname)
+  )
 
-  if (isProjectPage) return null
-
-  return <DynamicHeader />
+  return shouldHideHeader ? null : <DynamicHeader />
 }

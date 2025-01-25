@@ -4,7 +4,7 @@
 
 import { BasicInfoForm } from "@/components/auth/BasicInfoForm";
 import { useRouter } from "next/navigation";
-import { useUser } from "@/hooks/useUser";
+import { useUser } from "@/hooks/useUserere";
 
 export default function BasicInfoPage() {
   const router = useRouter();

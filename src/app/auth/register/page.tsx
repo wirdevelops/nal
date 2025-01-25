@@ -16,7 +16,7 @@ export default function RegisterPage() {
             height={48}
             className="mx-auto"
           />
-          <h1 className="text-2xl font-semibold tracking-tight">Create an account</h1>
+          {/* <h1 className="text-2xl font-semibold tracking-tight">Create an account</h1> */}
           <p className="text-sm text-muted-foreground">
             Get started with your filmmaking journey
           </p>

@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { useUser } from "@/hooks/useUser";
+import { useUser } from "@/hooks/useUserere";
 
 export default function OnboardingLayout({
   children

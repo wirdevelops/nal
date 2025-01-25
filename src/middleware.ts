@@ -1,68 +1,53 @@
 // middleware.ts
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { getSession, validateSession } from '@/lib/auth';
+import { getSession } from '@/lib/auth';
 
-const publicPaths = ['/auth/login', '/auth/register', '/auth/forgot-password'];
+const publicPaths = new Set([
+  '/',
+  '/about',
+  '/contact',
+  '/auth/login',
+  '/auth/register',
+  '/auth/forgot-password',
+  '/auth/reset-password',
+  '/auth/verify'
+]);
 const onboardingPaths = [
-  '/auth/onboarding',
-  '/auth/onboarding/basic-info',
-  '/auth/onboarding/role-details',
-  '/auth/onboarding/verification',
-  '/auth/onboarding/completed'
+  '/onboarding/role-selection',
+  '/onboarding/basic-info',
+  '/onboarding/role-details',
+  '/onboarding/verification'
 ];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const session = await getSession(request);
-  
+
   // Allow public paths
-  if (publicPaths.includes(pathname)) {
-    if (session) {
-      // Redirect logged-in users away from auth pages
-      return NextResponse.redirect(new URL('/dashboard', request.url));
-    }
-    return NextResponse.next();
+  if (publicPaths.has(pathname)) {
+    return session?.user
+      ? NextResponse.redirect(new URL('/dashboard', request.url))
+      : NextResponse.next();
   }
 
-  // Check authentication
-  if (!session) {
-    return NextResponse.redirect(new URL('/auth/login', request.url));
+  // Redirect unauthenticated users
+  if (!session?.user) {
+    return NextResponse.redirect(new URL(`/auth/login?redirect=${encodeURIComponent(pathname)}`, request.url));
   }
 
-  // Check session validity
-  const isValidSession = await validateSession(session);
-  if (!isValidSession) {
-    return NextResponse.redirect(new URL('/auth/login', request.url));
-  }
-
-  // Get onboarding status from session
-  const { user } = session;
-  const onboardingComplete = user.onboarding.stage === 'completed';
-  const currentOnboardingStage = user.onboarding.stage;
-
-  // Handle onboarding paths
-  if (onboardingPaths.includes(pathname)) {
-    if (onboardingComplete) {
-      return NextResponse.redirect(new URL('/dashboard', request.url));
-    }
-
-    // Prevent skipping stages
-    const currentStageIndex = onboardingPaths.indexOf(`/auth/onboarding/${currentOnboardingStage}`);
-    const requestedStageIndex = onboardingPaths.indexOf(pathname);
+  // Handle onboarding flow
+  if (!session.user.onboarding.completed.includes('completed')) {
+    const currentStage = session.user.onboarding.stage;
+    const targetPath = `/onboarding/${currentStage}`;
     
-    if (requestedStageIndex > currentStageIndex) {
-      return NextResponse.redirect(new URL(onboardingPaths[currentStageIndex], request.url));
+    if (!pathname.startsWith('/onboarding')) {
+      return NextResponse.redirect(new URL(targetPath, request.url));
     }
-
-    return NextResponse.next();
-  }
-
-  // Redirect incomplete profiles to onboarding
-  if (!onboardingComplete && !pathname.startsWith('/auth/onboarding')) {
-    return NextResponse.redirect(
-      new URL(`/auth/onboarding/${currentOnboardingStage}`, request.url)
-    );
+    
+    if (pathname !== targetPath) {
+      return NextResponse.redirect(new URL(targetPath, request.url));
+    }
   }
 
   return NextResponse.next();
@@ -70,13 +55,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public folder
-     */
-    '/((?!_next/static|_next/image|favicon.ico|public/).*)',
+    '/((?!_next/static|_next/image|favicon.ico|public/|api/).*)',
   ],
-}
+};
