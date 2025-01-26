@@ -52,7 +52,7 @@ async function getMiddlewareSession(request: NextRequest) {
   if (!sessionId) return null;
 
   try {
-    const user = await AuthService.validateSession(sessionId, request);
+    const user = await AuthService.validateSession(sessionId);
     if (!user) return null;
 
     // Only include necessary session data
