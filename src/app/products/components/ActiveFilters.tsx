@@ -2,6 +2,11 @@ import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import  { FilterState } from '@/types/store';
+import { Skeleton } from "@/components/ui/skeleton";
+
+const FilterSkeleton = () => (
+  <Skeleton className="h-8 w-24 rounded-full" />
+);
 
 interface ActiveFiltersProps {
   filters: FilterState;
@@ -16,7 +21,7 @@ const DEFAULT_FILTERS: FilterState = {
   priceRange: DEFAULT_PRICE_RANGE,
   condition: [],
   inStock: undefined,
-  sortBy: 'newest',
+  sortBy: 'popularity',
   search: ''
 };
 
@@ -66,7 +71,20 @@ export default function ActiveFilters({ filters, onChange, isLoading = false }: 
     return null;
   }
 
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-wrap gap-2">
+        <FilterSkeleton />
+        <FilterSkeleton />
+        <FilterSkeleton />
+      </div>
+    );
+  }
+
+
   return (
+    <div aria-live="polite" aria-atomic="true">
     <div className="flex flex-wrap gap-2">
       {filters.type.map(type => (
         <Badge 
@@ -149,6 +167,7 @@ export default function ActiveFilters({ filters, onChange, isLoading = false }: 
       >
         Clear all
       </Button>
+    </div>
     </div>
   );
 }

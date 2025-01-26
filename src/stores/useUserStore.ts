@@ -1,11 +1,34 @@
 // stores/useUserStore.ts
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { User, UserRole, OnboardingStage } from '@/types/user';
+import { v4 as uuidv4 } from 'uuid';
+import { 
+  type User, 
+  type UserRole, 
+  type OnboardingStage,
+  type ActorProfile,
+  type CrewProfile,
+  type VendorProfile,
+  type ProducerProfile,
+  type ProjectOwnerProfile,
+  type NgoProfile,
+  type AdminProfile,
+  PROFILE_INITIALIZERS
+} from '@/types/user';
 
 type ProfileInitializers = {
   [K in UserRole]: object;
 };
+
+interface UserProfiles {
+  actor: ActorProfile;
+  crew: CrewProfile;
+  vendor: VendorProfile;
+  producer: ProducerProfile;
+  'project-owner': ProjectOwnerProfile;
+  ngo: NgoProfile;
+  admin: AdminProfile;
+}
 
 interface UserState {
   user: User | null;
@@ -18,11 +41,7 @@ interface UserActions {
   setUser: (user: User | null) => void;
   clearError: () => void;
   initializeUser: (email: string, name: User['name']) => void;
-  updateProfile: <T extends keyof User['profiles']>(
-    role: T,
-    data: Partial<User['profiles'][T]>
-  ) => void;
-
+  updateProfile: <T extends UserRole>(role: T, data: Partial<UserProfiles[T]>) => void;
   addRole: (role: UserRole) => void;
   updateOnboarding: (stage: OnboardingStage, data?: Record<string, unknown>) => void;
   updateSettings: (settings: Partial<User['settings']>) => void;
@@ -31,6 +50,8 @@ interface UserActions {
   verifyEmail: () => void;
   requestPasswordReset: (email: string) => Promise<void>;
   completeOnboarding: () => void;
+  switchRole: (role: UserRole) => void;
+  getActiveProfile: <T extends UserRole>() => UserProfiles[T] | null;
 }
 
 const DEFAULT_SETTINGS: User['settings'] = {
@@ -45,15 +66,15 @@ const DEFAULT_SETTINGS: User['settings'] = {
   }
 };
 
-const PROFILE_INITIALIZERS: ProfileInitializers = {
-  actor: { actingStyles: [], reels: [], unionStatus: '' },
-  producer: { projects: [], collaborations: [] },
-  crew: { department: '', certifications: [], equipment: [] },
-  'project-owner': { currentProjects: [], pastProjects: [] },
-  vendor: { businessName: '', services: [], paymentMethods: [], inventory: [] },
-  ngo: { organizationName: '', focusAreas: [], partners: [] },
-  admin: {}
-};
+// const PROFILE_INITIALIZERS: ProfileInitializers = {
+//   actor: { actingStyles: [], reels: [], unionStatus: '' },
+//   producer: { projects: [], collaborations: [] },
+//   crew: { department: '', certifications: [], equipment: [] },
+//   'project-owner': { currentProjects: [], pastProjects: [] },
+//   vendor: { businessName: '', services: [], paymentMethods: [], inventory: [] },
+//   ngo: { organizationName: '', focusAreas: [], partners: [] },
+//   admin: {}
+// };
 
 export const useUserStore = create<UserState & UserActions>()(
   persist(
@@ -63,20 +84,22 @@ export const useUserStore = create<UserState & UserActions>()(
       error: null,
 
       setLoading: (loading) => set({ isLoading: loading }),
-      setUser: (user) => set({ user, isLoading: false, error: null }),
+      
+      setUser: (user) => set({ user }),
+      
       clearError: () => set({ error: null }),
-      setError: (error) => set({ error, isLoading: false }),
-      logout: () => {
-        set({ user: null, error: null, isLoading: false });
-        localStorage.removeItem('session');
-      },
-
-      initializeUser: (email, name) => {
+      
+      initializeUser: (email: string, name: User['name']) => {
+        if (get().user) {
+          console.warn('User already initialized');
+          return;
+        }
+        
         const newUser: User = {
-          id: crypto.randomUUID(),
+          id: uuidv4(),
           email,
+          isVerified: false,
           name,
-          avatar: undefined,
           roles: [],
           profiles: {},
           onboarding: {
@@ -88,181 +111,174 @@ export const useUserStore = create<UserState & UserActions>()(
           status: 'pending',
           metadata: {
             createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            lastActive: undefined
-          },
-          isVerified: false
+            updatedAt: new Date().toISOString()
+          }
         };
         
         set({ user: newUser });
-        localStorage.setItem(`userdata:${newUser.id}`, JSON.stringify(newUser));
       },
 
       updateProfile: (role, data) => {
-        const user = get().user;
-        if (!user) return;
+        set((state) => {
+          if (!state.user) return state;
+          return {
+            user: {
+              ...state.user,
+              profiles: {
+                ...state.user.profiles,
+                [role]: {
+                  ...(state.user.profiles[role] || PROFILE_INITIALIZERS[role]),
+                  ...data
+                }
+              }
+            }
+          };
+        });
+      },
 
-        const currentProfile = user.profiles[role] || PROFILE_INITIALIZERS[role];
-
-        const updatedProfile = { ...currentProfile, ...data };
-
-        const updatedUser = {
-          ...user,
-          profiles: {
-            ...user.profiles,
-            [role]: updatedProfile
-          },
-          metadata: {
-            ...user.metadata,
-            updatedAt: new Date().toISOString()
-          }
-        };
-
-        set({ user: updatedUser });
-        localStorage.setItem(`userdata:${user.id}`, JSON.stringify(updatedUser));
+      addRole: (role: UserRole) => {
+        set((state) => {
+          if (!state.user || state.user.roles.includes(role)) return state;
+          
+          const newRoles = [...state.user.roles, role];
+          return {
+            user: {
+              ...state.user,
+              roles: newRoles,
+              activeRole: state.user.activeRole || role, // Corrected this line
+              profiles: {
+                ...state.user.profiles,
+                [role]: PROFILE_INITIALIZERS[role]
+              }
+            }
+          };
+        });
       },
 
       updateOnboarding: (stage, data = {}) => {
-        const user = get().user;
-        if (!user) return;
-
-        const completed = user.onboarding.completed.includes(stage)
-          ? user.onboarding.completed
-          : [...user.onboarding.completed, stage];
-
-        const updatedUser = {
-          ...user,
-          onboarding: {
-            stage,
-            completed: completed as OnboardingStage[],
-            data: { ...user.onboarding.data, ...data }
-          },
-          metadata: {
-            ...user.metadata,
-            updatedAt: new Date().toISOString()
-          }
-        };
-
-        set({ user: updatedUser });
-        localStorage.setItem(`userdata:${user.id}`, JSON.stringify(updatedUser));
-      },
-
-      addRole: (role) => {
-        const user = get().user;
-        if (!user || user.roles.includes(role)) return;
-
-        const updatedUser = {
-          ...user,
-          roles: [...user.roles, role],
-          profiles: {
-            ...user.profiles,
-            [role]: user.profiles[role] || PROFILE_INITIALIZERS[role]
-          },
-          metadata: {
-            ...user.metadata,
-            updatedAt: new Date().toISOString()
-          }
-        };
-
-        set({ user: updatedUser });
-        localStorage.setItem(`userdata:${user.id}`, JSON.stringify(updatedUser));
+        set((state) => {
+          if (!state.user) return state;
+          return {
+            user: {
+              ...state.user,
+              onboarding: {
+                ...state.user.onboarding,
+                stage,
+                data: { ...state.user.onboarding.data, ...data },
+                completed: [...state.user.onboarding.completed, stage]
+              }
+            }
+          };
+        });
       },
 
       updateSettings: (settings) => {
-        const user = get().user;
-        if (!user) return;
-
-        const updatedUser = {
-          ...user,
-          settings: {
-            ...user.settings,
-            ...settings,
-            notifications: {
-              ...user.settings.notifications,
-              ...settings.notifications
-            },
-            privacy: {
-              ...user.settings.privacy,
-              ...settings.privacy
+        set((state) => {
+          if (!state.user) return state;
+          return {
+            user: {
+              ...state.user,
+              settings: { ...state.user.settings, ...settings }
             }
-          }
-        };
+          };
+        });
+      },
 
-        set({ user: updatedUser });
-        localStorage.setItem(`userdata:${user.id}`, JSON.stringify(updatedUser));
+      setError: (error) => set({ error }),
+      
+      logout: () => {
+        useUserStore.persist.clearStorage();
+        set({ user: null, error: null, isLoading: false });
       },
 
       verifyEmail: () => {
-        const user = get().user;
-        if (!user) return;
-
-        const updatedUser = {
-          ...user,
-          isVerified: true,
-          metadata: {
-            ...user.metadata,
-            updatedAt: new Date().toISOString()
-          }
-        };
-
-        set({ user: updatedUser });
-        localStorage.setItem(`userdata:${user.id}`, JSON.stringify(updatedUser));
+        set((state) => {
+          if (!state.user) return state;
+          return {
+            user: {
+              ...state.user,
+              isVerified: true,
+              metadata: {
+                ...state.user.metadata,
+                updatedAt: new Date().toISOString()
+              }
+            }
+          };
+        });
       },
 
       requestPasswordReset: async (email) => {
-        const userData = localStorage.getItem(`user:${email}`);
-        if (!userData) return;
-
-        const resetToken = crypto.randomUUID();
-        const expiresAt = Date.now() + 3600000; // 1 hour expiration
-        localStorage.setItem(`reset:${email}`, JSON.stringify({
-          token: resetToken,
-          expiresAt
-        }));
+        const resetToken = crypto.randomUUID?.() || uuidv4();
+        const expiresAt = Date.now() + 3600000; // 1 hour
+        
+        // In real implementation, store token securely and send email
+        console.log('Password reset token:', resetToken);
       },
 
       completeOnboarding: () => {
+        set((state) => {
+          if (!state.user) return state;
+          return {
+            user: {
+              ...state.user,
+              onboarding: {
+                ...state.user.onboarding,
+                stage: 'completed',
+                completed: [...state.user.onboarding.completed, 'completed']
+              },
+              status: 'active'
+            }
+          };
+        });
+      },
+
+      switchRole: (role: UserRole) => {
+        set((state) => {
+          if (!state.user || !state.user.roles.includes(role)) return state;
+          
+          return {
+            user: {
+              ...state.user,
+              activeRole: role
+            }
+          };
+        });
+      },
+
+      getActiveProfile: <T extends UserRole>(): UserProfiles[T] | null => {
         const user = get().user;
-        if (!user) return;
-      
-        const updatedUser: User = {
-          ...user,
-          onboarding: {
-            ...user.onboarding,
-            stage: 'completed',
-            completed: [...user.onboarding.completed, 'completed'] as OnboardingStage[]
-          },
-          status: 'active'
-        };
-      
-        set({ user: updatedUser });
-        localStorage.setItem(`userdata:${user.id}`, JSON.stringify(updatedUser));
-      }
+        if (!user?.activeRole) return null;
+        return (user.profiles[user.activeRole] as UserProfiles[T]) || null;
+      },
     }),
     {
       name: 'user-store',
-      partialize: (state) => ({ user: state.user })
+      partialize: (state) => ({ user: state.user }),
+      version: 1
     }
   )
 );
 
-// Corrected selectors
+// Selectors
 export const useUser = () => useUserStore((state) => state.user);
 export const useUserLoading = () => useUserStore((state) => state.isLoading);
+export const useUserError = () => useUserStore((state) => state.error);
 
-// Single action selector without shallow
+// Action hooks
 export const useUserActions = () => ({
-  setLoading: useUserStore(state => state.setLoading),
-  setUser: useUserStore(state => state.setUser),
-  clearError: useUserStore(state => state.clearError),
-  initializeUser: useUserStore(state => state.initializeUser),
-  updateProfile: useUserStore(state => state.updateProfile),
-  addRole: useUserStore(state => state.addRole),
-  updateOnboarding: useUserStore(state => state.updateOnboarding),
-  updateSettings: useUserStore(state => state.updateSettings),
-  setError: useUserStore(state => state.setError),
-  logout: useUserStore(state => state.logout),
-  verifyEmail: useUserStore(state => state.verifyEmail),
-  requestPasswordReset: useUserStore(state => state.requestPasswordReset),
-  completeOnboarding: useUserStore(state => state.completeOnboarding)
+  setLoading: useUserStore((state) => state.setLoading),
+  setUser: useUserStore((state) => state.setUser),
+  clearError: useUserStore((state) => state.clearError),
+  initializeUser: useUserStore((state) => state.initializeUser),
+  updateProfile: useUserStore((state) => state.updateProfile),
+  addRole: useUserStore((state) => state.addRole),
+  updateOnboarding: useUserStore((state) => state.updateOnboarding),
+  updateSettings: useUserStore((state) => state.updateSettings),
+  setError: useUserStore((state) => state.setError),
+  logout: useUserStore((state) => state.logout),
+  verifyEmail: useUserStore((state) => state.verifyEmail),
+  requestPasswordReset: useUserStore((state) => state.requestPasswordReset),
+  completeOnboarding: useUserStore((state) => state.completeOnboarding),
+  switchRole: useUserStore((state) => state.switchRole),
+  getActiveProfile: useUserStore((state) => state.getActiveProfile)
 });

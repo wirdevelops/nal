@@ -52,47 +52,37 @@ export function RegisterForm() {
       confirmPassword: ''
     },
   });
-
   const onSubmit = async (values: RegisterFormValues) => {
-    console.log('Starting registration with:', { ...values, password: '[REDACTED]' });
     try {
       setIsLoading(true);
-      const { confirmPassword, ...credentials } = values;
+      
+      // Clear previous session data
+      AuthService.clearSession();
   
       const user = await AuthService.signUp(
-        { email: credentials.email, password: credentials.password },
-        { first: credentials.firstName, last: credentials.lastName }
+        { email: values.email, password: values.password },
+        { first: values.firstName, last: values.lastName }
       );
-      
-      console.log('Registration successful:', { userId: user.id, email: user.email });
-      
-      // Automatically log in after registration
-      useUserStore.getState().setUser(user);
-      
-      toast({
-        title: "Account created successfully",
-        description: "Redirecting to dashboard...",
-      });
   
-      // Check localStorage for immediate validation
-      console.log('Stored user data:', localStorage.getItem(`user:${user.id}`));
-      console.log('Session cookie:', document.cookie);
+      // Direct session creation and redirect
+      AuthService.handleNewUser(user);
   
-      router.push(user.onboarding.stage === 'completed' ? '/dashboard' : '/onboarding');
     } catch (error) {
-      console.error('Registration failed:', error);
-      toast({
-        title: "Registration failed",
-        description: error instanceof Error ? error.message : "Something went wrong",
-        variant: "destructive",
-      });
+      if (error instanceof Error) {
+        if (error.message.includes('already exists')) {
+          // Redirect to login with pre-filled email
+          window.location.href = `/auth/login?email=${encodeURIComponent(values.email)}`;
+          return;
+        }
+      }
+      toast({ title: "Registration Error", description: error.message });
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 rounded-lg" >
       <div className="space-y-2 text-center">
         <h1 className="text-2xl font-semibold tracking-tight">Create an account</h1>
         <p className="text-sm text-muted-foreground">
@@ -110,7 +100,7 @@ export function RegisterForm() {
                 <FormItem>
                   <FormLabel>First Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="John" {...field} />
+                    <Input placeholder="Wirngo" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -123,7 +113,7 @@ export function RegisterForm() {
                 <FormItem>
                   <FormLabel>Last Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="Doe" {...field} />
+                    <Input placeholder="Elvis" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -138,7 +128,7 @@ export function RegisterForm() {
               <FormItem>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input placeholder="john.doe@example.com" type="email" {...field} />
+                  <Input placeholder="wirngoelvis@gmail.com" type="email" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

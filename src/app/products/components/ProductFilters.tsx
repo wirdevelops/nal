@@ -6,13 +6,20 @@ import { SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import type { ProductCategory, ProductCondition } from '@/types/store';
-import type { FilterState } from '@/stores/useProductStore';
+import type { FilterState } from '@/types/store';
 
 interface ProductFiltersProps {
   filters: FilterState;
   onChange: (filters: FilterState) => void;
   isLoading?: boolean;
 }
+
+const formatPrice = (value: number) => 
+  new Intl.NumberFormat('en-US', { 
+    style: 'currency', 
+    currency: 'USD', 
+    maximumFractionDigits: 0 
+  }).format(value);
 
 export default function ProductFilters({ filters, onChange, isLoading = false }: ProductFiltersProps) {
   const categories = [
@@ -98,23 +105,23 @@ export default function ProductFilters({ filters, onChange, isLoading = false }:
 
       {/* Price Range */}
       <section aria-labelledby="price-heading" className="space-y-4">
-        <h4 id="price-heading" className="font-medium">Price Range</h4>
-        <div className="space-y-4 px-2">
-          <Slider
-            min={0}
-            max={5000}
-            step={100}
-            value={[filters.priceRange[0], filters.priceRange[1]]}
-            onValueChange={handlePriceRangeChange}
-            disabled={isLoading}
-            aria-label="Price range"
-          />
-          <div className="flex justify-between text-sm">
-            <span>${filters.priceRange[0].toLocaleString()}</span>
-            <span>${filters.priceRange[1].toLocaleString()}</span>
-          </div>
-        </div>
-      </section>
+  <h4 id="price-heading" className="font-medium">Price Range</h4>
+  <div className="space-y-4 px-2">
+    <Slider
+      min={0}
+      max={5000}
+      step={100}
+      value={filters.priceRange}
+      onValueChange={handlePriceRangeChange}
+      disabled={isLoading}
+      aria-label="Price range"
+    />
+    <div className="flex justify-between text-sm">
+      <span>{formatPrice(filters.priceRange[0])}</span>
+      <span>{formatPrice(filters.priceRange[1])}</span>
+    </div>
+  </div>
+</section>
 
       {/* Condition */}
       {filters.type.includes('physical') && (

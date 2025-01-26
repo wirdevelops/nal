@@ -1,7 +1,7 @@
 // middleware.ts
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { getSession } from '@/lib/auth';
+import { AuthService } from '@/lib/auth-service';
 
 const publicPaths = new Set([
   '/',
@@ -15,52 +15,131 @@ const publicPaths = new Set([
 ]);
 
 const onboardingPaths = [
-  '/onboarding/role-selection',
-  '/onboarding/basic-info',
-  '/onboarding/role-details',
-  '/onboarding/verification'
+  '/auth/onboarding/role-selection',
+  '/auth/onboarding/basic-info',
+  '/auth/onboarding/role-details',
+  '/auth/onboarding/verification',
+  '/auth/onboarding/completed'
 ];
+
+const securityHeaders = {
+  'Content-Security-Policy': 
+    "default-src 'self'; " +
+    "script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; " +
+    "style-src 'self' 'unsafe-inline'; " +
+    "img-src 'self' data: blob: /api/placeholder/; " +
+    "font-src 'self' data:; " +
+    "frame-src 'none'; " +
+    "object-src 'none'; " +
+    "connect-src 'self'",
+  'Strict-Transport-Security': 'max-age=63072000; includeSubDomains; preload',
+  'X-Content-Type-Options': 'nosniff',
+  'X-Frame-Options': 'DENY',
+  'X-XSS-Protection': '1; mode=block',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+  'Permissions-Policy': 'geolocation=(), microphone=(), camera=()'
+};
+
+function applySecurityHeaders(response: NextResponse) {
+  Object.entries(securityHeaders).forEach(([key, value]) => {
+    response.headers.set(key, value);
+  });
+  return response;
+}
+
+async function getMiddlewareSession(request: NextRequest) {
+  const sessionId = request.cookies.get('session')?.value;
+  if (!sessionId) return null;
+
+  try {
+    const user = await AuthService.validateSession(sessionId, request);
+    if (!user) return null;
+
+    // Only include necessary session data
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        roles: user.roles,
+        isVerified: user.isVerified,
+        onboarding: {
+          stage: user.onboarding.stage,
+          completed: user.onboarding.completed
+        },
+        activeRole: user.activeRole
+      }
+    };
+  } catch (error) {
+    console.error('Session validation error:', error);
+    return null;
+  }
+}
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const session = await getSession();
+  const session = await getMiddlewareSession(request);
+  let response: NextResponse;
 
-  // Allow image and API routes to pass through
-  if (pathname.startsWith('/api/') || pathname.match(/\.(jpg|svg|json)$/)) {
-    return NextResponse.next();
-  }
-
-  // Allow public paths
+  // Public paths check
   if (publicPaths.has(pathname)) {
-    return session?.user
-      ? NextResponse.redirect(new URL('/dashboard', request.url))
-      : NextResponse.next();
+    if (session?.user) {
+      response = NextResponse.redirect(new URL('/dashboard', request.url));
+    } else {
+      response = NextResponse.next();
+    }
+    return applySecurityHeaders(response);
   }
 
-  // Redirect unauthenticated users
+  // Authentication check
   if (!session?.user) {
-    return NextResponse.redirect(new URL(`/auth/login?redirect=${encodeURIComponent(pathname)}`, request.url));
+    const loginUrl = new URL('/auth/login', request.url);
+    loginUrl.searchParams.set('redirect', encodeURIComponent(pathname));
+    response = NextResponse.redirect(loginUrl);
+    return applySecurityHeaders(response);
   }
 
-  // Handle onboarding flow
+  // Onboarding flow check
   if (!session.user.onboarding.completed.includes('completed')) {
     const currentStage = session.user.onboarding.stage;
-    const targetPath = `/onboarding/${currentStage}`;
-    
-    if (!pathname.startsWith('/onboarding')) {
-      return NextResponse.redirect(new URL(targetPath, request.url));
+    const targetPath = `/auth/onboarding/${currentStage}`;
+
+    if (!pathname.startsWith('/auth/onboarding')) {
+      response = NextResponse.redirect(new URL(targetPath, request.url));
+      return applySecurityHeaders(response);
     }
-    
-    if (pathname !== targetPath) {
-      return NextResponse.redirect(new URL(targetPath, request.url));
+
+    const currentPathStage = pathname.split('/').pop();
+    if (currentPathStage !== currentStage && !onboardingPaths.includes(pathname)) {
+      response = NextResponse.redirect(new URL(targetPath, request.url));
+      return applySecurityHeaders(response);
     }
   }
 
-  return NextResponse.next();
+  // Verify completion before dashboard access
+  if (pathname.startsWith('/dashboard') && !session.user.onboarding.completed.includes('completed')) {
+    response = NextResponse.redirect(new URL('/auth/onboarding/role-selection', request.url));
+    return applySecurityHeaders(response);
+  }
+
+  // Session refresh and continuation
+  response = NextResponse.next();
+  
+  // Set secure session cookie
+  response.cookies.set({
+    name: 'session',
+    value: request.cookies.get('session')?.value || '',
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 7 * 24 * 60 * 60
+  });
+
+  return applySecurityHeaders(response);
 }
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|public/|assets/).*)',
+    '/((?!_next/static|_next/image|favicon.ico|public/|api/).*)',
   ],
 };

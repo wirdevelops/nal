@@ -1,62 +1,70 @@
+// components/ProductCard.tsx
 import React from 'react';
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { ShoppingCart, Heart, HeartOff, Edit } from 'lucide-react';
-import Image from 'next/image';
-import { useUser } from '@/hooks/useUser';
-import { useProducts } from '@/hooks/useProducts';
-import  useCart  from '@/hooks/useCart';
+import { useUserStore } from '@/stores/useUserStore';
+import { useProductStore } from '@/stores/useProductStore';
+import useCart from '@/hooks/useCart';
 import { toast } from 'react-hot-toast';
-import type { PhysicalProduct, Product } from '@/types/store';
+import type { PhysicalProduct, Product } from '@/types/store'; 
+import ProductImage from './ProductImage'; 
 
 export function isPhysicalProduct(product: Product): product is PhysicalProduct {
   return product.type === 'physical';
 }
 
 export function getInventoryStatus(product: Product) {
-  if (!isPhysicalProduct(product)) {
+    if (!isPhysicalProduct(product)) {
+      return {
+        isOutOfStock: false,
+        showLowStockBadge: false,
+        stock: undefined,
+        backorder: undefined,
+        alerts: undefined
+      };
+    }
+  
+    const inventory = product.inventory;
+    const isOutOfStock = inventory?.stock <= 0 && !inventory?.backorder;
+    const showLowStockBadge = inventory?.alerts?.enabled && 
+      inventory.stock <= (inventory.alerts.threshold || 0);
+  
     return {
-      isOutOfStock: false,
-      showLowStockBadge: false,
-      stock: undefined,
-      backorder: undefined,
-      alerts: undefined
+      isOutOfStock,
+      showLowStockBadge,
+      stock: inventory?.stock,
+      backorder: inventory?.backorder,
+      alerts: inventory?.alerts
     };
   }
 
-  const inventory = product.inventory;
-  const isOutOfStock = inventory?.stock <= 0 && !inventory?.backorder;
-  const showLowStockBadge = inventory?.alerts?.enabled && 
-    inventory.stock <= (inventory.alerts.threshold || 0);
-
-  return {
-    isOutOfStock,
-    showLowStockBadge,
-    stock: inventory?.stock,
-    backorder: inventory?.backorder,
-    alerts: inventory?.alerts
-  };
-}
-
 interface ProductCardProps {
-  product: Product;
-  view?: 'grid' | 'list';
+    product: Product;
+    view?: 'grid' | 'list';
+    className?: string
 }
 
-export default function ProductCard({ product, view }: ProductCardProps) {
-  const { user, userActions } = useUser();
-  const { addItem } = useCart();
-  const { toggleFavorite, favoriteIds } = useProducts();
+const ProductCard: React.FC<ProductCardProps> = ({ product, view, className }) => {
+  const { user, UserActions } = useUserStore();
+    const { addItem } = useCart();
+    const { toggleFavorite, favoriteIds } = useProductStore();
   const isFavorite = favoriteIds.includes(product.id);
   const isProductOwner = user?.id === product.sellerId;
-  const isVendor = userActions.hasRole('vendor');
+  const isVendor = UserActions.hasRole('vendor');
   const canEdit = isProductOwner || isVendor;
-  
+
   const physicalProduct = product.type === 'physical' ? (product as PhysicalProduct) : null;
-  const inventory = physicalProduct?.inventory;
+    const inventory = physicalProduct?.inventory;
   const isOutOfStock = inventory ? 
     (inventory.stock <= 0 && !inventory.backorder) : false;
 
@@ -82,69 +90,61 @@ export default function ProductCard({ product, view }: ProductCardProps) {
       toast.error('Please sign in to save favorites');
       return;
     }
-    toggleFavorite(product.id);
+      toggleFavorite(product.id);
   };
 
- 
   return (
     <Link href={`/products/${product.id}`} className="block">
-      <Card className={cn(
-        "overflow-hidden transition-shadow hover:shadow-lg",
-        view === 'list' && "flex"
-      )}>
-        <div className={cn(
-          "relative aspect-square",
-          view === 'list' && "w-48"
-        )}>
-          <div className="w-full h-full">
-            <Image
-              src={product.images?.[0] || '/placeholder.png'}
-              alt={product.title}
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              priority={false}
-            />
-          </div>
+      <Card
+        className={cn(
+          'overflow-hidden transition-shadow hover:shadow-lg',
+          view === 'list' && 'flex',
+          className
+        )}
+      >
+        <ProductImage
+          src={product.images?.[0]}
+          alt={product.title}
+          view={view}
+        />
 
-          <div className="absolute top-2 right-2 flex gap-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="bg-background/80 hover:bg-background/90 backdrop-blur-sm"
-              onClick={handleFavorite}
-              aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
-            >
-              {isFavorite ? (
-                <Heart className="h-5 w-5 text-primary" fill="currentColor" />
-              ) : (
-                <HeartOff className="h-5 w-5" />
-              )}
-            </Button>
-
-            {canEdit && (
-              <Link 
-                href={`/products/${product.id}/edit`}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="bg-background/80 hover:bg-background/90 backdrop-blur-sm"
-                  aria-label="Edit product"
-                >
-                  <Edit className="h-5 w-5" />
-                </Button>
-              </Link>
+        <div className="absolute top-2 right-2 flex gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="bg-background/80 hover:bg-background/90 backdrop-blur-sm"
+            onClick={handleFavorite}
+            aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+          >
+            {isFavorite ? (
+              <Heart className="h-5 w-5 text-primary" fill="currentColor" />
+            ) : (
+              <HeartOff className="h-5 w-5" />
             )}
-          </div>
+          </Button>
 
-          {showLowStockBadge && (
+          {canEdit && (
+            <Link
+              href={`/products/${product.id}/edit`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <Button
+                variant="ghost"
+                size="icon"
+                className="bg-background/80 hover:bg-background/90 backdrop-blur-sm"
+                aria-label="Edit product"
+              >
+                <Edit className="h-5 w-5" />
+              </Button>
+            </Link>
+          )}
+        </div>
+
+        {showLowStockBadge && (
             <Badge variant="destructive" className="absolute bottom-2 left-2">
               Low Stock
             </Badge>
-          )}
-        </div>
+        )}
 
         <div className="flex-1 flex flex-col">
           <CardHeader className="pb-2">
@@ -156,11 +156,6 @@ export default function ProductCard({ product, view }: ProductCardProps) {
                 ${product.price.toLocaleString('en-US')}
               </p>
             </div>
-            {showLowStockBadge && (
-            <Badge variant="destructive" className="absolute bottom-2 left-2">
-              Low Stock
-            </Badge>
-          )}
           </CardHeader>
 
           <CardContent className="pb-2 flex-1">
@@ -169,9 +164,9 @@ export default function ProductCard({ product, view }: ProductCardProps) {
             </p>
             {product.tags?.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-2">
-                {product.tags.map(tag => (
-                  <Badge 
-                    key={tag} 
+                {product.tags.map((tag) => (
+                  <Badge
+                    key={tag}
                     variant="secondary"
                     className="text-xs font-normal"
                   >
@@ -183,8 +178,8 @@ export default function ProductCard({ product, view }: ProductCardProps) {
           </CardContent>
 
           <CardFooter>
-            <Button 
-              className="w-full" 
+            <Button
+              className="w-full"
               onClick={handleAddToCart}
               disabled={isOutOfStock}
             >
@@ -196,4 +191,6 @@ export default function ProductCard({ product, view }: ProductCardProps) {
       </Card>
     </Link>
   );
-}
+};
+
+export default ProductCard;

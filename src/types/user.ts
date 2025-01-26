@@ -1,9 +1,10 @@
-// types/user.ts
 import { Type, Static } from '@sinclair/typebox';
 import { UUID_PATTERN } from './store/common';
+
+// Define a simple type for common profile roles
 export type ProfileRole = 'actor' | 'crew' | 'vendor' | 'producer';
 
-// Define schemas with 'Schema' suffix
+// Define schemas with 'Schema' suffix for clarity
 export const UserRoleSchema = Type.Union([
   Type.Literal('actor'),
   Type.Literal('producer'),
@@ -27,6 +28,7 @@ export const OnboardingStageSchema = Type.Union([
 export type UserRole = Static<typeof UserRoleSchema>;
 export type OnboardingStage = Static<typeof OnboardingStageSchema>;
 
+// Base profile structure
 export const BaseProfile = Type.Object({
   skills: Type.Array(Type.String()),
   experience: Type.Array(Type.Object({
@@ -39,6 +41,7 @@ export const BaseProfile = Type.Object({
   availability: Type.Optional(Type.String({ format: 'date' }))
 });
 
+// Actor-specific profile
 export const ActorProfile = Type.Composite([
   BaseProfile,
   Type.Object({
@@ -48,6 +51,7 @@ export const ActorProfile = Type.Composite([
   })
 ]);
 
+// Crew-specific profile
 export const CrewProfile = Type.Composite([
   BaseProfile,
   Type.Object({
@@ -57,6 +61,7 @@ export const CrewProfile = Type.Composite([
   })
 ]);
 
+// Vendor-specific profile
 export const VendorProfile = Type.Object({
   businessName: Type.String(),
   services: Type.Array(Type.String()),
@@ -64,9 +69,142 @@ export const VendorProfile = Type.Object({
   inventory: Type.Array(Type.Object({
     category: Type.String(),
     items: Type.Array(Type.String())
-  }))
+  })),
+  experience: Type.Array(Type.String())
 });
 
+
+// Producer-specific profile
+export const ProducerProfile = Type.Composite([
+  BaseProfile,
+  Type.Object({
+    companyName: Type.String(),
+    projects: Type.Array(
+      Type.Object({
+        id: Type.String({ format: 'uuid' }),
+        title: Type.String(),
+        genre: Type.String(),
+        productionType: Type.Union([
+          Type.Literal('film'),
+          Type.Literal('tv'),
+          Type.Literal('commercial'),
+          Type.Literal('theater')
+        ]),
+        status: Type.Union([
+          Type.Literal('development'),
+          Type.Literal('pre-production'),
+          Type.Literal('production'),
+          Type.Literal('post-production'),
+          Type.Literal('released')
+        ]),
+        budgetRange: Type.Optional(Type.String()),
+        filmingLocations: Type.Array(Type.String())
+      })
+    ),
+    collaborations: Type.Array(
+      Type.Object({
+        collaboratorId: Type.String({ format: 'uuid' }),
+        role: Type.String(),
+        projectId: Type.String({ format: 'uuid' })
+      })
+    ),
+    unionAffiliations: Type.Array(Type.String()),
+    insuranceInformation: Type.Optional(Type.String())
+  })
+]);
+
+// Project-owner-specific profile
+export const ProjectOwnerProfile = Type.Composite([
+  BaseProfile,
+  Type.Object({
+    organization: Type.String(),
+    currentProjects: Type.Array(
+      Type.Object({
+        id: Type.String({ format: 'uuid' }),
+        title: Type.String(),
+        description: Type.String(),
+        startDate: Type.String({ format: 'date' }),
+        endDate: Type.Optional(Type.String({ format: 'date' })),
+        requiredResources: Type.Array(Type.String())
+      })
+    ),
+    pastProjects: Type.Array(
+      Type.Object({
+        id: Type.String({ format: 'uuid' }),
+        title: Type.String(),
+        outcome: Type.String(),
+        impactMetrics: Type.Record(Type.String(), Type.Number())
+      })
+    ),
+    fundingSources: Type.Array(Type.String())
+  })
+]);
+
+// NGO-specific profile
+export const NgoProfile = Type.Composite([
+  BaseProfile,
+  Type.Object({
+    organizationName: Type.String(),
+    registrationNumber: Type.String(),
+    focusAreas: Type.Array(
+      Type.Union([
+        Type.Literal('education'),
+        Type.Literal('environment'),
+        Type.Literal('healthcare'),
+        Type.Literal('human-rights'),
+        Type.Literal('community-development')
+      ])
+    ),
+    partners: Type.Array(
+      Type.Object({
+        name: Type.String(),
+        type: Type.Union([
+          Type.Literal('corporate'),
+          Type.Literal('government'),
+          Type.Literal('non-profit')
+        ]),
+        partnershipLevel: Type.Union([
+          Type.Literal('strategic'),
+          Type.Literal('financial'),
+          Type.Literal('operational')
+        ])
+      })
+    ),
+    impactMetrics: Type.Record(Type.String(), Type.Number()),
+    website: Type.Optional(Type.String({ format: 'uri' })),
+    annualBudget: Type.Optional(Type.Number())
+  })
+]);
+
+// Admin-specific profile
+export const AdminProfile = Type.Object({
+  accessLevel: Type.Union([
+    Type.Literal('super-admin'),
+    Type.Literal('content-admin'),
+    Type.Literal('user-admin'),
+    Type.Literal('financial-admin')
+  ]),
+  managedSections: Type.Array(
+    Type.Union([
+      Type.Literal('users'),
+      Type.Literal('content'),
+      Type.Literal('projects'),
+      Type.Literal('financial')
+    ])
+  ),
+  lastAudit: Type.Optional(Type.String({ format: 'date-time' })),
+  permissions: Type.Record(
+    Type.String(),
+    Type.Union([
+      Type.Literal('read'),
+      Type.Literal('write'),
+      Type.Literal('delete'),
+      Type.Literal('manage')
+    ])
+  )
+});
+
+// Top-level user schema
 export const User = Type.Object({
   id: Type.RegExp(UUID_PATTERN),
   email: Type.String({ format: 'email' }),
@@ -81,7 +219,10 @@ export const User = Type.Object({
     actor: Type.Optional(ActorProfile),
     crew: Type.Optional(CrewProfile),
     vendor: Type.Optional(VendorProfile),
-    producer: Type.Optional(Type.Object({})) // Add producer profile
+    producer: Type.Optional(ProducerProfile),
+    'project-owner': Type.Optional(ProjectOwnerProfile),
+    ngo: Type.Optional(NgoProfile),
+    admin: Type.Optional(AdminProfile)
   }),
   onboarding: Type.Object({
     stage: OnboardingStageSchema,
@@ -103,6 +244,7 @@ export const User = Type.Object({
       contactInfo: Type.Boolean()
     })
   }),
+  activeRole: Type.Optional(UserRoleSchema),
   status: Type.Union([
     Type.Literal('active'),
     Type.Literal('inactive'),
@@ -111,7 +253,8 @@ export const User = Type.Object({
   metadata: Type.Object({
     createdAt: Type.String({ format: 'date-time' }),
     updatedAt: Type.String({ format: 'date-time' }),
-    lastActive: Type.Optional(Type.String({ format: 'date-time' }))
+    lastActive: Type.Optional(Type.String({ format: 'date-time' })),
+    failedAttempts: Type.Optional(Type.Integer())
   })
 });
 
@@ -121,6 +264,10 @@ export type BaseProfile = Static<typeof BaseProfile>;
 export type ActorProfile = Static<typeof ActorProfile>;
 export type CrewProfile = Static<typeof CrewProfile>;
 export type VendorProfile = Static<typeof VendorProfile>;
+export type ProducerProfile = Static<typeof ProducerProfile>;
+export type ProjectOwnerProfile = Static<typeof ProjectOwnerProfile>;
+export type NgoProfile = Static<typeof NgoProfile>;
+export type AdminProfile = Static<typeof AdminProfile>;
 
 // Validation helpers using schema values
 export const validateUserRole = (role: unknown): role is UserRole => {
@@ -132,6 +279,82 @@ export const validateOnboardingStage = (stage: unknown): stage is OnboardingStag
   const validStages = OnboardingStageSchema.anyOf.map(s => s.const as OnboardingStage);
   return typeof stage === 'string' && validStages.includes(stage as OnboardingStage);
 };
+
+type ProfileInitializers = {
+  [K in UserRole]: K extends 'admin' ? AdminProfile : 
+    K extends 'project-owner' ? ProjectOwnerProfile :
+    K extends 'producer' ? ProducerProfile :
+    K extends 'ngo' ? NgoProfile :
+    K extends 'actor' ? ActorProfile :
+    K extends 'crew' ? CrewProfile :
+    K extends 'vendor' ? VendorProfile : never;
+};
+
+// Provides default values for profiles
+export const PROFILE_INITIALIZERS: ProfileInitializers = {
+  actor: {
+    actingStyles: [],
+    reels: [],
+    unionStatus: '',
+    portfolio: [],
+    skills: [],
+    experience: []
+  },
+  producer: {
+    companyName: '',
+    projects: [],
+    collaborations: [],
+    unionAffiliations: [],
+    insuranceInformation: '',
+    skills: [],
+    experience: [],
+    portfolio: []
+  },
+  'project-owner': {
+    organization: '',
+    currentProjects: [],
+    pastProjects: [],
+    fundingSources: [],
+    skills: [],
+    experience: [],
+    portfolio: [],
+    availability: undefined,
+  },
+   crew: {
+    department: '',
+    certifications: [],
+    equipment: [],
+    skills: [],
+    experience: [],
+    portfolio: [],
+    availability: undefined,
+   },
+  ngo: {
+    organizationName: '',
+    registrationNumber: '',
+    focusAreas: [],
+    partners: [],
+    impactMetrics: {},
+    website: '',
+    annualBudget: 0,
+    skills: [],
+    experience: [],
+    portfolio: []
+  },
+  vendor: {
+    businessName: '',
+    services: [],
+    paymentMethods: [],
+    inventory: [],
+    experience: []
+  },
+  admin: {
+    accessLevel: 'content-admin',
+    managedSections: [],
+    permissions: {}
+  },
+};
+
 
 // import { Type, Static } from '@sinclair/typebox';
 // import { UUID_PATTERN } from './common';
