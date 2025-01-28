@@ -23,7 +23,12 @@ const publicPaths = new Set([
   '/resources',
   '/terms',
   '/privacy',
-  '/faq'
+  '/faq',
+
+  '/projects',
+  '/ngo',
+  '/market',
+  '/products/*'
 ]);
 
 // Helper function to check if a path is public

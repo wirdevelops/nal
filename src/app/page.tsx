@@ -305,6 +305,35 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+      
+    {/* New Navigation Buttons Section */}
+    <section className="py-12 bg-background">
+        <div className="container">
+          <div className="flex justify-center gap-4">
+            <Button 
+              variant="outline" 
+              size="lg"
+              className="min-w-[120px] font-semibold hover:bg-primary hover:text-white transition-colors"
+            >
+              NGO
+            </Button>
+            <Button 
+              variant="outline" 
+              size="lg"
+              className="min-w-[120px] font-semibold hover:bg-primary hover:text-white transition-colors"
+            >
+              Market
+            </Button>
+            <Button 
+              variant="outline" 
+              size="lg"
+              className="min-w-[120px] font-semibold hover:bg-primary hover:text-white transition-colors"
+            >
+              Projects
+            </Button>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
