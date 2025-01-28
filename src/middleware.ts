@@ -11,8 +11,36 @@ const publicPaths = new Set([
   '/auth/register',
   '/auth/forgot-password',
   '/auth/reset-password',
-  '/auth/verify'
+  '/auth/verify',
+  
+  // Guest-accessible pages
+  '/features',
+  '/pricing',
+  '/contact',
+  
+  // Additional public routes
+  '/blog',
+  '/resources',
+  '/terms',
+  '/privacy',
+  '/faq'
 ]);
+
+// Helper function to check if a path is public
+function isPublicPath(path: string): boolean {
+  // Exact matches
+  if (publicPaths.has(path)) return true;
+  
+  // Check if path starts with any of these prefixes
+  const publicPrefixes = [
+    '/blog/',      // Individual blog posts
+    '/resources/', // Resource pages
+    '/api/',       // Public API routes
+  ];
+  
+  return publicPrefixes.some(prefix => path.startsWith(prefix));
+}
+
 
 const onboardingPaths = [
   '/auth/onboarding/role-selection',
@@ -27,7 +55,9 @@ const securityHeaders = {
     "default-src 'self'; " +
     "script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; " +
     "style-src 'self' 'unsafe-inline'; " +
-    "img-src 'self' data: blob: /api/placeholder/; " +
+    "img-src 'self' data: blob: https://images.unsplash.com; " +
+    "img-src *; " + // <--- * allows all image sources
+    // "img-src 'self' data: blob: /api/placeholder/; " +
     "font-src 'self' data:; " +
     "frame-src 'none'; " +
     "object-src 'none'; " +
@@ -80,17 +110,22 @@ export async function middleware(request: NextRequest) {
   const session = await getMiddlewareSession(request);
   let response: NextResponse;
 
-  // Public paths check
-  if (publicPaths.has(pathname)) {
+  // Public paths check - using the new helper function
+  if (isPublicPath(pathname)) {
     if (session?.user) {
-      response = NextResponse.redirect(new URL('/dashboard', request.url));
+      // If user is logged in and tries to access login/register pages, redirect to dashboard
+      if (['/auth/login', '/auth/register'].includes(pathname)) {
+        response = NextResponse.redirect(new URL('/dashboard', request.url));
+      } else {
+        response = NextResponse.next();
+      }
     } else {
       response = NextResponse.next();
     }
     return applySecurityHeaders(response);
   }
 
-  // Authentication check
+  // Authentication check for protected routes
   if (!session?.user) {
     const loginUrl = new URL('/auth/login', request.url);
     loginUrl.searchParams.set('redirect', encodeURIComponent(pathname));
