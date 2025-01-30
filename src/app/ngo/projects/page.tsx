@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation';
-import { useNGOProject } from '@/hooks/useNGOProject';
+import { useNGOProjectStore } from '@/stores/useNGOProjectStore';
 import { ProjectCard } from '../components/ProjectCard';
 import { ProjectFilters } from '../components/ProjectFilters';
 import { Button } from '@/components/ui/button';
@@ -13,7 +13,7 @@ import { ProjectCategory, ProjectStatus, Location } from '@/types/ngo/project';
 
 export default function ProjectsPage() {
   const router = useRouter();
-  const { projects, isLoading } = useNGOProject();
+  const { projects, isLoading } = useNGOProjectStore();
   const [filters, setFilters] = useState({
     search: '',
     status: 'all' as ProjectStatus | 'all',
