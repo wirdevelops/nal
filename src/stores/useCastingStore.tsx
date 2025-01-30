@@ -4,8 +4,6 @@
 import { create } from 'zustand';
 import { v4 as uuidv4 } from 'uuid';
 
-// Define Types for our Casting Store
-
 export type Member = {
   id: string;
   name: string;

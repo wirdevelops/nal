@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-
 // Define the layout keys
 type LayoutId = 'dashboard' | 'toolCentric' | 'communication' | 'hub' | 'workspace' | 'portal';
 

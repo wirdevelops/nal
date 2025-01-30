@@ -5,4 +5,4 @@ export * from './commercial';
 export * from './music-video';
 export * from './web-series';
 export * from './animation';
-export * from './projectTypes'; // New
+export * from './projectTypes';

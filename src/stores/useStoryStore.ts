@@ -50,10 +50,23 @@ export const useStoryStore = create<StoryState>()(
           beneficiary: {
             name: 'Mary Johnson',
             quote: 'This program changed my life and opened new opportunities for my family.',
-            location: 'Rural Cameroon'
           },
           createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
+          updatedAt: new Date().toISOString(),
+          metadata: undefined,
+          description: '',
+          image: '',
+          location: '',
+          stats: {
+            peopleHelped: 0,
+            volunteersInvolved: 0,
+            duration: ''
+          },
+          engagement: {
+            likes: 0,
+            comments: 0,
+            shares: 0
+          }
         }
       ],
       isLoading: false,

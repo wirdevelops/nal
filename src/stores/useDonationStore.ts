@@ -8,7 +8,8 @@ import type {
   PaymentStatus,
   Receipt,
   ImpactMetric,
-  DonationAllocation
+  DonationAllocation,
+  DonorInfo
 } from '@/types/ngo/donation';
 
 interface DonationState {
@@ -38,14 +39,6 @@ type DonationStats = {
   byFrequency: Record<DonationFrequency, number>;
 };
 
-const DEFAULT_DONATION: Partial<Donation> = {
-  status: 'pending',
-  currency: 'USD',
-  allocation: [],
-  impact: [],
-  receipt: undefined
-};
-
 export const useDonationStore = create<DonationState & DonationActions>()(
   persist(
     (set, get) => ({
@@ -53,23 +46,30 @@ export const useDonationStore = create<DonationState & DonationActions>()(
       isLoading: false,
       error: null,
 
-      initializeDonation: (donorInfo) => ({
-        id: uuidv4(),
-        donorId: uuidv4(),
-        amount: 0,
-        frequency: 'one_time',
-        status: 'pending',
-        donationDate: new Date().toISOString(),
-        paymentMethod: '',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        currency: 'USD',
-        allocation: [],
-        donor: donorInfo,
-        ...DEFAULT_DONATION
-      }),
+      initializeDonation: (donorInfo) => {
+         const newDonation: Omit<Donation, 'id' | 'createdAt' | 'updatedAt'>  = {
+           donorId: uuidv4(),
+           amount: 0,
+           frequency: 'one_time',
+           status: 'pending',
+           donationDate: new Date().toISOString(),
+           paymentMethod: '',
+           currency: 'USD',
+           allocation: [],
+           impact: [],
+           donor: donorInfo,
+           date: '',
+           anonymous: false
+         };
+          return {
+           ...newDonation,
+           id: uuidv4(),
+              createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          } as Donation;
+      },
 
-      addDonation: (donationData) => {
+      addDonation: (donationData: Omit<Donation, 'id' | 'createdAt' | 'updatedAt'> ) => {
         const newDonation: Donation = {
           ...get().initializeDonation(donationData.donor),
           ...donationData,

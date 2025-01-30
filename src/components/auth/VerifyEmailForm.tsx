@@ -43,21 +43,21 @@ export function VerifyEmailForm({ email }: { email: string }) {
     }
   };
 
-  const handleResend = async () => {
-    try {
-      setIsResending(true);
-      await AuthService.sendVerificationEmail(email);
-      toast({ title: "New code sent", description: "Check your email for a new verification code" });
-    } catch (error) {
-      toast({
-        title: "Resend failed",
-        description: error instanceof Error ? error.message : "Failed to resend code",
-        variant: "destructive"
-      });
-    } finally {
-      setIsResending(false);
-    }
-  };
+    const handleResend = async () => {
+        try {
+            setIsResending(true);
+            await AuthService.sendVerificationEmail(email);
+            toast({ title: "New code sent", description: "Check your email for a new verification code" });
+        } catch (error) {
+            toast({
+                title: "Resend failed",
+                description: error instanceof Error ? error.message : "Failed to resend code",
+                variant: "destructive"
+            });
+        } finally {
+            setIsResending(false);
+        }
+    };
 
   if (isVerified) {
     return (

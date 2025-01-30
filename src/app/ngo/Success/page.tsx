@@ -13,7 +13,7 @@ export default function StoriesPage() {
           subtitle={`${stories.length} stories shared`} 
         />
         <div className="container mx-auto px-6 py-8">
-          {/* Stories content here */}
+          {/* Stories  content here */}
         </div>
       </div>
     );

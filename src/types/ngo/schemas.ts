@@ -18,7 +18,8 @@ export const NGO_PROJECT_SCHEMA = Type.Object({
       caption: Type.Optional(Type.String())
     })
   ),
-  // ... other properties
+  // ... rest of the schema definition
+  
 });
 
 

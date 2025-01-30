@@ -16,6 +16,7 @@ import {
   PROFILE_INITIALIZERS
 } from '@/types/user';
 
+
 type ProfileInitializers = {
   [K in UserRole]: object;
 };
@@ -42,6 +43,7 @@ interface UserActions {
   clearError: () => void;
   initializeUser: (email: string, name: User['name']) => void;
   updateProfile: <T extends UserRole>(role: T, data: Partial<UserProfiles[T]>) => void;
+    updateUser: (data: Partial<User>) => void;
   addRole: (role: UserRole) => void;
   updateOnboarding: (stage: OnboardingStage, data?: Record<string, unknown>) => void;
   updateSettings: (settings: Partial<User['settings']>) => void;
@@ -66,15 +68,6 @@ const DEFAULT_SETTINGS: User['settings'] = {
   }
 };
 
-// const PROFILE_INITIALIZERS: ProfileInitializers = {
-//   actor: { actingStyles: [], reels: [], unionStatus: '' },
-//   producer: { projects: [], collaborations: [] },
-//   crew: { department: '', certifications: [], equipment: [] },
-//   'project-owner': { currentProjects: [], pastProjects: [] },
-//   vendor: { businessName: '', services: [], paymentMethods: [], inventory: [] },
-//   ngo: { organizationName: '', focusAreas: [], partners: [] },
-//   admin: {}
-// };
 
 export const useUserStore = create<UserState & UserActions>()(
   persist(
@@ -135,7 +128,17 @@ export const useUserStore = create<UserState & UserActions>()(
           };
         });
       },
-
+        updateUser: (data) => {
+            set((state) => {
+                if (!state.user) return state;
+                return {
+                    user: {
+                        ...state.user,
+                       ...data
+                    }
+                };
+            });
+        },
       addRole: (role: UserRole) => {
         set((state) => {
           if (!state.user || state.user.roles.includes(role)) return state;
@@ -271,6 +274,7 @@ export const useUserActions = () => ({
   clearError: useUserStore((state) => state.clearError),
   initializeUser: useUserStore((state) => state.initializeUser),
   updateProfile: useUserStore((state) => state.updateProfile),
+    updateUser: useUserStore((state) => state.updateUser),
   addRole: useUserStore((state) => state.addRole),
   updateOnboarding: useUserStore((state) => state.updateOnboarding),
   updateSettings: useUserStore((state) => state.updateSettings),

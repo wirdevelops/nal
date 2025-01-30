@@ -32,8 +32,13 @@ export type AuthSession = Session | null;
 // Session management core functions
 export async function createSession(userId: string): Promise<void> {
   try {
-    const sessionId = await AuthService.createSession(userId);
+    const sessionId = await AuthService.createSession(userId); // Changed to createSession and await
     
+    if (!sessionId) {
+      console.error('Session ID is undefined after creation.');
+        throw new Error('Session creation failed: No session ID returned from AuthService.');
+    }
+
     cookies().set({
       ...SESSION_CONFIG,
       value: sessionId,
@@ -50,7 +55,7 @@ export async function destroySession(): Promise<void> {
     const sessionId = cookies().get(SESSION_CONFIG.name)?.value;
     if (!sessionId) return;
 
-    await AuthService.clearAllSessions(sessionId);
+    await AuthService.clearSession(sessionId);
     cookies().delete(SESSION_CONFIG.name);
   } catch (error) {
     console.error('Session destruction failed:', error);

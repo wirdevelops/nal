@@ -69,7 +69,7 @@ export default function StoriesPage() {
 
   return (
     <div className="container max-w-6xl mx-auto px-4 py-8">
-      {/* Header */}
+      {/* Header  */}
       <div className="text-center mb-12 space-y-6">
         <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
           Impact Stories

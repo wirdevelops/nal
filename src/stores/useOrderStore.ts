@@ -266,7 +266,7 @@ createOrder: (items, paymentDetails) => {
           };
         });
       },
-
+      
       filterByStatus: (status) => {
         set(state => ({
           filters: { ...state.filters, status }

@@ -19,7 +19,6 @@ export function formatFileSize(bytes: number): string {
     return `${hours}h ${minutes}m ${remainingSeconds}s`;
   }
   
-  
   export function formatDate(dateString: string): string {
     const date = new Date(dateString);
     const options: Intl.DateTimeFormatOptions = {

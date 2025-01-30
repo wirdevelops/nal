@@ -75,7 +75,6 @@ export type DonorInfo = Static<typeof DonorInfoSchema>;
 export type Donation = Static<typeof DonationSchema>;
 
 // ===== Validation Helpers =====
-// ===== Validation Helpers =====
 export const validateDonationFrequency = (
     frequency: unknown
   ): frequency is DonationFrequency => {

@@ -8,7 +8,6 @@ interface PaginationProps {
   onPageChange: (page: number) => void;
   className?: string;
 }
-
 export const Pagination = ({
   currentPage,
   totalPages,

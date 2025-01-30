@@ -1,7 +1,7 @@
 import { AuthService } from '@/lib/auth-service';
 import { useUserStore } from '@/stores/useUserStore';
 
-export function initializeAuth() {
+export async function initializeAuth() {
   const sessionToken = document.cookie
     .split('; ')
     .find(row => row.startsWith('session='))
@@ -10,9 +10,9 @@ export function initializeAuth() {
   if (sessionToken) {
     const user = AuthService.validateSession(sessionToken);
     if (user) {
-      useUserStore.getState().setUser(user);
+      useUserStore.getState().setUser(await user);
     } else {
-      AuthService.clearSession();
+      AuthService.clearSession( sessionToken);
     }
   }
 }

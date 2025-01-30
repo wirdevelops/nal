@@ -24,7 +24,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className={GeistSans.className}>
       <head>
-        {/* <link rel="manifest" href="/manifest.json" /> */}
+        <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#E31837" />
       </head>
       <body>

@@ -11,3 +11,4 @@ export interface CommercialData {
     isPartOfCampaign?: boolean;
     campaignName?: string;
   }
+  

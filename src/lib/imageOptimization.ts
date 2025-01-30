@@ -189,7 +189,7 @@ interface OptimizationOptions {
     };
   
     // Adjust quality based on file size
-    if (analysis.size > 2 * 1024 * 1024) { // If larger than 2MB
+    if (analysis.size > 2 * 1024 * 1024) { //If larger than 2MB
       options.quality = 0.6;
     } else if (analysis.size > 1024 * 1024) { // If larger than 1MB
       options.quality = 0.7;

@@ -113,7 +113,6 @@ const createButton = (text: string, url: string) => `
     </a>
   </p>
 `;
-
 const validateEmail = (email: string) => {
   if (!validator.isEmail(email)) {
     throw new Error('Invalid email address');

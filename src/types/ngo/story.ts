@@ -1,3 +1,5 @@
+import { ReactNode } from "react";
+
 export interface StoryAuthor {
     id: string;
     name: string;
@@ -20,29 +22,18 @@ export interface StoryAuthor {
     COMMUNITY = "Community",
     EMERGENCY = "Emergency Relief"
   }
-  
-  // export interface Story {
-  //   metadata: any;
-  //   id: string;
-  //   title: string;
-  //   excerpt: string;
-  //   content: string;
-  //   imageUrl: string;
-  //   category: StoryCategory;
-  //   author: StoryAuthor;
-  //   date: string;
-  //   readTimeMinutes: number;
-  //   likesCount: number;
-  //   commentsCount: number;
-  //   sharesCount: number;
-  //   isFeatured: boolean;
-  //   beneficiary?: StoryBeneficiary;
-  //   projectId?: string;
-  //   createdAt: string;
-  //   updatedAt: string;
-  // }
 
   export interface Story {
+  imageUrl: string;
+  isFeatured: any;
+  date: string | number | Date;
+  author: any;
+  likesCount: ReactNode;
+  commentsCount: ReactNode;
+  sharesCount: ReactNode;
+  readTimeMinutes: ReactNode;
+  excerpt: string;
+  content: string;
   metadata: any;
   id: string;
   title: string;
@@ -50,6 +41,8 @@ export interface StoryAuthor {
   image: string;
   category: string;
   location: string;
+  createdAt: string;
+  updatedAt: string;
   beneficiary: {
     name: string;
     avatar?: string;

@@ -56,9 +56,9 @@ export const SubmitStoryModal = ({ onStorySubmit }: SubmitStoryModalProps) => {
     try {
       const storyData: StoryCreateDTO = {
         title: values.title,
-      category: values.category,
-      excerpt: values.excerpt,
-      content: values.content,
+        category: values.category,
+        excerpt: values.excerpt,
+        content: values.content,
         imageUrl: values.images[0], // Take the first uploaded image
         author: {
           id: '',
@@ -69,11 +69,24 @@ export const SubmitStoryModal = ({ onStorySubmit }: SubmitStoryModalProps) => {
         beneficiary: values.beneficiaryName && values.beneficiaryQuote ? {
           name: values.beneficiaryName,
           quote: values.beneficiaryQuote,
-          location: ''
         } : undefined,
         date: new Date().toISOString(),
         readTimeMinutes: Math.ceil(values.content.split(' ').length / 200),
-        isFeatured: false
+        isFeatured: false,
+        metadata: undefined,
+        description: '',
+        image: '',
+        location: '',
+        stats: {
+          peopleHelped: 0,
+          volunteersInvolved: 0,
+          duration: ''
+        },
+        engagement: {
+          likes: 0,
+          comments: 0,
+          shares: 0
+        }
       };
 
       onStorySubmit(storyData);

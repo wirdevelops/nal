@@ -6,3 +6,4 @@ export interface SeriesData {
     format?: 'scripted' | 'unscripted' | 'documentary';
     targetAudience?: string;
   }
+  

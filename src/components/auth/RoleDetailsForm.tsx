@@ -3,7 +3,7 @@ import { UserRole } from '@/types/user';
 import { CrewRoleForm } from './role-forms/CrewRoleForm';
 import { ActorRoleForm } from './role-forms/ActorRoleForm';
 import { ProducerRoleForm } from './role-forms/ProducerRoleForm';
-import { ProjectOwnerRoleForm } from './role-forms/ProjectOwnerRoleForm';
+import  {ProjectOwnerRoleForm}  from './role-forms/ProjectOwnerForm';
 import { VendorRoleForm } from './role-forms/VendorRoleForm';
 import { NGORoleForm } from './role-forms/NGORoleForm';
 

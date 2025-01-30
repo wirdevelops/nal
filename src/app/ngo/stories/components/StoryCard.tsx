@@ -51,7 +51,6 @@ export const StoryCard = ({ story, onFeature, className }: StoryCardProps) => (
           </p>
         </div>
       </div>
-
       <div className="flex justify-between items-center">
         <div className="flex gap-4 text-muted-foreground">
           <Button variant="ghost" className="gap-2">

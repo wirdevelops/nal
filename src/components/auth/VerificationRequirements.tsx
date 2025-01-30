@@ -36,7 +36,22 @@ const ROLE_REQUIREMENTS: Record<UserRole, {
       accept: 'image/*'
     }]
   },
-  // Add other role requirements
+  producer: {
+    documents: [],
+    additionalInfo: ''
+  },
+  vendor: {
+    documents: [],
+    additionalInfo: ''
+  },
+  ngo: {
+    documents: [],
+    additionalInfo: ''
+  },
+  admin: {
+    documents: [],
+    additionalInfo: ''
+  }
 };
 
 export function VerificationRequirements({ role, onFileUpload }: {
@@ -63,7 +78,7 @@ export function VerificationRequirements({ role, onFileUpload }: {
           <FileUpload
             accept={doc.accept}
             maxSize={10 * 1024 * 1024} // 10MB
-            onUpload={(files) => onFileUpload(doc.type, files)}
+            onUpload={async (files) => onFileUpload(doc.type, files)}
           />
         </div>
       ))}

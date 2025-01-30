@@ -9,7 +9,6 @@ interface CartState {
   isLoading: boolean;
   error: string | null;
 }
-
 interface CartActions {
   // Cart Management
   addItemToCart: (productId: string, quantity: number, options?: Record<string, any>) => void;
@@ -17,7 +16,7 @@ interface CartActions {
   updateItemQuantity: (productId: string, quantity: number) => void;
   updateItemOptions: (productId: string, options: Record<string, any>) => void;
   clearCart: () => void;
-  
+
   // Coupon Management
   applyCoupon: (code: string) => void;
   removeCoupon: (code: string) => void;

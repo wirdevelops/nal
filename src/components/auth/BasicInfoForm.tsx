@@ -146,7 +146,6 @@ export function BasicInfoForm({ roles, onSubmit, defaultValues }: BasicInfoFormP
             )}
           />
         </div>
-
         <FormField
           control={form.control}
           name="phone"

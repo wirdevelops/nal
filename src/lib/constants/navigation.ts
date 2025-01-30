@@ -8,25 +8,7 @@ import {
     Briefcase, 
     Heart,
     Settings,
-    Shield,
-    ScrollText,
-    FolderKanban,
-    Database,
-    Radio,
-    Newspaper,
-    Portfolio,
-    Calendar,
-    VideoIcon,
-    MessagesSquare,
-    Paint,
-    Cast,
-    Clock,
-    Mic2,
-    LibraryIcon,
-    HandHelping,
-    Users2,
-    Building,
-    BookOpen
+    Cast
   } from "lucide-react"
   
   export type NavigationItem = {

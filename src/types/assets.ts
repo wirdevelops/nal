@@ -89,7 +89,7 @@ enum AssetType {
     priority: 'low' | 'medium' | 'high'
     dueDate?: string
   }
-  
+
   interface AssetManagementProps {
     isAdmin: boolean
     projectStatus: 'active' | 'completed'

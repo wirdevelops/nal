@@ -15,85 +15,86 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { FileUpload } from '@/components/shared/FileUpload';
 import { Loader2, CheckCircle2, Upload } from 'lucide-react';
-import { UserRole } from '@/types/user';
+import { UserRole, VerificationData } from '@/types/user';
+
 
 const verificationSchema = z.object({
-  documents: z.array(z.string()).min(1, 'At least one document is required'),
-  idNumber: z.string().optional(),
-  professionalMemberships: z.array(z.string()).optional(),
-});
+    documents: z.array(z.string()).min(1, 'At least one document is required'),
+    idNumber: z.string().optional(),
+    professionalMemberships: z.array(z.string()).optional(),
+  });
 
 type VerificationFormValues = z.infer<typeof verificationSchema>;
 
 interface VerificationRequirement {
-  title: string;
-  description: string;
-  required: boolean;
-  accept: string;
-  maxSize: number;
-}
-
-const ROLE_REQUIREMENTS: Record<UserRole, VerificationRequirement[]> = {
-  'project-owner': [
-    {
-      title: 'Business Registration',
-      description: 'Company registration or business license',
-      required: true,
-      accept: 'application/pdf,image/*',
-      maxSize: 5 * 1024 * 1024 // 5MB
-    }
-  ],
-  'crew': [
-    {
-      title: 'Professional Certification',
-      description: 'Industry certifications or qualifications',
-      required: false,
-      accept: 'application/pdf,image/*',
-      maxSize: 5 * 1024 * 1024
-    }
-  ],
-  'actor': [
-    {
-      title: 'Headshots',
-      description: 'Professional headshots and portfolio',
-      required: true,
-      accept: 'image/*',
-      maxSize: 10 * 1024 * 1024
-    }
-  ],
-  'producer': [
-    {
-      title: 'Production Company Details',
-      description: 'Company registration and credentials',
-      required: true,
-      accept: 'application/pdf',
-      maxSize: 5 * 1024 * 1024
-    }
-  ],
-  'vendor': [
-    {
-      title: 'Business License',
-      description: 'Valid business license and tax documents',
-      required: true,
-      accept: 'application/pdf',
-      maxSize: 5 * 1024 * 1024
-    }
-  ],
-  'ngo': [
-    {
-      title: 'Organization Documents',
-      description: 'NGO registration and proof of status',
-      required: true,
-      accept: 'application/pdf',
-      maxSize: 5 * 1024 * 1024
-    }
-  ],
-  'admin': []
-};
+    title: string;
+    description: string;
+    required: boolean;
+    accept: string;
+    maxSize: number;
+  }
+  
+  const ROLE_REQUIREMENTS: Record<UserRole, VerificationRequirement[]> = {
+    'project-owner': [
+      {
+        title: 'Business Registration',
+        description: 'Company registration or business license',
+        required: true,
+        accept: 'application/pdf,image/*',
+        maxSize: 5 * 1024 * 1024 // 5MB
+      }
+    ],
+    'crew': [
+      {
+        title: 'Professional Certification',
+        description: 'Industry certifications or qualifications',
+        required: false,
+        accept: 'application/pdf,image/*',
+        maxSize: 5 * 1024 * 1024
+      }
+    ],
+    'actor': [
+      {
+        title: 'Headshots',
+        description: 'Professional headshots and portfolio',
+        required: true,
+        accept: 'image/*',
+        maxSize: 10 * 1024 * 1024
+      }
+    ],
+    'producer': [
+      {
+        title: 'Production Company Details',
+        description: 'Company registration and credentials',
+        required: true,
+        accept: 'application/pdf',
+        maxSize: 5 * 1024 * 1024
+      }
+    ],
+    'vendor': [
+        {
+          title: 'Business License',
+          description: 'Valid business license and tax documents',
+          required: true,
+          accept: 'application/pdf',
+          maxSize: 5 * 1024 * 1024
+        }
+      ],
+      'ngo': [
+          {
+            title: 'Organization Documents',
+            description: 'NGO registration and proof of status',
+            required: true,
+            accept: 'application/pdf',
+            maxSize: 5 * 1024 * 1024
+          }
+        ],
+        'admin': []
+      };
 
 interface VerificationFormProps {
   roles: UserRole[];
-  onSubmit: (data: VerificationFormValues) => Promise<void>;
+    onSubmit: (data: VerificationData) => Promise<void>;
   defaultValues?: Partial<VerificationFormValues>;
 }
 
@@ -103,12 +104,12 @@ export function VerificationForm({ roles, onSubmit, defaultValues }: Verificatio
 
   const form = useForm<VerificationFormValues>({
     resolver: zodResolver(verificationSchema),
-    defaultValues: {
-      documents: [],
-      idNumber: '',
-      professionalMemberships: [],
-      ...defaultValues
-    },
+      defaultValues: {
+          documents: [],
+          idNumber: '',
+          professionalMemberships: [],
+        ...defaultValues
+      },
   });
 
   const requirements = roles.flatMap(role => ROLE_REQUIREMENTS[role]);
@@ -116,7 +117,9 @@ export function VerificationForm({ roles, onSubmit, defaultValues }: Verificatio
   const handleSubmit = async (values: VerificationFormValues) => {
     try {
       setIsLoading(true);
-      await onSubmit(values);
+      await onSubmit({
+          ...values
+        } as VerificationData);
     } finally {
       setIsLoading(false);
     }
@@ -147,7 +150,7 @@ export function VerificationForm({ roles, onSubmit, defaultValues }: Verificatio
                   accept={requirement.accept}
                   maxSize={requirement.maxSize}
                   onUpload={async (files) => {
-                    const fileUrls = files.map(file => URL.createObjectURL(file));
+                      const fileUrls = files.map(file => URL.createObjectURL(file));
                     form.setValue('documents', [
                       ...form.getValues('documents'),
                       ...fileUrls
@@ -157,7 +160,7 @@ export function VerificationForm({ roles, onSubmit, defaultValues }: Verificatio
                       [requirement.title]: files
                     });
                   }}
-                  value={uploadedFiles[requirement.title]?.map(f => URL.createObjectURL(f)) || []}
+                    value={uploadedFiles[requirement.title]?.map(f => URL.createObjectURL(f)) || []}
                 />
 
                 {requirement.required && !uploadedFiles[requirement.title]?.length && (
@@ -167,26 +170,26 @@ export function VerificationForm({ roles, onSubmit, defaultValues }: Verificatio
             </Card>
           ))}
 
-          {roles.some(role => ['actor', 'crew'].includes(role)) && (
-            <FormField
-              control={form.control}
-              name="professionalMemberships"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Professional Memberships (Optional)</FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder="Enter membership IDs or organizations"
-                      {...field}
-                      onChange={(e) => field.onChange(e.target.value.split(','))}
-                      value={field.value?.join(', ')}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          )}
+            {roles.some(role => ['actor', 'crew'].includes(role)) && (
+                <FormField
+                    control={form.control}
+                    name="professionalMemberships"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Professional Memberships (Optional)</FormLabel>
+                            <FormControl>
+                                <Input
+                                    placeholder="Enter membership IDs or organizations"
+                                    {...field}
+                                    onChange={(e) => field.onChange(e.target.value.split(','))}
+                                    value={field.value?.join(', ')}
+                                />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+            )}
 
           <Button type="submit" disabled={isLoading}>
             {isLoading ? (

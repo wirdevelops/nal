@@ -1,4 +1,3 @@
-// src/app/auth/verify/page.tsx
 'use client';
 
 import { VerifyEmailForm } from '@/components/auth/VerifyEmailForm';

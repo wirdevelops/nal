@@ -27,7 +27,7 @@ interface VolunteerState {
   updateProfile: (userId: string, updates: Partial<VolunteerProfile>) => void;
   logHours: (userId: string, log: Omit<TimeLog, 'id' | 'verified'>) => void;
   verifyHours: (userId: string, logId: string) => void;
-  updateBackgroundCheck: (userId: string, status: BackgroundCheck) => void;
+  updateBackgroundCheck: (volunteerId: string, status: BackgroundCheck) => void;
   addTraining: (userId: string, training: { name: string; duration: number }) => void;
   completeTraining: (userId: string, trainingId: string) => void;
   getVolunteerMetrics: (userId: string) => {
@@ -39,7 +39,7 @@ interface VolunteerState {
 
 export const useVolunteerStore = create<VolunteerState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       volunteers: [],
       isLoading: false,
       error: null,
@@ -50,6 +50,21 @@ export const useVolunteerStore = create<VolunteerState>()(
           ...volunteerData,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
+          userId: '',
+          firstName: '',
+          lastName: '',
+          email: '',
+          projects: [],
+          skills: [],
+          availability: undefined,
+          hours: [],
+          references: [],
+          background: BackgroundCheck.PENDING,
+          trainings: [],
+          role: '',
+          joinDate: '',
+          trainingCompleted: false,
+          hoursContributed: 0
         };
 
         set((state) => ({
@@ -133,6 +148,138 @@ export const useVolunteerStore = create<VolunteerState>()(
           ),
         }));
       },
+        initializeVolunteer: (userId) => {
+          const newProfile: VolunteerProfile = {
+              skills: [],
+              availability: {
+                days: [],
+                startTime: "",
+                endTime: ""
+              },
+            hours: [],
+            references: [],
+            trainings: []
+        }
+            
+            set((state) => ({
+            volunteers: state.volunteers.map(volunteer => {
+                if(volunteer.userId === userId) {
+                    return {
+                        ...volunteer,
+                        profile: newProfile
+                    }
+                }
+                return volunteer;
+            })
+            }))
+            return newProfile;
+        },
+        updateProfile: (userId, updates) => {
+            set((state) => ({
+                volunteers: state.volunteers.map(volunteer => {
+                    if(volunteer.userId === userId) {
+                        return {
+                            ...volunteer,
+                            profile: {
+                              ...volunteer.profile,
+                              ...updates
+                            }
+                        }
+                    }
+                    return volunteer;
+                })
+            }));
+        },
+         logHours: (userId, log) => {
+            set((state) => ({
+                volunteers: state.volunteers.map(volunteer => {
+                    if(volunteer.userId === userId) {
+                        return {
+                            ...volunteer,
+                           hours: [...volunteer.hours, { ...log, id: uuidv4(), verified: false }],
+                            updatedAt: new Date().toISOString(),
+                        }
+                    }
+                  return volunteer;
+                })
+            }));
+          },
+          verifyHours: (userId, logId) => {
+              set((state) => ({
+                  volunteers: state.volunteers.map((volunteer) => {
+                      if(volunteer.userId === userId) {
+                         return {
+                              ...volunteer,
+                                hours: volunteer.hours.map(log => {
+                                    if(log.id === logId) {
+                                        return {
+                                            ...log,
+                                          verified: true,
+                                        }
+                                    }
+                                   return log;
+                                })
+                            };
+                      }
+                      return volunteer;
+                  })
+              }));
+          },
+           addTraining: (userId, training) => {
+               set((state) => ({
+                  volunteers: state.volunteers.map(volunteer => {
+                      if(volunteer.userId === userId) {
+                          return {
+                              ...volunteer,
+                              trainings: [...volunteer.trainings, { ...training, id: uuidv4(), completed: false } ]
+                          }
+                      }
+                      return volunteer;
+                  })
+               }));
+           },
+           completeTraining: (userId, trainingId) => {
+             set((state) => ({
+                volunteers: state.volunteers.map(volunteer => {
+                  if(volunteer.userId === userId) {
+                      return {
+                          ...volunteer,
+                          trainings: volunteer.trainings.map(training => {
+                              if(training.id === trainingId) {
+                                  return {
+                                      ...training,
+                                    completed: true,
+                                  }
+                              }
+                              return training;
+                          })
+                      }
+                    }
+                    return volunteer;
+                  })
+             }))
+           },
+      getVolunteerMetrics: (userId) => {
+          const volunteer = get().volunteers.find(volunteer => volunteer.userId === userId);
+
+          if(!volunteer) {
+              return {
+                  totalHours: 0,
+                  completedTrainings: 0,
+                  activeProjects: 0,
+                };
+            }
+
+            const totalHours = volunteer.hours.reduce((acc, log) => acc + log.hours, 0)
+          const completedTrainings = volunteer.trainings.filter(training => training.completed).length;
+          const activeProjects = volunteer.projects?.length || 0;
+            
+            return {
+              totalHours,
+                completedTrainings,
+                activeProjects
+            }
+          }
     }),
     {
       name: 'volunteer-storage',

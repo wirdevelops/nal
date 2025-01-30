@@ -14,7 +14,6 @@ export function formatCurrency(amount: number): string {
   }).format(amount);
 }
 
-
 export function formatDate(date: string): string {
   const options: Intl.DateTimeFormatOptions = {
     year: 'numeric',

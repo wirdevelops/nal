@@ -13,7 +13,7 @@ export default function VolunteerPage() {  // Changed to export default
         subtitle={`${volunteers.length} active volunteers`} 
       />
       <div className="container mx-auto px-6 py-8">
-        {/* Volunteer content here */}
+        {/* Volunteer  content here */}
       </div>
     </div>
   );

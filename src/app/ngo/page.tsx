@@ -111,7 +111,7 @@ export default function NGODashboard() {
                 </Button>
               </div>
             </div>
-            
+          
             <div className="lg:block relative z-10">
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-primary/5 rounded-2xl" />

@@ -34,8 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const login = async (email: string, password: string) => {
-    // In a real app, you'd make an API call to authenticate
-    // This is a mock implementation
+
     if (email === 'admin@example.com' && password === 'password') {
       const user: User = {
         id: '1',

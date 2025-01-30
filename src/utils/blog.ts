@@ -34,6 +34,7 @@ export const contentSectionSchema = z.object({
 });
 
 export const blogPostSchema = z.object({
+  projectId: z.string(),
   title: z.string().min(1, 'Title is required').max(200),
   slug: z.string().min(1).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
   excerpt: z.string().max(500).optional(),

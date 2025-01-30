@@ -33,7 +33,7 @@ export const SocialShare = ({ url, title, className }: SocialShareProps) => (
       title={title}
       source="Our NGO"
     >
-      <LinkedinIcon size={32} round />
+    <LinkedinIcon size={32} round />
     </LinkedinShareButton>
   </div>
 );

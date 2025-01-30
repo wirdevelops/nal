@@ -13,3 +13,4 @@ export interface WebSeriesData {
     seasonPlanned?: number;
     contentRating?: string;
   }
+  

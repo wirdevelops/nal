@@ -35,7 +35,7 @@ export interface Annotation {
   position: { x: number; y: number };
   timestamp: string;
   author: string;
-  resolved?: boolean;
+  resolved?: boolean; 
   // For drawing annotations
   path?: string;
   color?: string;

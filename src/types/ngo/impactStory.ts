@@ -97,7 +97,6 @@ export interface ImpactSummary {
   progress: Record<string, number>;
 }
 
-// Derived Types
 export type ImpactCategory = Static<typeof IMPACT_CATEGORY_SCHEMA>;
 export type ImpactStory = Static<typeof ImpactStorySchema>;
 export type ImpactMeasurement = Static<typeof ImpactMeasurementSchema>;

@@ -31,7 +31,7 @@ export const Cart = Type.Object({
   giftWrap: Type.Optional(Type.Boolean()),
   // For abandoned cart tracking
   lastActiveAt: Type.String({ format: 'date-time' }),
-  // For cart versioning
+  // For cart versioning 
   revision: Type.Integer({ minimum: 1 })
 });
 export type Cart = Static<typeof Cart>;

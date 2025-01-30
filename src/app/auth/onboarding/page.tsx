@@ -22,7 +22,6 @@ export default function OnboardingPage() {
       for (const role of data.roles) {
         await addRole(role);
       }
-
       // Update onboarding stage
       await updateOnboarding('basic-info', {
         selectedRoles: data.roles

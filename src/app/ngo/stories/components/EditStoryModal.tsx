@@ -13,7 +13,7 @@ import { Story, StoryUpdateDTO } from '@/types/ngo/story';
 const formSchema = z.object({
   title: z.string().min(5),
   excerpt: z.string().min(50),
-  content: z.string().min(100),
+  content: z.string().min(100), 
 });
 
 export const EditStoryModal = ({ 

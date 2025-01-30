@@ -46,7 +46,6 @@ export async function rateLimit(
     };
   }
 }
-
 export async function isIPBlocked(ip: string): Promise<boolean> {
   const blockKey = `blocked:${ip}`;
   return await redis.exists(blockKey) === 1;

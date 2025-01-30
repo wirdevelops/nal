@@ -1,4 +1,3 @@
-// app/auth/onboarding/role-details/page.tsx
 'use client';
 
 import { useState } from 'react';

@@ -29,7 +29,7 @@ const schema = z.object({
   experience: z.string().optional(),
 });
 
-export function ProjectOwnerForm({ onSubmit, defaultValues }) {
+export function ProjectOwnerRoleForm({ onSubmit, defaultValues }) {
   const form = useForm({
     resolver: zodResolver(schema),
     defaultValues: defaultValues || {

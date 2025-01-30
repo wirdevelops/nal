@@ -203,13 +203,7 @@ export interface Beneficiary {
       milestones: Milestone[];
       media: ProjectMedia[];
   }
-  }
-
-
-   
-  
-    
-  
+}  
       export const PROJECT_CATEGORIES = [
         'education',
         'health',
@@ -218,8 +212,6 @@ export interface Beneficiary {
         'emergency_relief',
         'other'
       ] as const;
-  
-
   
       // In your types
       export interface ProjectMetrics {

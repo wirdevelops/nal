@@ -56,14 +56,15 @@ export function RegisterForm() {
     try {
       setIsLoading(true);
       
-      // Clear previous session data
-      AuthService.clearSession();
-  
+      
       const user = await AuthService.signUp(
         { email: values.email, password: values.password },
         { first: values.firstName, last: values.lastName }
       );
-  
+      
+      // Clear previous session data
+      AuthService.clearSession(user.id);
+      
       // Direct session creation and redirect
       AuthService.handleNewUser(user);
   

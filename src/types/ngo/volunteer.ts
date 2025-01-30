@@ -26,7 +26,6 @@ export enum Skill {
     MARKETING_COMMUNICATIONS = "marketing_communications",
     OTHER = "other"
 }
-;
 
 export const VolunteerStatusSchema = Type.Union([
   Type.Literal('active'),
@@ -74,6 +73,7 @@ export const VolunteerProfileSchema = Type.Composite([
 ]);
 
 export interface Volunteer {
+    [x: string]: any;
     id: string;
     userId: string;
     firstName: string;

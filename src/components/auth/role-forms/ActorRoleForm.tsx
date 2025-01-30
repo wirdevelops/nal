@@ -58,7 +58,7 @@ export function ActorRoleForm({ onSubmit, defaultValues }) {
               <FormItem>
                 <FormLabel>Headshots</FormLabel>
                 <FileUpload
-                  onUpload={(files) => field.onChange(files.map(f => URL.createObjectURL(f)))}
+                  onUpload={async (files) => field.onChange(files.map(f => URL.createObjectURL(f)))}
                   accept="image/*"
                   maxSize={5 * 1024 * 1024}
                   value={field.value}
