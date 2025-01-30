@@ -1,3 +1,5 @@
+'use client'
+
 import React from 'react';
 import { useState, useCallback, useMemo, useEffect } from 'react';
 import Image from 'next/image';
