@@ -1,8 +1,7 @@
+'use client';
 import { Team } from '../../../components/Team';
 import { Button } from '@/components/ui/button';
-import { useNGOProject } from '@/hooks/useNGOProject';
 import { useState } from 'react';
-import { Card } from '@/components/ui/card';
 import { Plus } from 'lucide-react';
 
 export default function ProjectTeamPage({ params }: { params: { projectId: string } }) {

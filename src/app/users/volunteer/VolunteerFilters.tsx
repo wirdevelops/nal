@@ -9,7 +9,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
-import { BackgroundCheck, Skill } from '@/types/ngo';
+import { BackgroundCheck, Skill } from '@/types/ngo/volunteer';
 
 interface VolunteerFiltersProps {
   onFilterChange: (filters: VolunteerFilters) => void;

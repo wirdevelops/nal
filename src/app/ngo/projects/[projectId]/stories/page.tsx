@@ -1,3 +1,5 @@
+'use client'
+
 import { ImpactStories } from '../../../components/ImpactStories';
 import { Button } from '@/components/ui/button';
 import { useStories } from '@/hooks/useStories';
