@@ -1,7 +1,7 @@
 import { useCallback, useState, useEffect } from 'react';
 import { useVolunteerStore } from '@/stores/useVolunteerStore';
 import type { Volunteer, TimeLog, Skill, Schedule } from '@/types/ngo';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'others/use-toast';
 
 export function useVolunteer(volunteerId?: string) {
   const store = useVolunteerStore();

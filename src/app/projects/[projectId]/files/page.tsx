@@ -48,7 +48,7 @@ import {
   Eye,
 } from 'lucide-react';
 import { format } from 'date-fns';
-import { useFileManagement } from '@/hooks/useFileManagement';
+import { useFileManagement } from 'others/useFileManagement';
 import { FileCategory } from '@/stores/useFileStore';
 
 const getFileIcon = (category: FileCategory) => {

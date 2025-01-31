@@ -16,7 +16,7 @@ import { AssetRequestsTable } from "./AssetRequestsTable";
 import { AssetCategoryTabs } from "./AssetCategoryTabs";
 import { AssetForm } from "./AssetForm";
 import { Asset, AssetCategory, AssetLicense, AssetStatus, AssetType, AssetRequest, AssetVersion, AssetComment } from '@/types/assets'
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from 'others/use-toast';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';

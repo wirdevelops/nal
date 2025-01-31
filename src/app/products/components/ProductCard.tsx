@@ -14,7 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { ShoppingCart, Heart, HeartOff, Edit } from 'lucide-react';
 import { useUserStore } from '@/stores/useUserStore';
 import { useProductStore } from '@/stores/useProductStore';
-import useCart from '@/hooks/useCart';
+import useCart from 'others/useCart';
 import { toast } from 'react-hot-toast';
 import type { PhysicalProduct, Product } from '@/types/store'; 
 import ProductImage from './ProductImage'; 

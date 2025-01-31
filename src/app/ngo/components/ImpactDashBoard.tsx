@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Download, Share2, TrendingUp, Users, Clock, Target } from 'lucide-react';
 import { MetricCard } from './MetricCard';
 import { AnalyticCard } from './AnalyticCard'; // Fixed import name
-import { useImpact } from '@/hooks/useImpact';
+import { useImpact } from 'others/useImpact';
 import { exportToJson } from '@/lib/export';
 import { ImpactMetrics } from './ImpactMetrics';
 import { ImpactStories } from './ImpactStories';

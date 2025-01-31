@@ -14,7 +14,7 @@ import {
 import { cn } from '@/lib/utils';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 import { getProjectNavigation, type NavItem, type NavSection } from '../components/projectNavigation';
-import { useProject } from '@/hooks/useProjectHooks';
+import { useProject } from 'others/useProjectHooks';
 
 interface ProjectNavigationProps {
   projectId: string;

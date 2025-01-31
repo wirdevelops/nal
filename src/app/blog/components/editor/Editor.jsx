@@ -6,7 +6,7 @@ import Placeholder from '@tiptap/extension-placeholder'
 import Image from '@tiptap/extension-image'
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import { common, createLowlight } from "lowlight";
-import EditorToolbar from "./EditorToolbar";
+import {EditorToolbar} from "./EditorToolbar";
 
 const lowlight = createLowlight(common);
 

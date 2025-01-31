@@ -90,3 +90,14 @@ export const postAnalyticsSchema = z.object({
    }).optional(),
   geoData: z.record(z.number()).optional(),
   }).optional()
+
+
+  export function generateSlug(str: string): string {
+    return str
+      .toLowerCase()
+      .replace(/ /g, '-')
+      .replace(/[^\w-]+/g, '')
+      .replace(/--+/g, '-')
+      .replace(/^-+/, '')
+      .replace(/-+$/, '');
+  }

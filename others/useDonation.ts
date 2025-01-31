@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useDonationStore, type Donation, type ImpactMetric } from '@/stores/useDonationStore';
-import { toast } from '@/hooks/use-toast';
+import { toast } from 'others/use-toast';
 
 export function useDonation() {
   const store = useDonationStore();

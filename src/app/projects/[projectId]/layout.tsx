@@ -5,7 +5,7 @@ import { useParams, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { ProjectSwitcher } from '../components/ProjectSwitcher';
 import { ProjectHeader } from '../components/ProjectHeader';
-import { useProject } from '@/hooks/useProjectHooks';
+import { useProject } from 'others/useProjectHooks';
 import { Button } from '@/components/ui/button';
 import { UserMenu } from '@/components/layout/UserMenu';
 import { ThemeToggle } from '@/components/shared/ThemeToggle';

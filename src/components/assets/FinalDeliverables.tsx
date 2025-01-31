@@ -8,7 +8,7 @@ import { Progress } from "@/components/ui/progress";
 import { Download, Eye, Search } from "lucide-react";
 import { Asset, AssetType } from "@/types/assets";
 import { formatFileSize } from "@/lib/formats";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "others/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 

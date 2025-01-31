@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "others/use-toast";
 import { Asset, AssetRequest, AssetComment, AssetType, AssetCategory, AssetStatus, AssetLicense } from "@/types/assets";
 
 export function useAssetManagement(apiClient: any, storageClient: any, projectId: string, onAssetUpdate?: (asset: Asset) => void, onError?: (error: Error) => void) {

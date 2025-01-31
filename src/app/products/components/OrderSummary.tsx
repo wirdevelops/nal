@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tag, AlertCircle, CheckCircle2 } from 'lucide-react';
-import  useCart  from '@/hooks/useCart';
+import  useCart  from 'others/useCart';
 
 
 interface OrderSummaryProps {

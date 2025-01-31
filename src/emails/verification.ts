@@ -1,22 +1,16 @@
-import { EmailTemplate } from '@/lib/email-service';
+import { baseHTML, createButton, EmailTemplate } from '@/lib/email-service';
 
-const verificationTemplate: EmailTemplate = {
+const verificationEmailTemplate: EmailTemplate = {
   render: (data) => {
-    const { verifyUrl, subject } = data;
-    return `
-      ${baseHTML(`
-        <h1>${subject}</h1>
-        <p>Please click the button below to verify your email address:</p>
-          ${createButton("Verify Email", verifyUrl as string)}
-      `)}
-    `;
+    return baseHTML(`
+      <p>Hello,</p>
+      <p>Please click the button below to verify your email:</p>
+      ${createButton('Verify Email', data.verifyUrl)}
+      `);
   },
   renderText: (data) => {
-    const { verifyUrl, subject } = data;
-    return `${subject} Please verify your email by clicking the following link: ${verifyUrl}`;
+    return `Please click the link to verify your email: ${data.verifyUrl}`;
   }
 };
 
-export default verificationTemplate;
-
-import { baseHTML, createButton } from '@/lib/email-service';
+export default verificationEmailTemplate;

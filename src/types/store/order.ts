@@ -1,6 +1,6 @@
 // types/order.ts
 import { Type, Static } from '@sinclair/typebox';
-import { Coupon, UUID_PATTERN, ShippingOption } from './common';
+import { Coupon, UUID_PATTERN} from './common';
 
 
 export const PaymentMethodDetails = Type.Object({

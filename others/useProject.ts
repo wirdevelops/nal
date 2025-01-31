@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { useProjectStore } from '@/stores/useProjectStore';
 import { useFileStore } from '@/stores/useFileStore';
-import { useFileManagement } from '@/hooks/useFileManagement';
+import { useFileManagement } from 'others/useFileManagement';
 
 import type { Project, ProjectType, TypeSpecificData } from '@/types/project';
 import type {

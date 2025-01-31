@@ -1,6 +1,6 @@
 'use client';
 
-import { useNGOProject } from '@/hooks/useNGOProject';
+import { useNGOProject } from 'others/useNGOProject';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 

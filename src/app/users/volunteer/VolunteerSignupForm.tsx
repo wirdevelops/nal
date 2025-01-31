@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Skill, BackgroundCheck, Volunteer } from '@/types/ngo/volunteer';
-import { useVolunteer } from '@/hooks/useVolunteer';
+import { useVolunteer } from 'others/useVolunteer';
 import { useState } from 'react';
 import { Progress } from '@/components/ui/progress';
 import { ChevronLeft, ChevronRight } from 'lucide-react';

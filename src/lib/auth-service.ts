@@ -1,6 +1,6 @@
 // lib/auth-service.ts
 import { AuthCredentials } from '@/types/auth';
-import { User, UserRole } from '@/types/user';
+import { User } from '@/types/user';
 import { v4 as uuidv4 } from 'uuid';
 import { sendVerificationEmail as sendVerificationEmailService } from './email-service';
 

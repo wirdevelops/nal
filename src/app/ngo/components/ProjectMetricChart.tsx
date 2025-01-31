@@ -1,5 +1,5 @@
 // components/project-chart.tsx
-import { useNGOProject } from '@/hooks/useNGOProject';
+import { useNGOProject } from 'others/useNGOProject';
 import { ProjectMetrics } from '@/types/ngo/project';
 import ChartElement from './ChartElement';
 import { Skeleton } from '@/components/ui/skeleton';

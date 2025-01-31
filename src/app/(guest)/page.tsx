@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Film, Users, Globe, Heart, Video, Briefcase } from "lucide-react";
 import Link from "next/link";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "others/useAuth";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 

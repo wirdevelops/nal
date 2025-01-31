@@ -5,11 +5,9 @@ import { v4 as uuidv4 } from 'uuid';
 import type {
   Donation,
   DonationFrequency,
-  PaymentStatus,
   Receipt,
   ImpactMetric,
   DonationAllocation,
-  DonorInfo
 } from '@/types/ngo/donation';
 
 interface DonationState {

@@ -13,7 +13,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Asset, AssetLicense } from "@/types/assets";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "others/use-toast";
 import { formatDate } from "@/lib/formats";
 
 interface UsageRightsTableProps {

@@ -8,17 +8,16 @@ if (process.env.RESEND_API_KEY) {
   resend = new Resend(process.env.RESEND_API_KEY);
 }
 
-
 const FROM_EMAIL = process.env.EMAIL_FROM || 'noreply@nalevelempire.com';
 
 const emailTemplates = new Map<string, EmailTemplate>();
 
-type EmailData = {
+export type EmailData = {
   subject: string;
-  [key: string]: unknown;
+  [key: string]: any;
 };
 
-interface EmailTemplate {
+export interface EmailTemplate {
   render: (data: EmailData) => string;
   renderText: (data: EmailData) => string;
 }
@@ -99,7 +98,8 @@ const getBaseUrl = () => {
   return baseUrl;
 };
 
-const baseHTML = (content: string) => `
+
+export const baseHTML = (content: string) => `
 <!DOCTYPE html>
 <html>
 <head>
@@ -122,7 +122,7 @@ const baseHTML = (content: string) => `
 </html>
 `;
 
-const createButton = (text: string, url: string) => `
+export const createButton = (text: string, url: string) => `
   <p>
     <a href="${url}" 
        style="background-color: #2563eb; color: white; 

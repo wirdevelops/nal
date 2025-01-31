@@ -2,8 +2,8 @@
 
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
-import { useVolunteer } from '@/hooks/useVolunteer';
-import { useNGOProject } from '@/hooks/useNGOProject';
+import { useVolunteer } from 'others/useVolunteer';
+import { useNGOProject } from 'others/useNGOProject';
 import { ArrowLeft, Edit2, Archive, Type } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { VolunteerProfile } from '@/types/user';

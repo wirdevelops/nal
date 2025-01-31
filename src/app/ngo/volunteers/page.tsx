@@ -1,7 +1,7 @@
 'use client'
 
 import { PageHeader }from "../components/PageHeader";
-import { useVolunteer } from "@/hooks/useVolunteer";
+import { useVolunteer } from "others/useVolunteer";
 
 export default function VolunteerPage() {  // Changed to export default
   const { volunteers } = useVolunteer();

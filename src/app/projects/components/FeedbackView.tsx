@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useProjectMedia } from '@/hooks/useProjectMedia';
+import { useProjectMedia } from 'others/useProjectMedia';
 import { FileUpload } from '@/components/shared/FileUpload';
 import { Button } from '@/components/ui/button';
 import {

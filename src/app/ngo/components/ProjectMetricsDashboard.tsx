@@ -1,5 +1,5 @@
 // components/project-analytics.tsx
-import { useNGOProject } from '@/hooks/useNGOProject';
+import { useNGOProject } from 'others/useNGOProject';
 import { AnalyticCard } from './AnalyticCard';
 import { ProjectMetrics } from '@/types/ngo/project';
 

@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ShoppingCart } from 'lucide-react';
 import  CartItemList from '../../../components/layout/CartItem';
-import  useCart  from '@/hooks/useCart';
+import  useCart  from 'others/useCart';
 
 export const Header = () => {
    const { cart } = useCart();

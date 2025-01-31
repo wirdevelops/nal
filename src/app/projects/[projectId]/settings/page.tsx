@@ -11,7 +11,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { ThumbnailSelector } from '../../components/ThumbnailSelector';
-import { useProjectMedia } from '@/hooks/useProjectMedia';
+import { useProjectMedia } from 'others/useProjectMedia';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';

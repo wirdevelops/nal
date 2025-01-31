@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useProducts } from '@/hooks/useProducts';
+import { useProducts } from 'others/useProducts';
 import { useDebounce } from '@/hooks/useDebounce';
 import { useUser } from '@/hooks/useUser';
 import { Input } from "@/components/ui/input";

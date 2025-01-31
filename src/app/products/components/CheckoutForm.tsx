@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Loader2, CreditCard, Box } from 'lucide-react';
-import  useCart  from '@/hooks/useCart';
+import  useCart  from 'others/useCart';
 
 const checkoutSchema = z.object({
   email: z.string().email(),

@@ -2,7 +2,7 @@
 
 import { ImpactStories } from '../../../components/ImpactStories';
 import { Button } from '@/components/ui/button';
-import { useStories } from '@/hooks/useStories';
+import { useStories } from 'others/useStories';
 import { Plus } from 'lucide-react';
 import { useState } from 'react';
 

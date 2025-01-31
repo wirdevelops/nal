@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { VolunteerFilters } from './volunteer/VolunteerFilters';
 import { VolunteerList } from './volunteer/VolunteerList';
-import { useVolunteer } from '@/hooks/useVolunteer';
+import { useVolunteer } from 'others/useVolunteer';
 import { Plus, Download, Filter } from 'lucide-react';
 import { BackgroundCheck, Skill } from '@/types/ngo';
 import { VolunteerShiftManager } from './volunteer/VolunteerSchedule';

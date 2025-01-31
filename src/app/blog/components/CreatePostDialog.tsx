@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useProjectBlog } from '@/hooks/blog';
+import { useProjectBlog } from 'others/blog';
 import {
   Dialog,
   DialogContent,
@@ -66,7 +66,8 @@ export function CreatePostDialog({
         tags: [],
         author: {
           id: 'current-user', // This would come from auth
-          name: 'Current User', // This would come from auth
+          username: 'Current User',
+          fullName: 'Current User',
         },
       });
 

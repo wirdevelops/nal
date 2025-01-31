@@ -23,29 +23,29 @@ export interface TeamMember {
   avatar?: string;
 }
 
-const initialTeamMembers: TeamMember[] = [
-  { 
-    id: '1', 
-    name: 'Sarah Director', 
-    role: 'Director',
-    department: 'Production', // Added required department field
-    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100'
-  },
-  { 
-    id: '2', 
-    name: 'Mike Producer', 
-    role: 'Producer',
-    department: 'Production', // Added required department field
-    avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100'
-  },
-  { 
-    id: '3', 
-    name: 'Alex Writer', 
-    role: 'Lead Writer',
-    department: 'Creative', // Added required department field
-    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100'
-  }
-];
+// const initialTeamMembers: TeamMember[] = [
+//   { 
+//     id: '1', 
+//     name: 'Sarah Director', 
+//     role: 'Director',
+//     department: 'Production', // Added required department field
+//     avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100'
+//   },
+//   { 
+//     id: '2', 
+//     name: 'Mike Producer', 
+//     role: 'Producer',
+//     department: 'Production', // Added required department field
+//     avatar: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100'
+//   },
+//   { 
+//     id: '3', 
+//     name: 'Alex Writer', 
+//     role: 'Lead Writer',
+//     department: 'Creative', // Added required department field
+//     avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100'
+//   }
+// ];
 
 export interface Milestone {
   id: string;

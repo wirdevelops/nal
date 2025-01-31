@@ -1,7 +1,7 @@
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { ProjectFile, FileType, FileMetadata } from '../types/files';
+import type { ProjectFile, FileType } from '../types/files';
 
 interface FileStore {
   files: ProjectFile[];

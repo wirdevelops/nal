@@ -16,7 +16,7 @@ import {
   BudgetOverviewCard,
   IssuesOverviewCard,
 } from './CommonCards';
-import { useProject } from '@/hooks/useProjectHooks';
+import { useProject } from 'others/useProjectHooks';
 import {
   useFeatureFilm,
   useTVSeries,
@@ -25,7 +25,7 @@ import {
   useMusicVideo,
   useWebSeries,
   useAnimation,
-} from '@/hooks/useProjectHooks';
+} from 'others/useProjectHooks';
 
 import { Project } from '@/stores/useProjectStore';
 

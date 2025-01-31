@@ -1,6 +1,6 @@
 'use client';
 
-import { useStories } from '@/hooks/useStories';
+import { useStories } from 'others/useStories';
 import { StoryCategory } from '@/types/ngo/story';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';

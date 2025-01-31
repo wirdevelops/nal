@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FileUpload } from "./FileUpload";
 import { AssetType, AssetCategory } from "@/types/assets";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "others/use-toast";
 
 interface AssetFormValues {
   name: string;

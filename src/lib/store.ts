@@ -1,6 +1,5 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { ReactNode } from 'react';
 
 interface UserProfile {
     name: string

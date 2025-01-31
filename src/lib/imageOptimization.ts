@@ -62,8 +62,8 @@ interface OptimizationOptions {
   
       // If preserving metadata, combine original metadata with new image
       if (preserveMetadata && 'arrayBuffer' in file) {
-        const originalBuffer = await file.arrayBuffer();
-        const optimizedBuffer = await blob.arrayBuffer();
+        // const originalBuffer = await file.arrayBuffer();
+        // const optimizedBuffer = await blob.arrayBuffer();
         
         // Here you could add logic to preserve EXIF data if needed
         // For now, we'll just return the optimized blob

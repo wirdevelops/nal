@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { FileUpload } from '@/components/shared/FileUpload';
 import { Button } from '@/components/ui/button';
-import { useProjectMedia } from '@/hooks/useProjectMedia';
+import { useProjectMedia } from 'others/useProjectMedia';
 import { useFileStore } from '@/stores/useFileStore';
 import {
   Dialog,

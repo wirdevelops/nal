@@ -1,7 +1,7 @@
 import { useRef, useEffect } from 'react';
 import { CheckCircle, Clock, Circle } from 'lucide-react';
 import { TimelinePhase } from '../../types/timeline';
-import { useTimelineScroll } from '../../hooks/useTimelineScroll';
+import { useTimelineScroll } from '../../../others/useTimelineScroll';
 
 interface TimelineNavigationProps {
   phases: TimelinePhase[];
