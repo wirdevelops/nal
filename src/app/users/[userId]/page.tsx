@@ -2,11 +2,11 @@
 
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
-import { useVolunteer } from 'others/useVolunteer';
-import { useNGOProject } from 'others/useNGOProject';
+import { useVolunteer } from '@/hooks/useVolunteer';
+import { useNGOProject } from '@/hooks/useNGOProject';
 import { ArrowLeft, Edit2, Archive, Type } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { VolunteerProfile } from '@/types/user';
+// import { VolunteerProfile } from '@/types/user/volunteer';
 
 export default function VolunteerDetailsPage({ params }: { params: { volunteerId: string } }) {
   const router = useRouter();
@@ -85,14 +85,14 @@ export default function VolunteerDetailsPage({ params }: { params: { volunteerId
         </div>
       </div>
 
-      <VolunteerProfile
+      {/* <VolunteerProfile
         volunteer={volunteer}
         projects={volunteerProjects.map(p => ({
           id: p.id,
           name: p.name
         }))}
         onEditProfile={handleEditProfile}
-      />
+      /> */}
     </div>
   );
 }
