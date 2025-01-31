@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { MultiRoleProfile } from './MultiRoleProfile';
-import { ArrowLeft, Edit2, Archive } from 'lucide-react';
+import { ArrowLeft, Edit2} from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { UserRole } from '@/types/user';
 import { useUserStore } from '@/stores/useUserStore';
@@ -54,7 +54,7 @@ export default function UserProfilePage({ params }: { params: { userId: string }
         <div className="text-center py-8">
           <h1 className="text-2xl font-bold mb-2">User Not Found</h1>
           <p className="text-muted-foreground">
-            The user you're looking for doesn't exist or has been removed.
+            The user you&apos;re looking for doesn&apos;t exist or has been removed.
           </p>
         </div>
       </div>

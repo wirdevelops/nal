@@ -238,7 +238,7 @@ export default function HomePage() {
                 <CardContent className="pt-6">
                   <Star className="h-8 w-8 text-primary mb-4" />
                   <blockquote className="text-muted-foreground mb-6">
-                    "{testimonial.quote}"
+                  &quot;{testimonial.quote}&quot;
                   </blockquote>
                   <div className="flex items-center gap-4">
                     <img

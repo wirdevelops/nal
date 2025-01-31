@@ -15,7 +15,7 @@ export default function VolunteerConfirmationPage() {
           Application Received!
         </h1>
         <p className="text-xl text-muted-foreground mb-8">
-          Thank you for applying to become a volunteer. We'll review your 
+          Thank you for applying to become a volunteer. We&apos;ll review your 
           application and be in touch within 3 business days.
         </p>
         

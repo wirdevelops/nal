@@ -7,7 +7,7 @@ import { UserRole, ActorProfile, CrewProfile, VendorProfile, ProducerProfile, Ba
 import * as z from 'zod';
 
 // Define the schema used by the form to infer types
-const schema = z.object({
+const BasicInfoSchema = z.object({
   location: z.string().min(2, 'Location is required'),
   bio: z.string().max(500, 'Bio must be less than 500 characters'),
   website: z.string().url('Must be a valid URL').optional().or(z.literal('')),
@@ -33,7 +33,7 @@ export default function BasicInfoPage() {
   const router = useRouter();
   const { user, updateProfile } = useUserStore();
 
-  const handleSubmit = async (data: z.infer<typeof schema>) => {
+  const handleSubmit = async (data: z.infer<typeof BasicInfoSchema>) => {
       const role = user.roles[0];
 
       if (role === 'actor' || role === 'crew' || role === 'vendor' || role === 'producer') {

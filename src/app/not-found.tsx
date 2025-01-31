@@ -47,7 +47,7 @@ export default function NotFoundPage() {
           <div className="text-8xl font-bold text-primary">404</div>
           <h1 className="text-2xl font-semibold">Page Not Found</h1>
           <p className="text-muted-foreground max-w-md mx-auto">
-            Sorry, we couldn't find the page you're looking for. Here are some helpful links:
+            Sorry, we couldn&apos;t find the page you&apos;re looking for. Here are some helpful links:
           </p>
         </div>
 
