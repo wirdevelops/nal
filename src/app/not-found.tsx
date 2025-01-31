@@ -11,7 +11,6 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
-// Quick links for navigation
 const quickLinks = [
   {
     title: "Home",
