@@ -10,8 +10,6 @@ import type {
   AnimationData
 } from '@/types/project-types';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import { Category } from '@/types/blog';
-import { ProjectCategory } from '@/types/ngo/project';
 
 export type ProjectType = 'feature' | 'series' | 'documentary' | 'commercial' | 'music_video' | 'web_series' | 'animation';
 export type ProjectStatus = 'active' | 'completed' | 'on-hold' | 'archived';
@@ -30,7 +28,6 @@ type TypeSpecificData = {
 
 export interface Project<T extends ProjectType = ProjectType> {
   location: any;
-  category: ProjectCategory;
   name: string;
   id: string;
   title: string;
