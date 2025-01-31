@@ -16,7 +16,7 @@ export interface ValidationError {
     description?: string;
     type: ProjectTypeId;
     thumbnailFile?: File;
-    typeData?: Record<string, any>;
+    typeData?: Record<string, unknown>;
     startDate?: Date;
     targetDate?: Date;
     primaryTool?: string;
