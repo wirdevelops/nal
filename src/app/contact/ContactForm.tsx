@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -174,11 +175,13 @@ export function ContactForm() {
             </FormItem>
           )}
         />
+        <Link href="/projects">
 
         <Button type="submit" className="w-full">
           <Send className="w-4 h-4 mr-2" />
           Send Message
         </Button>
+        </Link>
       </form>
     </Form>
   );

@@ -14,6 +14,8 @@ import {
   Download,
   MessageSquare
 } from 'lucide-react';
+import Link from 'next/link';
+
 
 // Platform features
 const features = [
@@ -111,14 +113,18 @@ export default function HomePage() {
             </p>
 
             <div className="flex flex-wrap gap-4">
+            <Link href="/pro-trial">
               <Button size="lg">
                 Start Free Trial
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
+              </Link>
+              <Link href="/projects">
               <Button variant="outline" size="lg">
                 <Play className="mr-2 h-4 w-4" />
                 Watch Demo
               </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -191,10 +197,12 @@ export default function HomePage() {
                   </div>
                 ))}
               </div>
+              <Link href="/blog">
               <Button size="lg">
                 Learn More
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
+              </Link>
             </div>
             <div className="relative aspect-video rounded-lg overflow-hidden">
               <img
@@ -293,14 +301,18 @@ export default function HomePage() {
               Join thousands of production teams already using our platform
             </p>
             <div className="flex flex-wrap justify-center gap-4">
+            <Link href="/pro-tial">
               <Button variant="secondary" size="lg">
                 Start Free Trial
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
+              </Link>
+              <Link href="/contact">
               <Button variant="outline" size="lg" className="text-white border-white hover:bg-white/20">
                 <MessageSquare className="mr-2 h-4 w-4" />
                 Talk to Sales
               </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -310,13 +322,16 @@ export default function HomePage() {
     <section className="py-12 bg-background">
         <div className="container">
           <div className="flex justify-center gap-4">
-            <Button 
-              variant="outline" 
-              size="lg"
-              className="min-w-[120px] font-semibold hover:bg-primary hover:text-white transition-colors"
-            >
-              NGO
+           <Link href="/ngo">
+              <Button 
+                variant="outline" 
+                size="lg"
+                className="min-w-[120px] font-semibold hover:bg-primary hover:text-white transition-colors"
+              >
+                NGO
             </Button>
+            </Link>
+             <Link href="/market">
             <Button 
               variant="outline" 
               size="lg"
@@ -324,6 +339,8 @@ export default function HomePage() {
             >
               Market
             </Button>
+            </Link>
+            <Link href="/projects">
             <Button 
               variant="outline" 
               size="lg"
@@ -331,6 +348,7 @@ export default function HomePage() {
             >
               Projects
             </Button>
+            </Link>
           </div>
         </div>
       </section>
