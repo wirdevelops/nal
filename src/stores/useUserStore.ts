@@ -16,11 +16,6 @@ import {
   PROFILE_INITIALIZERS
 } from '@/types/user';
 
-
-type ProfileInitializers = {
-  [K in UserRole]: object;
-};
-
 interface UserProfiles {
   actor: ActorProfile;
   crew: CrewProfile;
@@ -210,9 +205,8 @@ export const useUserStore = create<UserState & UserActions>()(
         });
       },
 
-      requestPasswordReset: async (email) => {
+      requestPasswordReset: async () => {
         const resetToken = crypto.randomUUID?.() || uuidv4();
-        const expiresAt = Date.now() + 3600000; // 1 hour
         
         // In real implementation, store token securely and send email
         console.log('Password reset token:', resetToken);
