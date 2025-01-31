@@ -14,7 +14,7 @@ import {
 
 export function QuickContactOptions() {
   const handleWhatsAppClick = () => {
-    const whatsappNumber = "+1234567890";
+    const whatsappNumber = "+237679047311";
     const whatsappUrl = `https://wa.me/${whatsappNumber}`;
     window.open(whatsappUrl, '_blank');
   };
