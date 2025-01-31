@@ -12,7 +12,6 @@ import {
   LogIn
 } from 'lucide-react';
 import { UserMenu } from './UserMenu';
-import { ShoppingCartSheet } from './ShoppingCartSheet';
 import { MobileNav } from './MobileNav';
 import { cn } from "@/lib/utils";
 import { useUserStore } from '@/stores/useUserStore';
@@ -104,8 +103,6 @@ export function HeaderWrapper() {
   }, [pathname, user]);
 
   if (shouldHideHeader) return null;
-
-  const section = user ? SECTIONS[currentSection] : null;
 
    // Guest Header
    if (!user) {

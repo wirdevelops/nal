@@ -2,9 +2,9 @@
 
 import Link from 'next/link'
 import { cn } from "@/lib/utils"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
-import { Menu, X } from 'lucide-react'
+import {  X } from 'lucide-react'
 
 interface NavItem {
   label: string
