@@ -1,11 +1,13 @@
+'use client'
+
 import { Updates } from '../../../components/Updates';
-import { useNGOProject } from '@/hooks/useNGOProject';
+import { useNGOProjectStore } from '@/stores/useNGOProjectStore';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { Plus } from 'lucide-react';
 
 export default function ProjectUpdatesPage({ params }: { params: { projectId: string } }) {
-  const { getProjectById } = useNGOProject();
+  const { getProjectById } = useNGOProjectStore();
   const [showAddUpdate, setShowAddUpdate] = useState(false);
   const project = getProjectById(params.projectId);
 
