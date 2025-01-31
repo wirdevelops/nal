@@ -4,7 +4,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { AuthService } from '@/lib/auth-service';
 import { rateLimit } from '@/lib/rate-limit';
-import Credentials from 'next-auth/providers/credentials';
 
 const loginSchema = z.object({
   email: z.string().email(),

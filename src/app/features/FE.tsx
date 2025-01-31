@@ -34,7 +34,6 @@ import {
   MessageSquare,
   Calendar,
   FileText,
-  Settings,
   ArrowRight,
   Play,
   Download,

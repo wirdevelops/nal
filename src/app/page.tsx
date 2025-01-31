@@ -11,7 +11,6 @@ import {
   Check,
   Star,
   PlayCircle,
-  Download,
   MessageSquare
 } from 'lucide-react';
 import Link from 'next/link';

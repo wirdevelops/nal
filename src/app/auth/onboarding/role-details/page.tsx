@@ -6,7 +6,7 @@ import { useUserStore } from "@/stores/useUserStore";
 import { RoleDetailsForm } from '@/components/auth/RoleDetailsForm';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { ArrowLeft} from 'lucide-react';
 
 export default function RoleDetailsPage() {
   const router = useRouter();

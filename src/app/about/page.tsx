@@ -11,9 +11,7 @@ import {
   Zap,
   Trophy,
   Building,
-  Calendar,
   ArrowRight,
-  Clock,
   Mail
 } from 'lucide-react';
 import Image from 'next/image';

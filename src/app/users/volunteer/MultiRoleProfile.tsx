@@ -1,24 +1,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import {
-  Calendar,
   Clock,
   Mail,
   Phone,
   MapPin,
   CheckCircle,
-  UserCheck,
   BookOpen,
   AlertCircle,
   Briefcase,
   Palette,
   HeartHandshake,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import type { User } from '@/types/user';
+import { NgoProfile, ProjectOwnerProfile, VendorProfile, type User } from '@/types/user';
 
 interface MultiRoleProfileProps {
   user: User;
@@ -41,7 +37,7 @@ export function MultiRoleProfile({ user, onEditProfile }: MultiRoleProfileProps)
           <div className="flex items-start gap-6">
             <Avatar className="h-24 w-24">
               <AvatarFallback className="text-2xl">
-                {user.firstName?.[0]}{user.lastName?.[0]}
+                {user.name.first?.[0]}{user.name.last?.[0]}
               </AvatarFallback>
             </Avatar>
 
@@ -49,10 +45,10 @@ export function MultiRoleProfile({ user, onEditProfile }: MultiRoleProfileProps)
               <div className="flex justify-between items-start">
                 <div>
                   <h1 className="text-2xl font-bold">
-                    {user.firstName} {user.lastName}
+                    {user.name.first} {user.name.last}
                   </h1>
                   <p className="text-muted-foreground">
-                    Member since {formatDate(user.createdAt)}
+                    Member since {formatDate(user.metadata.createdAt)}
                   </p>
                 </div>
                 {onEditProfile && (
@@ -88,21 +84,21 @@ export function MultiRoleProfile({ user, onEditProfile }: MultiRoleProfileProps)
       </Card>
 
       {/* Role-specific Sections */}
-      {user.roles.includes('volunteer') && (
+      {user.roles.includes('ngo') && (
         <RoleSection title="Volunteer Profile" icon={<HeartHandshake className="w-5 h-5" />}>
-          <VolunteerProfileSection profile={user.volunteerProfile} />
+          <VolunteerProfileSection profile={NgoProfile} />
         </RoleSection>
       )}
 
-      {user.roles.includes('seller') && (
+      {user.roles.includes('vendor') && (
         <RoleSection title="Seller Profile" icon={<Briefcase className="w-5 h-5" />}>
-          <SellerProfileSection profile={user.sellerProfile} />
+          <SellerProfileSection profile={VendorProfile} />
         </RoleSection>
       )}
 
-      {user.roles.includes('creator') && (
+      {user.roles.includes('project-owner') && (
         <RoleSection title="Creator Profile" icon={<Palette className="w-5 h-5" />}>
-          <CreatorProfileSection profile={user.creatorProfile} />
+          <CreatorProfileSection profile={ProjectOwnerProfile} />
         </RoleSection>
       )}
 
@@ -116,7 +112,7 @@ export function MultiRoleProfile({ user, onEditProfile }: MultiRoleProfileProps)
             {user.email}
           </InfoRow>
           <InfoRow icon={<Phone className="w-4 h-4" />} label="Phone">
-            {user.phone || 'Not provided'}
+            {user.profiles.phone || 'Not provided'}
           </InfoRow>
           <InfoRow icon={<MapPin className="w-4 h-4" />} label="Location">
             {user.location || 'Not provided'}
@@ -147,7 +143,7 @@ const RoleSection = ({ title, icon, children }: {
 );
 
 // Volunteer Profile Section Component
-const VolunteerProfileSection = ({ profile }: { profile?: User['volunteerProfile'] }) => {
+const VolunteerProfileSection = ({ profile }: { profile?: NgoProfile }) => {
   if (!profile) return null;
 
   return (
@@ -196,7 +192,7 @@ const SellerProfileSection = ({ profile }: { profile?: User['sellerProfile'] }) 
 };
 
 // Creator Profile Section Component
-const CreatorProfileSection = ({ profile }: { profile?: User['creatorProfile'] }) => {
+const CreatorProfileSection = ({ profile }: { profile?: ProjectOwnerProfile }) => {
   if (!profile) return null;
 
   return (

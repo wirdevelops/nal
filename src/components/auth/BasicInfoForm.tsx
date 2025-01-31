@@ -33,7 +33,7 @@ interface BasicInfoFormProps {
   defaultValues?: Partial<z.infer<typeof schema>>;
 }
 
-export function BasicInfoForm({ roles, onSubmit, defaultValues }: BasicInfoFormProps) {
+export function BasicInfoForm({ onSubmit, defaultValues }: BasicInfoFormProps) {
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: {

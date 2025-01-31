@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Users, Calendar, Scale } from 'lucide-react';
 import type { TimeLog, Volunteer } from '@/types/ngo/volunteer';
-import { BackgroundCheck, Skill } from '@/types/ngo/volunteer';
+import { BackgroundCheck} from '@/types/ngo/volunteer';
 import { Checkbox } from '@/components/ui/checkbox';
 
 interface VolunteerListProps {

@@ -3,7 +3,6 @@
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { MultiRoleProfile } from './MultiRoleProfile';
-import { useUser } from '@/hooks/useUser';
 import { ArrowLeft, Edit2, Archive } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { UserRole } from '@/types/user';
@@ -16,7 +15,7 @@ import {
 
 export default function UserProfilePage({ params }: { params: { userId: string } }) {
   const router = useRouter();
-  const { user, isLoading } = useUser(params.userId);
+  const { user, isLoading } = useUserStore(params.userId);
 
   if (isLoading) {
     return (

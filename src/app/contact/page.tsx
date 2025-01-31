@@ -1,4 +1,3 @@
-import { Metadata } from 'next';
 import { ContactForm } from './ContactForm';
 import { QuickContactOptions } from './QuickContact';
 import { FAQCTA } from './FAQ';

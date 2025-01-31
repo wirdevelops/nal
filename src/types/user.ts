@@ -277,6 +277,7 @@ export const User = Type.Object({
       contactInfo: Type.Boolean()
     })
   }),
+  location: Type.Optional(Type.String()),
   activeRole: Type.Optional(UserRoleSchema),
   status: Type.Union([
     Type.Literal('active'),

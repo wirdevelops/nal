@@ -21,7 +21,7 @@ interface Shift {
   status: 'draft' | 'published' | 'completed';
 }
 
-export function VolunteerShiftManager({ projectId }: { projectId: string }) {
+export function VolunteerShiftManager({ }: { projectId: string }) {
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [open, setOpen] = useState(false);
   const [newShift, setNewShift] = useState<Partial<Shift>>({
