@@ -2,23 +2,39 @@
 import { Resend } from 'resend';
 import validator from 'validator';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM_EMAIL = process.env.EMAIL_FROM ||'noreply@nalevelempire.com';
+// Initialize Resend only if the API key is available
+let resend: Resend | null = null;
+if (process.env.RESEND_API_KEY) {
+  resend = new Resend(process.env.RESEND_API_KEY);
+}
 
-const emailTemplates = new Map();
+
+const FROM_EMAIL = process.env.EMAIL_FROM || 'noreply@nalevelempire.com';
+
+const emailTemplates = new Map<string, EmailTemplate>();
 
 type EmailData = {
   subject: string;
   [key: string]: unknown;
 };
 
+interface EmailTemplate {
+  render: (data: EmailData) => string;
+  renderText: (data: EmailData) => string;
+}
+
 export async function sendEmail(
   type: 'verification' | 'reset' | 'welcome',
   email: string,
   data: EmailData
 ) {
+    if (!resend) {
+      console.error("Resend API key not configured. Email service is disabled.");
+      return { success: false, error: "Resend API key not configured" };
+    }
+
   validateEmail(email);
-  
+
   if (typeof data.subject !== 'string') {
     throw new Error('Email subject must be a string');
   }
@@ -52,28 +68,31 @@ export async function sendEmail(
       await new Promise(resolve => setTimeout(resolve, 1000 * (4 - retries)));
     }
   }
+   return { success: false, error: "Email send failed after multiple retries" };
 }
 
-async function getTemplate(name: string) {
-  if (!emailTemplates.has(name)) {
-    const template = await import(`@/emails/${name}`);
-    if (typeof template?.render !== 'function' || typeof template?.renderText !== 'function') {
-      throw new Error(`Invalid email template: ${name}`);
+async function getTemplate(name: string): Promise<EmailTemplate> {
+    if (!emailTemplates.has(name)) {
+      try {
+        const templateModule = await import(`@/emails/${name}`);
+        const template: EmailTemplate = templateModule.default;
+
+        if (!template || typeof template?.render !== 'function' || typeof template?.renderText !== 'function') {
+          throw new Error(`Invalid email template: ${name}`);
+        }
+        emailTemplates.set(name, template);
+      } catch (error) {
+        console.error(`Error loading email template ${name}:`, error);
+        throw new Error(`Failed to load email template: ${name}`);
+      }
     }
-    emailTemplates.set(name, template);
-  }
-  return emailTemplates.get(name);
-}
-
-interface EmailTemplate {
-  render: (data: EmailData) => string;
-  renderText: (data: EmailData) => string;
+    return emailTemplates.get(name)!;
 }
 
 const getBaseUrl = () => {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL;
   if (!baseUrl) throw new Error('NEXT_PUBLIC_APP_URL is not defined');
-  
+
   if (process.env.NODE_ENV === 'production') {
     return baseUrl.replace(/^http:/, 'https:');
   }
@@ -113,6 +132,7 @@ const createButton = (text: string, url: string) => `
     </a>
   </p>
 `;
+
 const validateEmail = (email: string) => {
   if (!validator.isEmail(email)) {
     throw new Error('Invalid email address');
@@ -120,14 +140,14 @@ const validateEmail = (email: string) => {
 };
 
 export async function sendVerificationEmail(email: string, token: string) {
-  const encodedToken = encodeURIComponent(token);
-  const verifyUrl = `${getBaseUrl()}/auth/verify?token=${encodedToken}`;
+    const encodedToken = encodeURIComponent(token);
+    const verifyUrl = `${getBaseUrl()}/auth/verify?token=${encodedToken}`;
 
-  return sendEmail('verification', email, {
-    subject: 'Verify your email address',
-    verifyUrl,
-    token
-  });
+    return sendEmail('verification', email, {
+      subject: 'Verify your email address',
+      verifyUrl,
+      token
+    });
 }
 
 export async function sendPasswordResetEmail(email: string, token: string) {
