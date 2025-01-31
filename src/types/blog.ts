@@ -1,5 +1,3 @@
-import { z } from 'zod';
-
 // Blog post status
 export type PostStatus = 'draft' | 'published' | 'archived' | 'scheduled';
 
