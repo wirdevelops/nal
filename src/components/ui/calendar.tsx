@@ -66,5 +66,6 @@ function Calendar({
   );
 }
 Calendar.displayName = 'Calendar';
+// Removed export { Calendar }
 
 export { Calendar };
