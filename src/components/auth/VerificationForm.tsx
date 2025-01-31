@@ -14,7 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { FileUpload } from '@/components/shared/FileUpload';
-import { Loader2, CheckCircle2, Upload } from 'lucide-react';
+import { Loader2, CheckCircle2 } from 'lucide-react';
 import { UserRole, VerificationData } from '@/types/user';
 
 

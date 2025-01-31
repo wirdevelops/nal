@@ -7,7 +7,6 @@ import {
   Form, FormControl, FormField, FormItem, FormLabel, FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const producerSchema = z.object({
@@ -46,10 +45,10 @@ export function ProducerRoleForm({ onSubmit, defaultValues }) {
     }
   });
 
-  const projectTypes = [
-    'Feature Films', 'Short Films', 'Documentaries', 
-    'TV Series', 'Web Series', 'Commercials', 'Music Videos'
-  ];
+  // const projectTypes = [
+  //   'Feature Films', 'Short Films', 'Documentaries', 
+  //   'TV Series', 'Web Series', 'Commercials', 'Music Videos'
+  // ];
 
   const expertiseAreas = [
     'Development', 'Financing', 'Pre-production',

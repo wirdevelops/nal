@@ -103,7 +103,7 @@ export function VerifyEmailForm({ email }: { email: string }) {
       </Form>
 
       <div className="text-center text-sm">
-        Didn't receive the code?{' '}
+        Didn&apos;t receive the code?{' '}
         <button
           type="button"
           onClick={handleResend}

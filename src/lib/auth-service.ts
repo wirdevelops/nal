@@ -77,7 +77,7 @@ export class AuthService {
     }
   }
 
-  static async resetPassword(token: string, newPassword: string, password: string): Promise<boolean> {
+  static async resetPassword(token: string, newPassword: string): Promise<boolean> {
     const response = await fetch('/api/auth/reset-password', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -115,7 +115,7 @@ export class AuthService {
 
   }
   
-  static clearSession(userId: string): void {
+  static clearSession(): void {
     document.cookie = 'session=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT';
   }
 

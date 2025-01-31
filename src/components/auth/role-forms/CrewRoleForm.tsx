@@ -20,8 +20,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { FileUpload } from '@/components/shared/FileUpload';
 
 const crewSchema = z.object({
   department: z.string().min(1, 'Please select a department'),

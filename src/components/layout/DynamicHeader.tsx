@@ -16,50 +16,50 @@ import { MobileNav } from './MobileNav';
 import { cn } from "@/lib/utils";
 import { useUserStore } from '@/stores/useUserStore';
 
-const SECTIONS = {
-  projects: {
-    title: 'Projects',
-    nav: [
-      { label: 'Dashboard', href: '/dashboard', icon: Film },
-      { label: 'My Projects', href: '/projects', icon: Video },
-      { label: 'Ideas Bank', href: '/ideas', icon: Lightbulb },
-      { label: 'Teams', href: '/teams', icon: Users }
-    ],
-    actions: [{ label: 'New Project', icon: Plus, href: '/projects/new' }]
-  },
-  marketplace: {
-    title: 'Marketplace',
-    nav: [
-      { label: 'Equipment', href: '/market/equipment' },
-      { label: 'Digital Assets', href: '/market/digital' },
-      { label: 'Services', href: '/market/services' }
-    ]
-  },
-  opportunities: {
-    title: 'Opportunities',
-    nav: [
-      { label: 'Job Board', href: '/jobs', icon: Briefcase },
-      { label: 'Casting Calls', href: '/casting', icon: Users },
-      { label: 'NGO Projects', href: '/ngo', icon: HandHeart }
-    ]
-  },
-  communication: {
-    title: 'Communication',
-    nav: [
-      { label: 'Project Chats', href: '/chats/projects' },
-      { label: 'Team Spaces', href: '/chats/teams' },
-      { label: 'Direct Messages', href: '/chats/direct' }
-    ]
-  },
-  content: {
-    title: 'Content',
-    nav: [
-      { label: 'Blog', href: '/blog', icon: FileText },
-      { label: 'Podcast', href: '/podcast', icon: Mic },
-      { label: 'Resources', href: '/resources' }
-    ]
-  }
-};
+// const SECTIONS = {
+//   projects: {
+//     title: 'Projects',
+//     nav: [
+//       { label: 'Dashboard', href: '/dashboard', icon: Film },
+//       { label: 'My Projects', href: '/projects', icon: Video },
+//       { label: 'Ideas Bank', href: '/ideas', icon: Lightbulb },
+//       { label: 'Teams', href: '/teams', icon: Users }
+//     ],
+//     actions: [{ label: 'New Project', icon: Plus, href: '/projects/new' }]
+//   },
+//   marketplace: {
+//     title: 'Marketplace',
+//     nav: [
+//       { label: 'Equipment', href: '/market/equipment' },
+//       { label: 'Digital Assets', href: '/market/digital' },
+//       { label: 'Services', href: '/market/services' }
+//     ]
+//   },
+//   opportunities: {
+//     title: 'Opportunities',
+//     nav: [
+//       { label: 'Job Board', href: '/jobs', icon: Briefcase },
+//       { label: 'Casting Calls', href: '/casting', icon: Users },
+//       { label: 'NGO Projects', href: '/ngo', icon: HandHeart }
+//     ]
+//   },
+//   communication: {
+//     title: 'Communication',
+//     nav: [
+//       { label: 'Project Chats', href: '/chats/projects' },
+//       { label: 'Team Spaces', href: '/chats/teams' },
+//       { label: 'Direct Messages', href: '/chats/direct' }
+//     ]
+//   },
+//   content: {
+//     title: 'Content',
+//     nav: [
+//       { label: 'Blog', href: '/blog', icon: FileText },
+//       { label: 'Podcast', href: '/podcast', icon: Mic },
+//       { label: 'Resources', href: '/resources' }
+//     ]
+//   }
+// };
 
 const GUEST_NAV = [
   { label: 'Home', href: '/' },

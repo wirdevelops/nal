@@ -42,10 +42,10 @@ export function ActorRoleForm({ onSubmit, defaultValues }) {
     }
   });
 
-  const actingStyles = [
-    'Theater', 'Film', 'Television', 'Commercial', 
-    'Voice-over', 'Musical Theater', 'Improv', 'Classical'
-  ];
+  // const actingStyles = [
+  //   'Theater', 'Film', 'Television', 'Commercial', 
+  //   'Voice-over', 'Musical Theater', 'Improv', 'Classical'
+  // ];
 
   return (
     <Form {...form}>

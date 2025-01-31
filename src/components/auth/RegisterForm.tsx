@@ -17,7 +17,6 @@ import { Loader2 } from 'lucide-react';
 import { AuthService } from '@/lib/auth-service';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useUserStore } from '@/stores/useUserStore';
 
 const registerSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
@@ -40,7 +39,6 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 export function RegisterForm() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const router = useRouter();
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),

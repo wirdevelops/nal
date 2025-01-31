@@ -1,9 +1,7 @@
 import { UserRole } from '@/types/user';
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Film, Camera, Users, Building, ShoppingBag, Heart } from 'lucide-react';
 import { cn } from "@/lib/utils";
-import { isLastDayOfMonth } from 'date-fns';
 
 const ROLES: {
   id: UserRole;
@@ -60,7 +58,6 @@ export function RoleSelector({
   selectedRoles, 
   onChange, 
   maxSelections = 2,
-  isLoading = false 
 }: RoleSelectorProps) {
   const handleRoleToggle = (role: UserRole) => {
     if (selectedRoles.includes(role)) {
@@ -77,7 +74,7 @@ export function RoleSelector({
       <div className="space-y-2">
         <h2 className="text-lg font-semibold">Choose your role{maxSelections > 1 ? 's' : ''}</h2>
         <p className="text-sm text-muted-foreground">
-          Select how you'll primarily use the platform 
+          Select how you&apos;ll primarily use the platform 
           {maxSelections > 1 && ` (up to ${maxSelections} roles)`}
         </p>
       </div>
