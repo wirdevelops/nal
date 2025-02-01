@@ -14,7 +14,7 @@ const emailTemplates = new Map<string, EmailTemplate>();
 
 export type EmailData = {
   subject: string;
-  [key: string]: any;
+  [key: string]: unknown;
 };
 
 export interface EmailTemplate {

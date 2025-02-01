@@ -3,9 +3,7 @@
 import React, { useRef, useEffect, PropsWithChildren } from 'react';
 import { useProjectStore } from '@/stores/useProjectStore';
 
-interface StoreProviderProps extends PropsWithChildren {}
-
-export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
+export const StoreProvider: React.FC<PropsWithChildren> = ({ children }) => {
   const initialized = useRef(false);
   const { persist } = useProjectStore;
 
@@ -15,7 +13,6 @@ export const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
       initialized.current = true;
     }
   }, [persist]);
-
 
   return <>{children}</>;
 };

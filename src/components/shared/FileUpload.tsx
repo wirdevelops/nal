@@ -4,6 +4,7 @@ import { Progress } from '@/components/ui/progress';
 import { Upload, X, File, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useDropzone } from 'react-dropzone';
+import Image from 'next/image'; // Import the Image component from next/image
 
 interface FileUploadProps {
   onUpload: (files: File[]) => Promise<void>;
@@ -94,6 +95,7 @@ export function FileUpload({
       
     } catch (error) {
       setErrors(['Failed to upload files. Please try again.']);
+      console.error('Upload error:', error); // Log the error for debugging
     } finally {
       setIsProcessing(false);
       setUploadProgress([]);
@@ -129,9 +131,11 @@ export function FileUpload({
             {value.map((url, index) => (
               <div key={url} className="relative">
                 {previewType === 'image' && (
-                  <img
+                  <Image
                     src={url}
                     alt={`Preview ${index}`}
+                    width={200} // Set appropriate width
+                    height={200} // Set appropriate height
                     className="w-full h-full object-cover rounded"
                   />
                 )}

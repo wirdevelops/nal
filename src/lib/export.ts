@@ -19,7 +19,7 @@ export function exportToJson(data: unknown, filename: string): void {
 
 // Define an interface for the data
 interface CsvRow {
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 

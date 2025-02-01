@@ -7,13 +7,13 @@ import  {ProjectOwnerRoleForm}  from './role-forms/ProjectOwnerForm';
 import { VendorRoleForm } from './role-forms/VendorRoleForm';
 import { NGORoleForm } from './role-forms/NGORoleForm';
 
-interface RoleDetailsFormProps {
+interface RoleDetailsFormProps<T = unknown> {
   role: UserRole;
-  onSubmit: (data: any) => Promise<void>;
-  defaultValues?: any;
+  onSubmit: (data: T) => Promise<void>;
+  defaultValues?: unknown;
 }
 
-export function RoleDetailsForm({ role, onSubmit, defaultValues }: RoleDetailsFormProps) {
+export function RoleDetailsForm<T = unknown>({ role, onSubmit, defaultValues }: RoleDetailsFormProps<T>) {
   const getRoleForm = () => {
     switch (role) {
       case 'crew':
