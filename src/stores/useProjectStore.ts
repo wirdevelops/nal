@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { v4 as uuidv4 } from 'uuid';
-import type { 
+import type {
   FeatureFilmData,
   SeriesData,
   DocumentaryData,
@@ -26,8 +26,13 @@ type TypeSpecificData = {
   animation: AnimationData;
 };
 
+interface Coordinates {
+    latitude: number;
+    longitude: number;
+}
+
 export interface Project<T extends ProjectType = ProjectType> {
-  location: any;
+  location: string | Coordinates;
   name: string;
   id: string;
   title: string;

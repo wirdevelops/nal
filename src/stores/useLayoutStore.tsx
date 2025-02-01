@@ -28,8 +28,9 @@ export const useLayoutStore = create<LayoutStore>()(
         })),
       resetSectionLayout: (section) =>
         set((state) => {
-          const { [section]: _, ...rest } = state.sectionLayouts;
-          return { sectionLayouts: rest };
+          const sectionLayouts = { ...state.sectionLayouts };
+          delete sectionLayouts[section];
+          return { sectionLayouts };
         }),
     }),
     {
