@@ -15,7 +15,6 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { Loader2 } from 'lucide-react';
 import { AuthService } from '@/lib/auth-service';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 const registerSchema = z.object({
@@ -61,7 +60,7 @@ export function RegisterForm() {
       );
       
       // Clear previous session data
-      AuthService.clearSession(user.id);
+      AuthService.clearSession();
       
       // Direct session creation and redirect
       AuthService.handleNewUser(user);

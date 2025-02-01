@@ -5,9 +5,8 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from "@/components/ui/button";
 import {
-  Film, Video, Briefcase, Users, Globe, Menu,
-  MessageSquare, Lightbulb, Mic, FileText, HandHeart,
-  Plus, BellRing,
+  Film, Briefcase, Globe, Menu,
+  MessageSquare, BellRing,
   UserPlus,
   LogIn
 } from 'lucide-react';
@@ -85,7 +84,7 @@ const HIDDEN_HEADER_PATHS = [
 export function HeaderWrapper() {
   const pathname = usePathname();
   const { user } = useUserStore();
-  const [currentSection, setCurrentSection] = useState('projects');
+  const [, setCurrentSection] = useState('projects');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const shouldHideHeader = HIDDEN_HEADER_PATHS.some(pattern => pattern.test(pathname));

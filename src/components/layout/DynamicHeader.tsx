@@ -1,20 +1,20 @@
-'use client'
+// 'use client'
 
-import { useState, useEffect } from 'react';
-import { usePathname } from 'next/navigation';
-import Link from 'next/link';
-import { Button } from "@/components/ui/button";
-import {
-  Film, Video, Briefcase, Users, Globe, Menu,
-  MessageSquare, Lightbulb, Mic, FileText, HandHeart,
-  Plus, BellRing,
-  UserPlus,
-  LogIn
-} from 'lucide-react';
-import { UserMenu } from './UserMenu';
-import { MobileNav } from './MobileNav';
-import { cn } from "@/lib/utils";
-import { useUserStore } from '@/stores/useUserStore';
+// import { useState, useEffect } from 'react';
+// import { usePathname } from 'next/navigation';
+// import Link from 'next/link';
+// import { Button } from "@/components/ui/button";
+// import {
+//   Film, Video, Briefcase, Users, Globe, Menu,
+//   MessageSquare, Lightbulb, Mic, FileText, HandHeart,
+//   Plus, BellRing,
+//   UserPlus,
+//   LogIn
+// } from 'lucide-react';
+// import { UserMenu } from './UserMenu';
+// import { MobileNav } from './MobileNav';
+// import { cn } from "@/lib/utils";
+// import { useUserStore } from '@/stores/useUserStore';
 
 // const SECTIONS = {
 //   projects: {
@@ -61,165 +61,165 @@ import { useUserStore } from '@/stores/useUserStore';
 //   }
 // };
 
-const GUEST_NAV = [
-  { label: 'Home', href: '/' },
-  { label: 'About', href: '/about' },
-  { label: 'Features', href: '/features' },
-  { label: 'Pricing', href: '/pricing' },
-  { label: 'Contact', href: '/contact' }
-];
+// const GUEST_NAV = [
+//   { label: 'Home', href: '/' },
+//   { label: 'About', href: '/about' },
+//   { label: 'Features', href: '/features' },
+//   { label: 'Pricing', href: '/pricing' },
+//   { label: 'Contact', href: '/contact' }
+// ];
 
-const PRIMARY_NAV = [
-  { label: 'Projects', href: '/projects', icon: Film, section: 'projects' },
-  { label: 'Opportunities', href: '/jobs', icon: Briefcase, section: 'opportunities' },
-  { label: 'Communication', href: '/chats', icon: MessageSquare, section: 'communication' },
-  { label: 'Marketplace', href: '/market', icon: Globe, section: 'marketplace' }
-];
+// const PRIMARY_NAV = [
+//   { label: 'Projects', href: '/projects', icon: Film, section: 'projects' },
+//   { label: 'Opportunities', href: '/jobs', icon: Briefcase, section: 'opportunities' },
+//   { label: 'Communication', href: '/chats', icon: MessageSquare, section: 'communication' },
+//   { label: 'Marketplace', href: '/market', icon: Globe, section: 'marketplace' }
+// ];
 
-const HIDDEN_HEADER_PATHS = [
-  /^\/auth\/.*/,  // All auth pages
-  /^\/preview\/.*/,  // Preview pages
-  /^\/print\/.*/   // Print pages
-];
+// const HIDDEN_HEADER_PATHS = [
+//   /^\/auth\/.*/,  // All auth pages
+//   /^\/preview\/.*/,  // Preview pages
+//   /^\/print\/.*/   // Print pages
+// ];
 
-export function DynamicHeader() {
-  const pathname = usePathname();
-  const { user } = useUserStore();
-  const [currentSection, setCurrentSection] = useState('projects');
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+// export function DynamicHeader() {
+//   const pathname = usePathname();
+//   const { user } = useUserStore();
+//   const [currentSection, setCurrentSection] = useState('projects');
+//   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const shouldHideHeader = HIDDEN_HEADER_PATHS.some(pattern => pattern.test(pathname));
+//   const shouldHideHeader = HIDDEN_HEADER_PATHS.some(pattern => pattern.test(pathname));
 
-  useEffect(() => {
-    if (user) {
-      if (pathname.startsWith('/market')) setCurrentSection('marketplace');
-      else if (pathname.startsWith('/jobs') || pathname.startsWith('/casting') || pathname.startsWith('/ngo')) 
-        setCurrentSection('opportunities');
-      else if (pathname.startsWith('/chats')) setCurrentSection('communication');
-      else if (pathname.startsWith('/blog') || pathname.startsWith('/podcast')) 
-        setCurrentSection('content');
-      else setCurrentSection('projects');
-    }
-  }, [pathname, user]);
+//   useEffect(() => {
+//     if (user) {
+//       if (pathname.startsWith('/market')) setCurrentSection('marketplace');
+//       else if (pathname.startsWith('/jobs') || pathname.startsWith('/casting') || pathname.startsWith('/ngo')) 
+//         setCurrentSection('opportunities');
+//       else if (pathname.startsWith('/chats')) setCurrentSection('communication');
+//       else if (pathname.startsWith('/blog') || pathname.startsWith('/podcast')) 
+//         setCurrentSection('content');
+//       else setCurrentSection('projects');
+//     }
+//   }, [pathname, user]);
 
-  if (shouldHideHeader) return null;
+//   if (shouldHideHeader) return null;
 
-   // Guest Header
-   if (!user) {
-    return (
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-14 items-center">
-          {/* Logo Section */}
-          <div className="flex-1 flex justify-start">
-            <Link href="/" className="flex items-center space-x-2">
-              <Film className="h-6 w-6 text-primary" />
-              <span className="font-bold text-xl hidden md:inline-block">
-                Na Level Empire
-              </span>
-            </Link>
-          </div>
+//    // Guest Header
+//    if (!user) {
+//     return (
+//       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+//         <div className="container flex h-14 items-center">
+//           {/* Logo Section */}
+//           <div className="flex-1 flex justify-start">
+//             <Link href="/" className="flex items-center space-x-2">
+//               <Film className="h-6 w-6 text-primary" />
+//               <span className="font-bold text-xl hidden md:inline-block">
+//                 Na Level Empire
+//               </span>
+//             </Link>
+//           </div>
 
-          {/* Centered Navigation */}
-          <nav className="flex-1 hidden md:flex items-center justify-center">
-            <div className="flex items-center space-x-8">
-              {GUEST_NAV.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={cn(
-                    "text-sm font-medium transition-colors hover:text-primary",
-                    pathname === link.href ? "text-primary" : "text-muted-foreground"
-                  )}
-                >
-                  {link.label}
-                </Link>
-              ))}
-            </div>
-          </nav>
+//           {/* Centered Navigation */}
+//           <nav className="flex-1 hidden md:flex items-center justify-center">
+//             <div className="flex items-center space-x-8">
+//               {GUEST_NAV.map((link) => (
+//                 <Link
+//                   key={link.href}
+//                   href={link.href}
+//                   className={cn(
+//                     "text-sm font-medium transition-colors hover:text-primary",
+//                     pathname === link.href ? "text-primary" : "text-muted-foreground"
+//                   )}
+//                 >
+//                   {link.label}
+//                 </Link>
+//               ))}
+//             </div>
+//           </nav>
 
-          {/* Auth Buttons */}
-          <div className="flex-1 flex items-center justify-end space-x-4">
-            <Button variant="ghost" asChild>
-              <Link href="/auth/login">
-                <LogIn className="h-4 w-4 mr-2" />
-                Sign In
-              </Link>
-            </Button>
-            <Button asChild className="bg-primary">
-              <Link href="/auth/register">
-                <UserPlus className="h-4 w-4 mr-2" />
-                Create Account
-              </Link>
-            </Button>
+//           {/* Auth Buttons */}
+//           <div className="flex-1 flex items-center justify-end space-x-4">
+//             <Button variant="ghost" asChild>
+//               <Link href="/auth/login">
+//                 <LogIn className="h-4 w-4 mr-2" />
+//                 Sign In
+//               </Link>
+//             </Button>
+//             <Button asChild className="bg-primary">
+//               <Link href="/auth/register">
+//                 <UserPlus className="h-4 w-4 mr-2" />
+//                 Create Account
+//               </Link>
+//             </Button>
 
-            {/* Mobile Menu Button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden"
-              onClick={() => setIsMobileMenuOpen(true)}
-            >
-              <Menu className="h-5 w-5" />
-            </Button>
-          </div>
-        </div>
-      </header>
-    );
-  }
+//             {/* Mobile Menu Button */}
+//             <Button
+//               variant="ghost"
+//               size="icon"
+//               className="md:hidden"
+//               onClick={() => setIsMobileMenuOpen(true)}
+//             >
+//               <Menu className="h-5 w-5" />
+//             </Button>
+//           </div>
+//         </div>
+//       </header>
+//     );
+//   }
   
-  return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 items-center">
-        <div className="flex items-center gap-6 flex-1">
-          <Link href="/dashboard" className="flex items-center space-x-2">
-            <Film className="h-6 w-6 text-primary" />
-            <span className="font-bold text-xl hidden md:inline-block">
-              Na Level Empire
-            </span>
-          </Link>
+//   return (
+//     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+//       <div className="container flex h-14 items-center">
+//         <div className="flex items-center gap-6 flex-1">
+//           <Link href="/dashboard" className="flex items-center space-x-2">
+//             <Film className="h-6 w-6 text-primary" />
+//             <span className="font-bold text-xl hidden md:inline-block">
+//               Na Level Empire
+//             </span>
+//           </Link>
 
-          <nav className="hidden md:flex items-center gap-6">
-            {PRIMARY_NAV.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "text-sm font-medium transition-colors hover:text-primary flex items-center gap-2",
-                  pathname.startsWith(item.href) ? "text-primary" : "text-muted-foreground"
-                )}
-              >
-                <item.icon className="h-4 w-4" />
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-        </div>
+//           <nav className="hidden md:flex items-center gap-6">
+//             {PRIMARY_NAV.map((item) => (
+//               <Link
+//                 key={item.href}
+//                 href={item.href}
+//                 className={cn(
+//                   "text-sm font-medium transition-colors hover:text-primary flex items-center gap-2",
+//                   pathname.startsWith(item.href) ? "text-primary" : "text-muted-foreground"
+//                 )}
+//               >
+//                 <item.icon className="h-4 w-4" />
+//                 {item.label}
+//               </Link>
+//             ))}
+//           </nav>
+//         </div>
 
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" className="relative">
-            <BellRing className="h-5 w-5" />
-          </Button>
+//         <div className="flex items-center gap-2">
+//           <Button variant="ghost" size="icon" className="relative">
+//             <BellRing className="h-5 w-5" />
+//           </Button>
 
-          <Button variant="ghost" size="icon" className="relative">
-            <MessageSquare className="h-5 w-5" />
-          </Button>
+//           <Button variant="ghost" size="icon" className="relative">
+//             <MessageSquare className="h-5 w-5" />
+//           </Button>
 
-          <UserMenu />
+//           <UserMenu />
 
-          <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setIsMobileMenuOpen(true)}>
-            <Menu className="h-5 w-5" />
-          </Button>
-        </div>
-      </div>
+//           <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setIsMobileMenuOpen(true)}>
+//             <Menu className="h-5 w-5" />
+//           </Button>
+//         </div>
+//       </div>
 
-      {/* Mobile Navigation */}
-      <MobileNav 
-        items={PRIMARY_NAV}
-        sectionItems={[]}
-        currentPath={pathname}
-        isOpen={isMobileMenuOpen}
-        onClose={() => setIsMobileMenuOpen(false)}
-      />
-    </header>
-  );
-}
+//       {/* Mobile Navigation */}
+//       <MobileNav 
+//         items={PRIMARY_NAV}
+//         sectionItems={[]}
+//         currentPath={pathname}
+//         isOpen={isMobileMenuOpen}
+//         onClose={() => setIsMobileMenuOpen(false)}
+//       />
+//     </header>
+//   );
+// }

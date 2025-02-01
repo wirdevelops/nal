@@ -59,7 +59,7 @@ export function ForgotPasswordForm() {
         <div className="space-y-2 text-center">
           <h1 className="text-2xl font-semibold tracking-tight">Check your email</h1>
           <p className="text-muted-foreground">
-            We've sent a password reset link to your email address.
+            We&apos;ve sent a password reset link to your email address.
           </p>
         </div>
         <Button asChild className="w-full">
@@ -74,7 +74,7 @@ export function ForgotPasswordForm() {
       <div className="space-y-2">
         <h1 className="text-2xl font-semibold tracking-tight">Forgot password?</h1>
         <p className="text-sm text-muted-foreground">
-          Enter your email address and we'll send you a link to reset your password.
+          Enter your email address and we&apos;ll send you a link to reset your password.
         </p>
       </div>
 

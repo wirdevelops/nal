@@ -169,7 +169,7 @@ export default function AboutPage() {
         </div>
         <h1 className="text-4xl font-bold">Transforming Entertainment Production</h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          We're on a mission to revolutionize how stories are told through technology
+          We&apos;re on a mission to revolutionize how stories are told through technology
         </p>
       </div>
 
@@ -348,8 +348,8 @@ export default function AboutPage() {
           <div className="max-w-3xl space-y-6">
             <h2 className="text-3xl font-bold">Join Our Team</h2>
             <p className="text-lg opacity-90">
-              Be part of a team that's revolutionizing the entertainment industry.
-              We're always looking for passionate innovators.
+              Be part of a team that&apos;s revolutionizing the entertainment industry.
+              We&apos;re always looking for passionate innovators.
             </p>
             <div className="flex flex-wrap gap-4">
               <Button variant="secondary" size="lg" onClick={handleButtonClick}>

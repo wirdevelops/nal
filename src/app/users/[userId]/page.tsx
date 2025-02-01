@@ -11,7 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 export default function VolunteerDetailsPage({ params }: { params: { volunteerId: string } }) {
   const router = useRouter();
   const { volunteer, isLoading: isVolunteerLoading } = useVolunteer(params.volunteerId);
-  const { projects: allProjects, isLoading: areProjectsLoading } = useNGOProject();
+  const { isLoading: areProjectsLoading } = useNGOProject();
 
   // Get volunteer's associated projects
 
@@ -52,7 +52,7 @@ export default function VolunteerDetailsPage({ params }: { params: { volunteerId
         <div className="text-center py-8">
           <h1 className="text-2xl font-bold mb-2">Volunteer Not Found</h1>
           <p className="text-muted-foreground">
-            The volunteer you're looking for doesn't exist or has been removed.
+            The volunteer you&apos;re looking for doesn&apos;t exist or has been removed.
           </p>
         </div>
       </div>

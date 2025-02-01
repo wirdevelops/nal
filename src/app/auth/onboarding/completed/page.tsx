@@ -65,7 +65,7 @@ export default function CompletedPage() {
           <div className="space-y-2">
             <h1 className="text-2xl font-semibold">Welcome to Nalevel Empire!</h1>
             <p className="text-muted-foreground">
-              Your profile is set up and ready to go. Here's what you can do next:
+              Your profile is set up and ready to go. Here&apos;s what you can do next:
             </p>
           </div>
 

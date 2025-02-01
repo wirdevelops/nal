@@ -39,7 +39,6 @@ import {
   Zap,
   Shield,
   HelpCircle,
-  Info,
   Send
 } from 'lucide-react';
 
