@@ -86,6 +86,20 @@ export class AuthService {
     return token;
   }
 
+  static async sendVerificationEmail(email: string): Promise<void> {
+    try{
+      const user = await AuthService.findUserByEmail(email);
+      if(user){
+        const verificationToken = await AuthService.createVerificationToken(user.id);
+        await sendVerificationEmailService(email, verificationToken);
+      }
+    }
+   catch (error){
+      console.error('Failed to send verification email', error);
+        throw new Error('Failed to resend verification code')
+    }
+  }
+
     static async createPasswordResetToken(userId: string): Promise<string> {
         const token = uuidv4();
         const response = await fetch('/api/auth/create-reset-token', {
@@ -219,7 +233,7 @@ export class AuthService {
     return success;
   }
 
-  static async resetPassword(token: string, newPassword: string): Promise<boolean> {
+  static async resetPassword(token: string, newPassword: string, password: string): Promise<boolean> {
     const response = await fetch('/api/auth/reset-password', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
