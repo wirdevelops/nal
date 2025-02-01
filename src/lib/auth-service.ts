@@ -8,7 +8,8 @@ const SECURITY = {
   SESSION_EXPIRATION: 7 * 24 * 60 * 60, // 7 days in seconds
   PASSWORD_MIN_LENGTH: 12,
   PASSWORD_REGEX: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{12,}$/,
-  VERIFICATION_TOKEN_EXPIRY: 24 * 60 * 60 // 24 hours in seconds
+  VERIFICATION_TOKEN_EXPIRY: 24 * 60 * 60, // 24 hours in seconds
+  RESET_TOKEN_EXPIRY: 1 * 60 * 60 // 1 hour in seconds
 };
 
 export class AuthService {
@@ -43,8 +44,8 @@ export class AuthService {
   }
 
   static async signUp(
-    credentials: AuthCredentials, 
-    name: User['name'], 
+    credentials: AuthCredentials,
+    name: User['name'],
     ip: string
   ): Promise<User> {
     const response = await fetch('/api/auth/register', {
@@ -85,6 +86,26 @@ export class AuthService {
     return token;
   }
 
+    static async createPasswordResetToken(userId: string): Promise<string> {
+        const token = uuidv4();
+        const response = await fetch('/api/auth/create-reset-token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            userId,
+            token,
+            expiresIn: SECURITY.RESET_TOKEN_EXPIRY
+        })
+        });
+
+        if (!response.ok) {
+        throw new Error('Failed to create password reset token');
+        }
+
+        return token;
+    }
+
+
   static async verifyEmail(token: string, email: string): Promise<boolean> {
     const response = await fetch('/api/auth/verify', {
       method: 'POST',
@@ -99,6 +120,23 @@ export class AuthService {
     const { success } = await response.json();
     return success;
   }
+
+
+  static async findUserByEmail(email: string): Promise<User | null> {
+      const response = await fetch('/api/auth/find-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+  
+      if (!response.ok) {
+        return null; // User not found or error
+      }
+  
+      return await response.json();
+  }
+
+
 
   static async deleteUnverifiedUser(userId: string): Promise<boolean> {
     const response = await fetch(`/api/auth/users/${userId}`, {
@@ -123,8 +161,8 @@ export class AuthService {
       const response = await fetch('/api/auth/create-session', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          userId, 
+        body: JSON.stringify({
+          userId,
           sessionId,
           userAgent,
           ip,
@@ -158,7 +196,7 @@ export class AuthService {
       });
 
       if (!response.ok) return null;
-      
+
       const { user } = await response.json();
       return user;
     } catch {
@@ -195,13 +233,13 @@ export class AuthService {
     const { success } = await response.json();
     return success;
   }
-  
+
   static clearSession(): void {
     document.cookie = `session=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Secure; SameSite=Strict`;
   }
 
   static validatePassword(password: string): boolean {
-    return SECURITY.PASSWORD_REGEX.test(password) && 
+    return SECURITY.PASSWORD_REGEX.test(password) &&
       password.length >= SECURITY.PASSWORD_MIN_LENGTH;
   }
 
@@ -210,10 +248,10 @@ export class AuthService {
       const sessionId = await AuthService.createSession(user.id);
       const verificationToken = await AuthService.createVerificationToken(user.id);
       await sendVerificationEmailService(user.email, verificationToken);
-      
+
       // Set the session cookie
       document.cookie = AuthService.buildSessionCookie(sessionId);
-      
+
       // Redirect to verification page
       window.location.href = '/auth/verify';
     } catch (error) {
@@ -229,11 +267,11 @@ export class AuthService {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sessionId })
       });
-  
+
       if (!response.ok) {
         throw new Error('Failed to clear sessions');
       }
-  
+
       return true;
     } catch (error) {
       console.error("Error clearing sessions:", error);
