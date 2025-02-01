@@ -15,7 +15,6 @@ export async function GET() {
         location: 'Los Angeles, CA',
         date: '2024-02-01'
       },
-      // Add more projects...
     ],
     stats: [
       {
