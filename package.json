@@ -3,12 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "lint": "next lint --fix",
+    "lint:strict": "next lint",  
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "test": "jest",
     "test:watch": "jest --watch",
-    "lint": "next lint",
     "type-check": "tsc --noEmit",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "supabase:types": "supabase gen types typescript --project-id your-project-id > src/types/supabase.ts"

@@ -30,18 +30,21 @@ export type UserRole = Static<typeof UserRoleSchema>;
 export type OnboardingStage = Static<typeof OnboardingStageSchema>;
 
 
-// Define the schema for the verification data
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const verificationSchema = z.object({
-    identificationType: z.string().min(2, "Identification type is required").optional(),
-    identificationNumber: z.string().min(2, "Identification Number is required").optional(),
-    issuingAuthority: z.string().min(2, "Issuing Authority is required").optional(),
-    dateOfIssue: z.string().min(2, "Date of Issue is required").optional(),
-    expiryDate: z.string().min(2, "Expiry date is required").optional(),
-    proofOfAddress: z.string().url("Must be a valid URL").optional().or(z.literal(''))
-  });
+  identificationType: z.string().min(2, "Identification type is required").optional(),
+  identificationNumber: z.string().min(2, "Identification Number is required").optional(),
+  issuingAuthority: z.string().min(2, "Issuing Authority is required").optional(),
+  dateOfIssue: z.string().min(2, "Date of Issue is required").optional(),
+  expiryDate: z.string().min(2, "Expiry date is required").optional(),
+  proofOfAddress: z.string().url("Must be a valid URL").optional().or(z.literal(''))
+});
 
 export type VerificationData = z.infer<typeof verificationSchema>;
 
+const validateVerificationData = (data: unknown): data is VerificationData => {
+  return verificationSchema.safeParse(data).success;
+};
 
 // Base profile structure
 export const BaseProfile = Type.Object({

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { User, Phone, Mail, MapPin } from 'lucide-react';
+import { Phone, Mail, MapPin } from 'lucide-react';
 
 interface TeamMember {
   id: string;

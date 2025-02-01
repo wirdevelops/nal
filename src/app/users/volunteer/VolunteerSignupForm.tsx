@@ -14,7 +14,7 @@ import { useState } from 'react';
 import { Progress } from '@/components/ui/progress';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { PhoneInput } from '@/components/ui/phone-input';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { parsePhoneNumber } from 'libphonenumber-js';
 
 const formSteps = [
@@ -48,6 +48,8 @@ const formSchema = z.object({
   })).optional(),
 });
 
+type FormSchemaType = z.infer<typeof formSchema>;
+
 export function VolunteerSignupForm({ onSuccess, onCancel }: { 
   onSuccess: () => void; 
   onCancel: () => void;
@@ -57,7 +59,7 @@ export function VolunteerSignupForm({ onSuccess, onCancel }: {
   const { registerVolunteer, isLoading } = useVolunteer();
   const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormSchemaType>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       firstName: '',
@@ -91,7 +93,7 @@ export function VolunteerSignupForm({ onSuccess, onCancel }: {
     form.setValue('availability.days', newDays);
   };
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: FormSchemaType) => {
     const parsedPhone = parsePhoneNumber(values.phone, 'US')?.formatInternational() || values.phone;
     try {
       const volunteerData: Omit<Volunteer, 'id' | 'createdAt' | 'updatedAt'> = {
@@ -148,7 +150,7 @@ export function VolunteerSignupForm({ onSuccess, onCancel }: {
 
   const nextStep = async () => {
     const fields = formSteps[currentStep].fields;
-    const output = await form.trigger(fields as any);
+    const output = await form.trigger(fields as (keyof FormSchemaType)[]);
     
     if (!output) return;
     if (currentStep < formSteps.length - 1) {
@@ -403,5 +405,3 @@ export function VolunteerSignupForm({ onSuccess, onCancel }: {
     </Form>
   );
 }
-
-
