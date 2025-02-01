@@ -1,21 +1,53 @@
-'use client';
-
 import { useRouter } from 'next/navigation';
 import { Button } from "@/components/ui/button";
 import { MultiRoleProfile } from './MultiRoleProfile';
 import { ArrowLeft, Edit2} from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { UserRole } from '@/types/user';
-import { useUserStore } from '@/stores/useUserStore';
+import { useUserStore, useUserActions } from '@/stores/useUserStore';
 import { Badge } from '@/components/ui/badge';
 import {
   X,
   Plus,
 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 export default function UserProfilePage({ params }: { params: { userId: string } }) {
   const router = useRouter();
-  const { user, isLoading } = useUserStore(params.userId);
+   const { user, isLoading, error, setUser, setLoading, clearError } = useUserStore(state => ({
+        user: state.user,
+        isLoading: state.isLoading,
+        error: state.error,
+        setUser: state.setUser,
+        setLoading: state.setLoading,
+        clearError: state.clearError
+    }));
+
+    const { setLoading: setStoreLoading } = useUserActions();
+
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+         setMounted(true);
+        setStoreLoading(true)
+        //fetch user data
+        fetch(`/api/auth/users/${params.userId}`)
+           .then(res => res.json())
+            .then(({user}) => {
+                setUser(user);
+             })
+            .catch(err => {
+                console.error('error fetching user data', err)
+                clearError()
+            })
+            .finally(() => {
+                setStoreLoading(false);
+            })
+
+     }, [params.userId, setUser, setLoading, clearError, setStoreLoading]);
+
+
+  if (!mounted) return null;
 
   if (isLoading) {
     return (
@@ -40,6 +72,28 @@ export default function UserProfilePage({ params }: { params: { userId: string }
     );
   }
 
+  if (error) {
+        return (
+            <div className="container mx-auto px-4 py-8">
+        <Button
+          variant="ghost"
+          onClick={() => router.back()}
+          className="mb-8"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back
+        </Button>
+        <div className="text-center py-8">
+          <h1 className="text-2xl font-bold mb-2">User Not Found</h1>
+          <p className="text-muted-foreground">
+            The user you're looking for doesn't exist or has been removed.
+          </p>
+        </div>
+      </div>
+        )
+  }
+
+
   if (!user) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -54,7 +108,7 @@ export default function UserProfilePage({ params }: { params: { userId: string }
         <div className="text-center py-8">
           <h1 className="text-2xl font-bold mb-2">User Not Found</h1>
           <p className="text-muted-foreground">
-            The user you&apos;re looking for doesn&apos;t exist or has been removed.
+            The user you're looking for doesn't exist or has been removed.
           </p>
         </div>
       </div>
@@ -90,47 +144,50 @@ export default function UserProfilePage({ params }: { params: { userId: string }
 }
 
 export const RoleManager = ({ userId }: { userId: string }) => {
-  const { currentUser, addRole, removeRole } = useUserStore();
+    const { user: currentUser } = useUserStore(state => ({ user: state.user }));
+  const { addRole, removeRole } = useUserActions();
+
 
   if (!currentUser || currentUser.id !== userId) return null;
 
-  const availableRoles: UserRole[] = ['volunteer', 'seller', 'creator'];
+  const availableRoles: UserRole[] = ['ngo', 'vendor', 'project-owner'];
 
-  return (
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold">Manage Roles</h3>
-      <div className="flex flex-wrap gap-2">
-        {currentUser.roles.map(role => (
-          <div key={role} className="flex items-center gap-2 bg-accent px-3 py-1 rounded-full">
-            <span className="capitalize">{role}</span>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => removeRole(role)}
-              className="h-6 w-6 p-1 rounded-full"
-            >
-              <X className="w-3 h-3" />
-            </Button>
-          </div>
-        ))}
-        
-        {availableRoles
-          .filter(role => !currentUser.roles.includes(role))
-          .map(role => (
-            <Button
-              key={role}
-              variant="outline"
-              onClick={() => addRole(role)}
-              className="capitalize"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add {role}
-            </Button>
-          ))}
-      </div>
-    </div>
-  );
+    return (
+        <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Manage Roles</h3>
+            <div className="flex flex-wrap gap-2">
+                {currentUser.roles.map(role => (
+                    <div key={role} className="flex items-center gap-2 bg-accent px-3 py-1 rounded-full">
+                        <span className="capitalize">{role}</span>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeRole(role)}
+                            className="h-6 w-6 p-1 rounded-full"
+                        >
+                            <X className="w-3 h-3" />
+                        </Button>
+                    </div>
+                ))}
+
+                {availableRoles
+                    .filter(role => !currentUser.roles.includes(role))
+                    .map(role => (
+                        <Button
+                            key={role}
+                            variant="outline"
+                            onClick={() => addRole(role)}
+                            className="capitalize"
+                        >
+                            <Plus className="w-4 h-4 mr-2" />
+                            Add {role}
+                        </Button>
+                    ))}
+            </div>
+        </div>
+    );
 };
+
 
 export const RoleBadges = ({ roles }: { roles: UserRole[] }) => (
   <div className="flex flex-wrap gap-2">
