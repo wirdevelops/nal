@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -89,11 +90,16 @@ export default function HomePage() {
       <section className="relative py-20 overflow-hidden">
         <div className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-gradient-to-r from-background to-background/50" />
-          <img
-            src="/api/placeholder/1920/600"
-            alt="Hero background"
-            className="w-full h-full object-cover"
-          />
+          <div className="relative w-full h-full">
+            <Image
+              src="/api/placeholder/1920/600"
+              alt="Hero background"
+              fill
+              priority
+              className="object-cover"
+              sizes="100vw"
+            />
+          </div>
         </div>
 
         <div className="container relative z-10">
@@ -204,11 +210,15 @@ export default function HomePage() {
               </Link>
             </div>
             <div className="relative aspect-video rounded-lg overflow-hidden">
-              <img
-                src="/api/placeholder/800/450"
-                alt="Platform benefits"
-                className="w-full h-full object-cover"
-              />
+            <div className="relative w-full h-full">
+                <Image
+                  src="/api/placeholder/800/450"
+                  alt="Platform benefits"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 800px"
+                />
+              </div>
               <div className="absolute inset-0 flex items-center justify-center">
                 <Button variant="outline" size="lg" className="gap-2">
                   <PlayCircle className="h-5 w-5" />
@@ -241,11 +251,15 @@ export default function HomePage() {
                   &quot;{testimonial.quote}&quot;
                   </blockquote>
                   <div className="flex items-center gap-4">
-                    <img
-                      src={testimonial.image}
-                      alt={testimonial.author}
-                      className="w-12 h-12 rounded-full"
-                    />
+                  <div className="relative w-12 h-12">
+                      <Image
+                        src={testimonial.image}
+                        alt={testimonial.author}
+                        fill
+                        className="rounded-full object-cover"
+                        sizes="48px"
+                      />
+                    </div>
                     <div>
                       <div className="font-semibold">{testimonial.author}</div>
                       <div className="text-sm text-muted-foreground">
@@ -275,7 +289,13 @@ export default function HomePage() {
           <div className="flex flex-wrap justify-center gap-8">
             {partners.map((partner) => (
               <div key={partner.name} className="grayscale hover:grayscale-0 transition-all duration-300">
-                <img src={partner.logo} alt={partner.name} className="h-12" />
+                <Image
+                  src={partner.logo}
+                  alt={partner.name}
+                  fill
+                  className="object-contain"
+                  sizes="150px"
+                />
               </div>
             ))}
           </div>
@@ -286,11 +306,15 @@ export default function HomePage() {
       <section className="relative py-20 overflow-hidden">
         <div className="absolute inset-0">
           <div className="absolute inset-0 bg-gradient-to-r from-primary to-primary/20 mix-blend-multiply" />
-          <img
-            src="/api/placeholder/1920/600"
-            alt="CTA background"
-            className="w-full h-full object-cover"
-          />
+          <div className="relative w-full h-full">
+            <Image
+              src="/api/placeholder/1920/600"
+              alt="CTA background"
+              fill
+              className="object-cover"
+              sizes="100vw"
+            />
+          </div>
         </div>
 
         <div className="container relative">

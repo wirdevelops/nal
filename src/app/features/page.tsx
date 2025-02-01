@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import Image from 'next/image';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,7 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import {
   Film,
   Users,
@@ -440,11 +441,16 @@ export default function FeaturesPage() {
       <div className="relative rounded-lg overflow-hidden">
         <div className="absolute inset-0">
           <div className="absolute inset-0 bg-gradient-to-r from-primary to-primary/20 mix-blend-multiply" />
-          <img 
-            src="/api/placeholder/1600/400" 
-            alt="Features CTA"
-            className="w-full h-full object-cover"
-          />
+          <div className="relative w-full h-full">
+            <Image 
+              src="/api/placeholder/1600/400" 
+              alt="Features CTA"
+              fill
+              className="object-cover"
+              sizes="100vw"
+              priority={false}
+            />
+          </div>
         </div>
         
         <div className="relative p-8 md:p-12 text-white">

@@ -8,7 +8,7 @@ export const calculateTrendPercentage = (trend: { value: number }[]) => {
 
   export const calculateTrend = (
     data: Array<{ value: number }>, 
-    period: number = 1
+    period = 1
   ): number => {
     if (data.length < period + 1) return 0;
     const current = data[data.length - 1].value;

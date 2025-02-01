@@ -1,4 +1,3 @@
-// app/api/auth/register/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { AuthService } from '@/lib/auth-service';
@@ -6,14 +5,14 @@ import { sendVerificationEmail } from '@/lib/email-service';
 import { rateLimit } from '@/lib/rate-limit';
 
 class AuthError extends Error {
-    constructor(public message: string, public statusCode: number = 400) {
+    constructor(public message: string, public statusCode = 400) {  // Removed `: number`
       super(message);
       this.name = 'AuthError';
     }
-  }
+}
   
-  // Update error handler
-  function handleApiError(error: unknown) {
+// Rest of the file remains exactly the same
+function handleApiError(error: unknown) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: 'Validation failed', issues: error.errors },
@@ -40,7 +39,7 @@ class AuthError extends Error {
       { error: 'Internal server error' },
       { status: 500 }
     );
-  }
+}
 
 const registerSchema = z.object({
   email: z.string().email(),
@@ -107,5 +106,4 @@ export async function POST(req: NextRequest) {
       // Structured error handling
       return handleApiError(error);
     }
-  }
-  
+}
