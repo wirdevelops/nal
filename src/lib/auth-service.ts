@@ -221,4 +221,23 @@ export class AuthService {
       throw new Error("Registration process failed");
     }
   }
+
+  static async clearAllSessions(sessionId: string): Promise<boolean> {
+    try {
+      const response = await fetch('/api/auth/clear-sessions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId })
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to clear sessions');
+      }
+  
+      return true;
+    } catch (error) {
+      console.error("Error clearing sessions:", error);
+      throw new Error('Failed to clear sessions');
+    }
+  }
 }
