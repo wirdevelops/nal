@@ -17,6 +17,14 @@ import { PhoneInput } from '@/components/ui/phone-input';
 import { useToast } from '@/hooks/use-toast';
 import { parsePhoneNumber } from 'libphonenumber-js';
 
+export interface Reference {
+  id: string;
+  name: string;
+  relationship: string;
+  contact: string;
+  status: BackgroundCheck; // This should be BackgroundCheck enum, not string
+}
+
 const formSteps = [
   { title: 'Personal Information', fields: ['firstName', 'lastName', 'email', 'phone'] },
   { title: 'Skills & Availability', fields: ['skills', 'availability'] },
@@ -118,7 +126,7 @@ export function VolunteerSignupForm({ onSuccess, onCancel }: {
           name: ref.name,
           relationship: ref.relationship,
           contact: ref.contact,
-          status: 'pending' as const
+          status: BackgroundCheck.PENDING
         })),
 
         // Required fields with defaults
@@ -133,7 +141,8 @@ export function VolunteerSignupForm({ onSuccess, onCancel }: {
         role: '',
         joinDate: '',
         trainingCompleted: false,
-        hoursContributed: 0
+        hoursContributed: 0,
+        x: ''
       };
   
       await registerVolunteer(volunteerData);
