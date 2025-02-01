@@ -11,10 +11,10 @@ const SECURITY = {
 };
 
 export class AuthService {
-  static requestPasswordReset(email: string) {
+  static requestPasswordReset() {
     throw new Error('Method not implemented.');
   }
-  static async login(credentials: AuthCredentials, ip: string): Promise<User> {
+  static async login(credentials: AuthCredentials): Promise<User> {
     const response = await fetch('/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

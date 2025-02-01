@@ -23,7 +23,7 @@ export function useNGOProject() {
   }));
 
   const store = useNGOProjectStore();
-  const [isLoading, setIsLoading] = useState(false);
+  const [, setIsLoading] = useState(false);
 
   // Updated type to match store's expectation
   const createProject = useCallback(async (projectData: Omit<NGOProject, 'id' | 'createdAt' | 'updatedAt' | 'metrics'>) => {

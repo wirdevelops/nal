@@ -2,7 +2,6 @@ import { Type, Static, TObject } from '@sinclair/typebox';
 import { UUID_PATTERN } from './store/common';
 import * as z from 'zod';
 
-
 // Define a simple type for common profile roles
 export type ProfileRole = 'actor' | 'crew' | 'vendor' | 'producer';
 
@@ -41,8 +40,8 @@ const verificationSchema = z.object({
     proofOfAddress: z.string().url("Must be a valid URL").optional().or(z.literal(''))
   });
 
-
 export type VerificationData = z.infer<typeof verificationSchema>;
+
 
 // Base profile structure
 export const BaseProfile = Type.Object({

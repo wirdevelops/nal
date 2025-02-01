@@ -57,16 +57,23 @@ export function validateProjectCreation(data: ProjectCreationData): ValidationRe
   };
 }
 
+// Define type-specific data structures
+type ProjectSpecificData = {
+    runtime?: number;
+    numberOfSeasons?: number;
+    client?: string;
+}
+
 // Validator for type-specific data
 export function validateTypeSpecificData(
   type: ProjectType,
-  data: Record<string, any>
+  data: ProjectSpecificData
 ): ValidationResult {
   const errors: ValidationResult['errors'] = [];
 
   switch (type) {
     case 'feature':
-      if (data.runtime && (data.runtime < 1 || data.runtime > 999)) {
+      if (data.runtime !== undefined && (data.runtime < 1 || data.runtime > 999)) {
         errors.push({
           field: 'runtime',
           message: 'Runtime must be between 1 and 999 minutes'
@@ -75,7 +82,7 @@ export function validateTypeSpecificData(
       break;
 
     case 'series':
-      if (data.numberOfSeasons && data.numberOfSeasons < 1) {
+      if (data.numberOfSeasons !== undefined && data.numberOfSeasons < 1) {
         errors.push({
           field: 'numberOfSeasons',
           message: 'Number of seasons must be at least 1'
@@ -84,15 +91,13 @@ export function validateTypeSpecificData(
       break;
 
     case 'commercial':
-      if (!data.client?.trim()) {
+      if (data.client !== undefined && !data.client?.trim()) {
         errors.push({
           field: 'client',
           message: 'Client name is required'
         });
       }
       break;
-
-    // Add validation for other project types
   }
 
   return {
@@ -185,7 +190,7 @@ export const animationValidation = commonValidation.extend({
 });
 
 // Function to validate project data based on type
-export function validateProject(type: string, data: any) {
+export function validateProject(type: string, data: z.infer<typeof commonValidation>) {
   const validationSchemas = {
     feature: featureFilmValidation,
     series: seriesValidation,

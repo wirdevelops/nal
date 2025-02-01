@@ -1,5 +1,4 @@
 import { Type, Static } from '@sinclair/typebox';
-import { UUID_PATTERN } from '../common';
 import { User } from '../user';
 import { ImpactStory } from './impactStory';
 import { Donation, ImpactMetric } from './donation';
