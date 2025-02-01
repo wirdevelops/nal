@@ -40,7 +40,7 @@ export async function PUT(req: NextRequest) {
     const body = await req.json();
     const { token, password } = resetSchema.parse(body);
 
-    const success = await AuthService.resetPassword(token, password);
+    const success = await AuthService.resetPassword(token, password, password);
     if (!success) {
       return NextResponse.json(
         { error: 'Invalid or expired reset token' },
