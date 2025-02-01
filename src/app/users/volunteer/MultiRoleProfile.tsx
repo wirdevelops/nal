@@ -1,3 +1,4 @@
+// Updated MultiRoleProfile.tsx
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -86,19 +87,19 @@ export function MultiRoleProfile({ user, onEditProfile }: MultiRoleProfileProps)
       {/* Role-specific Sections */}
       {user.roles.includes('ngo') && (
         <RoleSection title="Volunteer Profile" icon={<HeartHandshake className="w-5 h-5" />}>
-          <VolunteerProfileSection profile={NgoProfile} />
+          <VolunteerProfileSection profile={user.profiles?.ngo} />
         </RoleSection>
       )}
 
       {user.roles.includes('vendor') && (
         <RoleSection title="Seller Profile" icon={<Briefcase className="w-5 h-5" />}>
-          <SellerProfileSection profile={VendorProfile} />
+          <SellerProfileSection profile={user.profiles?.vendor} />
         </RoleSection>
       )}
 
       {user.roles.includes('project-owner') && (
         <RoleSection title="Creator Profile" icon={<Palette className="w-5 h-5" />}>
-          <CreatorProfileSection profile={ProjectOwnerProfile} />
+          <CreatorProfileSection profile={user.profiles?.['project-owner']} />
         </RoleSection>
       )}
 
@@ -112,7 +113,7 @@ export function MultiRoleProfile({ user, onEditProfile }: MultiRoleProfileProps)
             {user.email}
           </InfoRow>
           <InfoRow icon={<Phone className="w-4 h-4" />} label="Phone">
-            {user.profiles.phone || 'Not provided'}
+           {user.profiles?.phone || 'Not provided'}
           </InfoRow>
           <InfoRow icon={<MapPin className="w-4 h-4" />} label="Location">
             {user.location || 'Not provided'}
@@ -171,14 +172,14 @@ const VolunteerProfileSection = ({ profile }: { profile?: NgoProfile }) => {
 };
 
 // Seller Profile Section Component
-const SellerProfileSection = ({ profile }: { profile?: User['sellerProfile'] }) => {
+const SellerProfileSection = ({ profile }: { profile?: VendorProfile }) => {
   if (!profile) return null;
 
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <InfoRow icon={<Briefcase className="w-4 h-4" />} label="Store Name">
-          {profile.storeName || 'Not specified'}
+          {profile.storeName || profile.businessName || 'Not specified'}
         </InfoRow>
         <InfoRow icon={<CheckCircle className="w-4 h-4" />} label="Seller Rating">
           {profile.sellerRating}/5
@@ -187,6 +188,22 @@ const SellerProfileSection = ({ profile }: { profile?: User['sellerProfile'] }) 
       <InfoRow icon={<BookOpen className="w-4 h-4" />} label="Payment Methods">
         {profile.paymentMethods.join(', ') || 'No methods added'}
       </InfoRow>
+       <div className="flex flex-wrap gap-2">
+        {profile.skills.map(skill => (
+          <Badge key={skill} variant="secondary" className="capitalize">
+            {skill.toLowerCase().replace('_', ' ')}
+          </Badge>
+        ))}
+      </div>
+        <div className="flex flex-wrap gap-2">
+        {profile.portfolio.map(item => (
+            <a key={item} href={item} target="_blank" rel="noopener noreferrer" >
+          <Badge  variant="secondary" className="capitalize">
+            Portfolio Item
+          </Badge>
+          </a>
+        ))}
+      </div>
     </div>
   );
 };
@@ -212,6 +229,22 @@ const CreatorProfileSection = ({ profile }: { profile?: ProjectOwnerProfile }) =
           </a>
         </InfoRow>
       )}
+        <div className="flex flex-wrap gap-2">
+        {profile.skills.map(skill => (
+          <Badge key={skill} variant="secondary" className="capitalize">
+            {skill.toLowerCase().replace('_', ' ')}
+          </Badge>
+        ))}
+      </div>
+        <div className="flex flex-wrap gap-2">
+        {profile.portfolio.map(item => (
+          <a key={item} href={item} target="_blank" rel="noopener noreferrer">
+          <Badge  variant="secondary" className="capitalize">
+           Portfolio Item
+          </Badge>
+           </a>
+        ))}
+      </div>
     </div>
   );
 };

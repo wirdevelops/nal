@@ -1,3 +1,4 @@
+// Updated types/user.ts
 import { Type, Static, TObject } from '@sinclair/typebox';
 import { UUID_PATTERN } from './store/common';
 import * as z from 'zod';
@@ -97,16 +98,20 @@ export const CrewProfile = Type.Composite([
 ]);
 
 // Vendor-specific profile
-export const VendorProfile = Type.Object({
-  businessName: Type.String(),
-  services: Type.Array(Type.String()),
-  paymentMethods: Type.Array(Type.String()),
-  inventory: Type.Array(Type.Object({
-    category: Type.String(),
-    items: Type.Array(Type.String())
-  })),
-  experience: Type.Array(Type.String())
-});
+export const VendorProfile = Type.Composite([
+    BaseProfile,
+ Type.Object({
+    businessName: Type.String(),
+     storeName: Type.Optional(Type.String()),
+     sellerRating: Type.Optional(Type.Number()),
+    services: Type.Array(Type.String()),
+    paymentMethods: Type.Array(Type.String()),
+    inventory: Type.Array(Type.Object({
+      category: Type.String(),
+      items: Type.Array(Type.String())
+    }))
+  })
+]);
 
 
 // Producer-specific profile
@@ -153,6 +158,8 @@ export const ProjectOwnerProfile = Type.Composite([
   BaseProfile,
   Type.Object({
     organization: Type.String(),
+     specialties: Type.Array(Type.String()),
+    imdbLink: Type.Optional(Type.String({format: 'uri'})),
     currentProjects: Type.Array(
       Type.Object({
         id: Type.String({ format: 'uuid' }),
@@ -206,6 +213,12 @@ export const NgoProfile = Type.Composite([
       })
     ),
     impactMetrics: Type.Record(Type.String(), Type.Number()),
+      hoursLogged: Type.Number(),
+      background: Type.Union([
+        Type.Literal('PENDING'),
+        Type.Literal('APPROVED'),
+        Type.Literal('REJECTED')
+      ]),
     website: Type.Optional(Type.String({ format: 'uri' })),
     annualBudget: Type.Optional(Type.Number())
   })
@@ -257,7 +270,8 @@ export const User = Type.Object({
     producer: Type.Optional(ProducerProfile),
     'project-owner': Type.Optional(ProjectOwnerProfile),
     ngo: Type.Optional(NgoProfile),
-    admin: Type.Optional(AdminProfile)
+    admin: Type.Optional(AdminProfile),
+     phone: Type.Optional(Type.String()),
   }),
   onboarding: Type.Object({
     stage: OnboardingStageSchema,
@@ -355,6 +369,8 @@ export const PROFILE_INITIALIZERS: ProfileInitializers = {
     experience: [],
     portfolio: [],
     availability: undefined,
+      specialties: [],
+       imdbLink: '',
   },
    crew: {
     department: '',
@@ -372,6 +388,8 @@ export const PROFILE_INITIALIZERS: ProfileInitializers = {
     partners: [],
     impactMetrics: {},
     website: '',
+      hoursLogged: 0,
+      background: 'PENDING',
     annualBudget: 0,
     skills: [],
     experience: [],
@@ -382,6 +400,7 @@ export const PROFILE_INITIALIZERS: ProfileInitializers = {
     services: [],
     paymentMethods: [],
     inventory: [],
+      storeName: '',
     experience: [],
      skills: [],
     portfolio: []
