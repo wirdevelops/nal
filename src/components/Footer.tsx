@@ -144,7 +144,6 @@ export function Footer() {
             </div>
           </div>
         </div>
-
         {/* Bottom section */}
         <div className="mt-16 border-t pt-8">
           <p className="text-sm text-muted-foreground">
