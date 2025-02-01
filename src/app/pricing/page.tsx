@@ -27,7 +27,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { 
   CheckCircle, 
   XCircle, 
@@ -438,7 +438,7 @@ export default function PricingPage() {
                     <DialogHeader>
                       <DialogTitle>Contact Enterprise Sales</DialogTitle>
                       <DialogDescription>
-                        Get a custom quote for your organization's needs.
+                        Get a custom quote for your organization&apos;s needs.
                       </DialogDescription>
                     </DialogHeader>
                     <ContactForm onSubmit={handleContactSubmit} />
@@ -477,7 +477,7 @@ export default function PricingPage() {
             <Card key={index}>
               <CardContent className="pt-6">
                 <div className="space-y-4">
-                  <p className="text-muted-foreground italic">"{testimonial.quote}"</p>
+                  <p className="text-muted-foreground italic">&apos;{testimonial.quote}&apos;</p>
                   <div>
                     <p className="font-medium">{testimonial.author}</p>
                     <p className="text-sm text-muted-foreground">{testimonial.role}</p>
@@ -498,8 +498,8 @@ export default function PricingPage() {
               <Shield className="w-12 h-12 text-primary mx-auto" />
               <h3 className="text-xl font-semibold">30-Day Money-Back Guarantee</h3>
               <p className="text-muted-foreground">
-                Try any plan risk-free. If you're not completely satisfied within the first 30 days,
-                we'll refund your payment in full — no questions asked.
+                Try any plan risk-free. If you&apos;re not completely satisfied within the first 30 days,
+                we&apos;ll refund your payment in full — no questions asked.
               </p>
             </div>
           </CardContent>

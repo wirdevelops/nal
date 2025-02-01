@@ -1,3 +1,4 @@
+type GTagArgument = string | number | boolean | Record<string, unknown>;
 interface Window {
-    gtag: (...args: any[]) => void; // Type definition for gtag
+    gtag: (...args: GTagArgument[]) => void; // Type definition for gtag
   }

@@ -73,7 +73,7 @@ export const VolunteerProfileSchema = Type.Composite([
 ]);
 
 export interface Volunteer {
-    [x: string]: any;
+    x: string;
     id: string;
     userId: string;
     firstName: string;
