@@ -6,14 +6,18 @@ import { useUserStore } from "@/stores/useUserStore";
 import { RoleDetailsForm } from '@/components/auth/RoleDetailsForm';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft} from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
+import { ActorProfile, CrewProfile, VendorProfile, ProducerProfile } from '@/types/user';
+
+// Define a union type for all possible profile data
+type ProfileData = ActorProfile | CrewProfile | VendorProfile | ProducerProfile;
 
 export default function RoleDetailsPage() {
   const router = useRouter();
   const { user, updateProfile } = useUserStore();
   const [currentRoleIndex, setCurrentRoleIndex] = useState(0);
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (data: ProfileData) => {
     const currentRole = user?.roles[currentRoleIndex];
     if (currentRole === 'actor' || currentRole === 'crew' || 
         currentRole === 'vendor' || currentRole === 'producer') {

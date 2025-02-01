@@ -19,7 +19,6 @@ const BasicInfoSchema = z.object({
   phone: z.string().regex(/^\+?[\d\s-]{10,}$/, 'Invalid phone number').optional()
 });
 
-
 // Create a type for the possible profiles that our profile can be
 type ProfileFromRole<R extends UserRole> =
   R extends 'actor' ? ActorProfile :
@@ -28,39 +27,40 @@ type ProfileFromRole<R extends UserRole> =
   R extends 'producer' ? ProducerProfile :
     BaseProfile;
 
-
 export default function BasicInfoPage() {
   const router = useRouter();
   const { user, updateProfile } = useUserStore();
 
   const handleSubmit = async (data: z.infer<typeof BasicInfoSchema>) => {
-      const role = user.roles[0];
+    // Validate the data using the schema
+    const validatedData = BasicInfoSchema.parse(data);
 
-      if (role === 'actor' || role === 'crew' || role === 'vendor' || role === 'producer') {
-          await updateProfile(role, data);
-      }
+    const role = user.roles[0];
+
+    if (role === 'actor' || role === 'crew' || role === 'vendor' || role === 'producer') {
+      await updateProfile(role, validatedData);
+    }
     router.push('/auth/onboarding/verification');
   };
 
   const getDefaultValues = () => {
     const role = user?.roles?.[0] as UserRole; // Type assertion as UserRole for safety
     const profile = user?.profiles?.[role] as ProfileFromRole<typeof role>; // Type assertion for the profile
-      
-      return {
-          location: profile?.location || '',
-          bio: profile?.bio || '',
-          website: profile?.website || '',
-          socialMedia: profile?.socialMedia
-              ? {
-                linkedin: profile.socialMedia.linkedin || '',
-                twitter: profile.socialMedia.twitter || '',
-                instagram: profile.socialMedia.instagram || '',
-              }
-              : undefined,
-          phone: profile?.phone || ''
-      };
-    };
 
+    return {
+      location: profile?.location || '',
+      bio: profile?.bio || '',
+      website: profile?.website || '',
+      socialMedia: profile?.socialMedia
+        ? {
+            linkedin: profile.socialMedia.linkedin || '',
+            twitter: profile.socialMedia.twitter || '',
+            instagram: profile.socialMedia.instagram || '',
+          }
+        : undefined,
+      phone: profile?.phone || ''
+    };
+  };
 
   return (
     <div className="max-w-2xl mx-auto">
