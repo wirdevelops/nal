@@ -43,20 +43,20 @@ export function useNGOProject() {
     }
   }, [store]);
 
-  // Add media management
-  const addProjectMedia = useCallback(async (projectId: string, media: Omit<ProjectMedia, 'id'>) => {
-    try {
-      store.addProjectMedia(projectId, media);
-      toast({ title: 'Success', description: 'Media added successfully' });
-    } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to add media',
-        variant: 'destructive',
-      });
-      throw error;
-    }
-  }, [store]);
+    // Add media management
+    const addProjectMedia = useCallback(async (projectId: string, media: File[]) => {
+        try {
+        store.addProjectMedia(projectId, media);
+        toast({ title: 'Success', description: 'Media added successfully' });
+        } catch (error) {
+        toast({
+            title: 'Error',
+            description: 'Failed to add media',
+            variant: 'destructive',
+        });
+        throw error;
+        }
+    }, [store]);
 
   const fetchProjects = useCallback(async () => {
     try {
