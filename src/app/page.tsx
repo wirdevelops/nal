@@ -148,7 +148,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
       {/* Main Features */}
       <section className="py-20">
         <div className="container">
