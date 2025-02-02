@@ -142,7 +142,17 @@ export function VolunteerSignupForm({ onSuccess, onCancel }: {
         joinDate: '',
         trainingCompleted: false,
         hoursContributed: 0,
-        x: ''
+           profile: {
+              skills: [],
+              availability: {
+                days: [],
+                startTime: "",
+                endTime: ""
+              },
+            hours: [],
+            references: [],
+            trainings: []
+        }
       };
   
       await registerVolunteer(volunteerData);

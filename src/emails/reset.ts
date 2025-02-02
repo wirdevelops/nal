@@ -1,11 +1,16 @@
 import { baseHTML, createButton, EmailTemplate } from '@/lib/email-service';
 
-const resetTemplate: EmailTemplate = {
+interface ResetEmailData {
+    subject: string;
+    resetUrl: string;
+}
+
+const resetTemplate: EmailTemplate<ResetEmailData> = {
     render: (data) => {
         return baseHTML(`
         <h1>${data.subject}</h1>
             <p>Please click the button below to reset your password:</p>
-                ${createButton("Reset Password", data.resetUrl as string)}
+                ${createButton("Reset Password", data.resetUrl)}
             `);
     },
     renderText: (data) => {

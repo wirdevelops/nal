@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Phone, Mail, MapPin } from 'lucide-react';
+import Image from 'next/image';
 
 interface TeamMember {
   id: string;
@@ -147,10 +148,12 @@ function MemberCard({ member }: { member: TeamMember }) {
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 flex flex-col items-center">
-      <img
+      <Image
         src={member.avatar}
         alt={member.name}
-        className="w-20 h-20 rounded-full mb-2 object-cover"
+        width={100}
+        height={100}
+        className="rounded-full mb-2 object-cover"
       />
       <h3 className="text-lg font-semibold text-center">{member.name}</h3>
       <p className="text-sm text-gray-500 dark:text-gray-400 text-center">{member.title}</p>

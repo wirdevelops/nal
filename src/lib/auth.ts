@@ -55,7 +55,7 @@ export async function destroySession(): Promise<void> {
     const sessionId = cookies().get(SESSION_CONFIG.name)?.value;
     if (!sessionId) return;
 
-    await AuthService.clearSession(sessionId);
+    await AuthService.clearSession();
     cookies().delete(SESSION_CONFIG.name);
   } catch (error) {
     console.error('Session destruction failed:', error);

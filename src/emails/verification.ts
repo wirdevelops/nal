@@ -1,6 +1,11 @@
 import { baseHTML, createButton, EmailTemplate } from '@/lib/email-service';
 
-const verificationEmailTemplate: EmailTemplate = {
+// Define the data structure for this specific template
+interface VerificationEmailData {
+    verifyUrl: string;
+}
+
+const verificationEmailTemplate: EmailTemplate<VerificationEmailData> = {
   render: (data) => {
     return baseHTML(`
       <p>Hello,</p>

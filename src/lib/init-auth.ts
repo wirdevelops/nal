@@ -12,7 +12,7 @@ export async function initializeAuth() {
     if (user) {
       useUserStore.getState().setUser(await user);
     } else {
-      AuthService.clearSession( sessionToken);
+      AuthService.clearSession();
     }
   }
 }

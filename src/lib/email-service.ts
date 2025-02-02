@@ -10,22 +10,20 @@ if (process.env.RESEND_API_KEY) {
 
 const FROM_EMAIL = process.env.EMAIL_FROM || 'noreply@nalevelempire.com';
 
-const emailTemplates = new Map<string, EmailTemplate>();
+const emailTemplates = new Map<string, EmailTemplate<any>>();
 
-export type EmailData = {
-  subject: string;
-  [key: string]: unknown;
+// Make EmailTemplate generic
+export type EmailTemplate<T> = {
+    render: (data: T) => string;
+    renderText: (data: T) => string;
 };
 
-export interface EmailTemplate {
-  render: (data: EmailData) => string;
-  renderText: (data: EmailData) => string;
-}
 
-export async function sendEmail(
+
+export async function sendEmail<T extends { subject: string}>(
   type: 'verification' | 'reset' | 'welcome',
   email: string,
-  data: EmailData
+  data: T
 ) {
     if (!resend) {
       console.error("Resend API key not configured. Email service is disabled.");
@@ -70,11 +68,11 @@ export async function sendEmail(
    return { success: false, error: "Email send failed after multiple retries" };
 }
 
-async function getTemplate(name: string): Promise<EmailTemplate> {
+async function getTemplate<T>(name: string): Promise<EmailTemplate<T>> {
     if (!emailTemplates.has(name)) {
       try {
         const templateModule = await import(`@/emails/${name}`);
-        const template: EmailTemplate = templateModule.default;
+        const template: EmailTemplate<T> = templateModule.default;
 
         if (!template || typeof template?.render !== 'function' || typeof template?.renderText !== 'function') {
           throw new Error(`Invalid email template: ${name}`);
@@ -139,11 +137,12 @@ const validateEmail = (email: string) => {
   }
 };
 
+// Here we make it a generic function and pass it the right data shape
 export async function sendVerificationEmail(email: string, token: string) {
     const encodedToken = encodeURIComponent(token);
     const verifyUrl = `${getBaseUrl()}/auth/verify?token=${encodedToken}`;
-
-    return sendEmail('verification', email, {
+    
+    return sendEmail<{ subject: string, verifyUrl: string, token: string }>('verification', email, {
       subject: 'Verify your email address',
       verifyUrl,
       token
@@ -154,7 +153,7 @@ export async function sendPasswordResetEmail(email: string, token: string) {
   const encodedToken = encodeURIComponent(token);
   const resetUrl = `${getBaseUrl()}/auth/reset-password?token=${encodedToken}`;
 
-  return sendEmail('reset', email, {
+  return sendEmail<{ subject: string, resetUrl: string, token: string }>('reset', email, {
     subject: 'Reset your password',
     resetUrl,
     token
@@ -164,7 +163,7 @@ export async function sendPasswordResetEmail(email: string, token: string) {
 export async function sendWelcomeEmail(email: string, name: string) {
   const dashboardUrl = `${getBaseUrl()}/dashboard`;
 
-  return sendEmail('welcome', email, {
+  return sendEmail<{ subject: string, name: string, dashboardUrl: string }>('welcome', email, {
     subject: 'Welcome to Nalevel Empire',
     name,
     dashboardUrl

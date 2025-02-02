@@ -1,4 +1,3 @@
-// stores/useNGOProjectStore.ts
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { v4 as uuidv4 } from 'uuid';
@@ -71,7 +70,6 @@ interface NGOProjectActions {
       projectId: string;
       projectName: string;
       location: string;
-      type: string;
       description: string;
     }[];
 }
@@ -460,7 +458,6 @@ getProjectsByStatus: (status) => {
             projectId: project.id,
             projectName: project.name,
             location: `${project.location.city}, ${project.location.country}`,
-            type: milestone.type.toLowerCase(),
             description: milestone.description
             }))
         ).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());

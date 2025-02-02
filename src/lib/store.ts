@@ -470,13 +470,13 @@ export const useAppStore = create<AppState>()(
                 }
                 return null
             },
-           fulfillOrder: (orderId) => set((state) => {
+            fulfillOrder: (orderId) => set((state) => {
                 const order = state.orders.find(o => o.id === orderId)
                 if (!order || order.status !== 'Processing') return state
-
+        
                 const updatedProducts = [...state.products]
                 const updatedSellers = [...state.sellers]
-
+        
                 order.items.forEach(item => {
                   const product = updatedProducts.find(p => p.id === item.id)
                   if (product) {
@@ -490,11 +490,12 @@ export const useAppStore = create<AppState>()(
                     }
                   }
                 })
-
-                const updatedOrders = state.orders.map(o => 
-                   o.id === orderId ? { ...o, status: 'Fulfilled' } : o
-                )
-
+        
+        
+                const updatedOrders: Order[] = state.orders.map(o => 
+                    o.id === orderId ? { ...o, status: 'Fulfilled' } : o
+                 )
+        
                 return {
                   products: updatedProducts,
                   sellers: updatedSellers,
