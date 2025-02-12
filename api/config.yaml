@@ -1,0 +1,22 @@
+# config.yaml
+kafka:
+  brokers:
+    - "kafka1:9092"
+    - "kafka2:9092"
+  topic: "notifications"
+  dlq_topic: "notifications_dlq"
+
+channels:
+  email:
+    enabled: true
+    smtp:
+      host: "smtp.example.com"
+      port: 587
+      username: "$SMTP_USERNAME" # Env var
+      password: "$SMTP_PASSWORD"
+  sms:
+    enabled: true
+    twilio:
+      account_sid: "$TWILIO_SID"
+      auth_token: "$TWILIO_AUTH_TOKEN"
+      from_number: "+1234567890"

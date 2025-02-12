@@ -1,0 +1,266 @@
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: nalevel-app
+#   labels:
+#     app: nalevel-app
+# spec:
+#   replicas: 2  # Start with 2 pods
+#   selector:
+#     matchLabels:
+#       app: nalevel-app
+#   template:
+#     metadata:
+#       labels:
+#         app: nalevel-app
+#     spec:
+#       containers:
+#       - name: nalevel-app
+#         image: <your_account_id>.dkr.ecr.us-east-1.amazonaws.com/nalevel-app:latest # Placeholder: Updated by CI/CD
+#         ports:
+#         - containerPort: 8080
+#         env: # Environment Variables
+#           - name: MONGODB_URI
+#             value: "mongodb://mongodb-service:27017/nalevel-db" # Service name for MongoDB
+#           - name: DB_NAME
+#             value: "nalevel-db"
+#           - name: REDIS_ADDRESS
+#             value: "redis-service:6379"   # Service name for Redis
+#           - name:  REDIS_PASSWORD
+#             valueFrom:
+#                 secretKeyRef:
+#                   name: redis-secret
+#                   key: redis-password # Key name of the secret
+#           - name: KAFKA_BROKERS
+#             value: "kafka-service:9092" # Service name for internal Kafka access.
+#           - name: SERVER_PORT
+#             value: "8080"
+#           - name: EMAIL_FROM
+#             value: "your_email"
+#           - name: SMTP_HOST
+#             value: "smtp.example.com"
+#           - name: SMTP_PORT
+#             value: "587"
+#           - name: SMTP_USER
+#             value: "your_smtp_user"
+#           - name: SMTP_PASSWORD
+#             value: "your_smtp_password"
+#           - name: APP_URL
+#             value: "http://your-app-url"  # Update this
+#           - name: JWT_SECRET_KEY
+#             value: "your_jwt_secret"       # Use a strong, randomly generated secret
+#           - name: PASETO_SYMMETRIC_KEY
+#             value: "your_paseto_key"      # Use a strong, randomly generated key
+#           - name: PASSWORD_PATTERN
+#             value: "^[a-zA-Z0-9!@#$%^&*]{8,32}$"  # Or your desired pattern
+#           - name: KAFKA_TOPIC
+#             value: "user-events"
+#           - name: KAFKA_GROUP_ID
+#             value: "my-consumer-group"
+#           - name: KAFKA_DLQ_TOPIC
+#             value: "my-events-dlq"
+#           - name: USER_CACHE_TTL
+#             value: "30m"
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: nalevel-app-service
+# spec:
+#   selector:
+#     app: nalevel-app
+#   ports:
+#     - protocol: TCP
+#       port: 80  # Expose on port 80 (standard HTTP)
+#       targetPort: 8080  # Forward to the container's port 8080
+#   type: LoadBalancer # Use a LoadBalancer to expose the service externally
+
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: mongodb-service
+# spec:
+#   ports:
+#   - port: 27017
+#     targetPort: 27017
+#   selector:
+#     app: mongodb # MUST MATCH the label in the MongoDB deployment
+
+# ---
+# apiVersion: apps/v1
+# kind: StatefulSet # Use StatefulSet for MongoDB
+# metadata:
+#   name: mongodb
+# spec:
+#   serviceName: "mongodb-service"
+#   replicas: 1 # Start with a single replica for dev/test
+#   selector:
+#     matchLabels:
+#       app: mongodb
+#   template:
+#     metadata:
+#       labels:
+#         app: mongodb
+#     spec:
+#       containers:
+#       - name: mongodb
+#         image: mongo:latest
+#         ports:
+#         - containerPort: 27017
+#         volumeMounts:
+#         - name: mongodb-data-volume
+#           mountPath: /data/db
+#   volumeClaimTemplates:
+#   - metadata:
+#       name: mongodb-data-volume
+#     spec:
+#       accessModes: [ "ReadWriteOnce" ]
+#       resources:
+#         requests:
+#           storage: 1Gi # Request 1GB of storage (adjust as needed)
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: redis-service
+# spec:
+#   ports:
+#   - port: 6379
+#     targetPort: 6379
+#   selector:
+#     app: redis
+
+# ---
+# apiVersion: v1
+# kind: Secret
+# metadata:
+#   name: redis-secret
+# type: Opaque
+# data:
+#   redis-password:  # Use base64 encoded value
+      
+# ---
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: redis
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app: redis
+#   template:
+#     metadata:
+#       labels:
+#         app: redis
+#     spec:
+#       containers:
+#       - name: redis
+#         image: redis:latest
+#         ports:
+#         - containerPort: 6379
+#         env:
+#             - name:  REDIS_PASSWORD
+#               valueFrom:
+#                 secretKeyRef:
+#                   name: redis-secret
+#                   key: redis-password
+#         volumeMounts:
+#           - name: redis-data-volume
+#             mountPath: /data
+
+#       volumes:
+#         - name: redis-data-volume
+#           emptyDir: {} # Use EmptyDir for now.  Consider PersistentVolumeClaim for production.
+
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: kafka-service
+# spec:
+#   ports:
+#     - port: 9092
+#       targetPort: 9092
+#       name: client
+#   selector:
+#     app: kafka
+# ---
+# apiVersion: apps/v1
+# kind: StatefulSet
+# metadata:
+#   name: kafka
+# spec:
+#   serviceName: "kafka-service"
+#   replicas: 1  # Start with one Kafka broker for dev/test
+#   selector:
+#     matchLabels:
+#       app: kafka
+#   template:
+#     metadata:
+#       labels:
+#         app: kafka
+#     spec:
+#       containers:
+#         - name: kafka
+#           image: bitnami/kafka:latest
+#           ports:
+#             - containerPort: 9092
+#               name: client
+#           env:
+#             - name: KAFKA_CFG_ZOOKEEPER_CONNECT
+#               value: "zookeeper-service:2181"
+#             - name: ALLOW_PLAINTEXT_LISTENER
+#               value: "yes"
+#             - name: KAFKA_CFG_LISTENERS
+#               value: "PLAINTEXT://:9092"
+#             - name: KAFKA_CFG_ADVERTISED_LISTENERS
+#               value: "PLAINTEXT://kafka-service:9092" #  Internal service name
+#           volumeMounts:
+#             - name: kafka-data
+#               mountPath: /bitnami/kafka
+#   volumeClaimTemplates:
+#   - metadata:
+#       name: kafka-data
+#     spec:
+#       accessModes: ["ReadWriteOnce"]
+#       resources:
+#         requests:
+#           storage: 1Gi  # Adjust as needed
+
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: zookeeper-service
+# spec:
+#   ports:
+#     - port: 2181
+#       targetPort: 2181
+#   selector:
+#     app: zookeeper
+
+# ---
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: zookeeper
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app: zookeeper
+#   template:
+#     metadata:
+#       labels:
+#         app: zookeeper
+#     spec:
+#       containers:
+#         - name: zookeeper
+#           image: bitnami/zookeeper:latest
+#           ports:
+#             - containerPort: 2181
+#           env:
+#             - name: ALLOW_ANONYMOUS_LOGIN
+#               value: "yes"

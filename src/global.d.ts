@@ -1,4 +1,12 @@
-type GTagArgument = string | number | boolean | Record<string, unknown>;
-interface Window {
-    gtag: (...args: GTagArgument[]) => void; // Type definition for gtag
+// src/global.d.ts
+declare global {
+    interface Window {
+      gtag: (
+        event: string,
+        measurementId: string,
+        config: { page_path: string }
+      ) => void;
+    }
   }
+  
+  export {};

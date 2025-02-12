@@ -1,0 +1,30 @@
+# Git
+.git
+.gitignore
+
+# Docker
+.dockerignore
+docker-compose.yml
+docker-compose.*.yml
+
+# Build artifacts (if you have any other build directories)
+bin/
+build/
+dist/
+
+# Editor/IDE files
+*.swp
+*~
+.idea/
+.vscode/
+
+# Temporary files
+tmp/
+*.tmp
+*.log
+
+# OS-generated files
+.DS_Store
+
+# Other files or directories you don't need in the image
+vendor/ # If you're using vendoring, you *might* need this.  But try to use `go mod download` instead.

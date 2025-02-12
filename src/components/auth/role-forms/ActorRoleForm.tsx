@@ -9,6 +9,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { FileUpload } from '@/components/shared/FileUpload';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { basicInfoSchema, roleDetailsSchema, verificationSchema } from "@/lib/onboarding/validations"; // Make sure these exist!
+import { OnboardingStage } from "@/lib/onboarding/types";
+import { UserRole } from '@/lib/user/types';
 
 const actorSchema = z.object({
   actingStyles: z.array(z.string()).min(1, 'Select at least one style'),

@@ -1,0 +1,91 @@
+# version: '3.8'
+
+services:
+  zookeeper:
+    image: 'bitnami/zookeeper:latest'
+    ports:
+      - '2181:2181'
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    networks:
+      - nalevel-network
+
+  kafka:
+    image: 'bitnami/kafka:latest'
+    ports:
+      - '9092:9092'
+      - '9093:9093'
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_CFG_LISTENERS=CLIENT://:9092,EXTERNAL://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka:9092,EXTERNAL://localhost:9093
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=CLIENT
+    depends_on:
+      - zookeeper
+    networks:
+      - nalevel-network
+
+  mongodb:
+    image: 'mongo:latest'
+    ports:
+      - '27017:27017'
+    environment:
+      - MONGO_INITDB_DATABASE=nalevel-db
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - nalevel-network
+
+  redis:
+    image: 'redis:latest'
+    ports:
+      - '6379:6379'
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+    networks:
+      - nalevel-network
+
+  app:
+    build:
+      context: . #  Use the current directory as the build context
+      dockerfile: Dockerfile #  Specify the Dockerfile (if it's not named "Dockerfile", which it isn't here)
+    ports:
+      - '8000:8080'
+    depends_on:
+      - mongodb
+      - redis
+      - kafka
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/nalevel-db
+      - DB_NAME=nalevel-db
+      - REDIS_ADDRESS=redis:6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - KAFKA_BROKERS=kafka:9092
+      - SERVER_PORT=8080
+      - EMAIL_FROM=${EMAIL_FROM}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - APP_URL=${APP_URL}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - PASETO_SYMMETRIC_KEY=${PASETO_SYMMETRIC_KEY}
+      - PASSWORD_PATTERN=${PASSWORD_PATTERN}
+      - KAFKA_TOPIC=${KAFKA_TOPIC}
+      - KAFKA_GROUP_ID=${KAFKA_GROUP_ID}
+      - KAFKA_DLQ_TOPIC=${KAFKA_DLQ_TOPIC}
+      - USER_CACHE_TTL=${USER_CACHE_TTL}
+    networks:
+      - nalevel-network
+
+volumes:
+  mongodb_data:
+  redis_data:
+
+networks:
+  nalevel-network:
+    driver: bridge

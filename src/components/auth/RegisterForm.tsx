@@ -1,7 +1,10 @@
+'use client'
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
+import Link from 'next/link';
+import { Loader2, AlertCircle } from 'lucide-react';
+
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -10,84 +13,73 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2 } from 'lucide-react';
-import { AuthService } from '@/lib/auth-service';
-import Link from 'next/link';
-
-const registerSchema = z.object({
-  firstName: z.string().min(2, 'First name must be at least 2 characters'),
-  lastName: z.string().min(2, 'Last name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
-  password: z.string()
-    .min(8, 'Password must be at least 8 characters')
-    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-    .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-    .regex(/[0-9]/, 'Password must contain at least one number')
-    .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character'),
-  confirmPassword: z.string()
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
-});
-
-type RegisterFormValues = z.infer<typeof registerSchema>;
+import { useRegister } from '@/lib/auth/hooks';
+import { registerSchema, type RegisterInput } from '@/lib/auth/validations';
+import { PasswordStrengthIndicator } from './PasswordStrengthIndicator';
+import { useRouter } from 'next/navigation';
 
 export function RegisterForm() {
-  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { toast } = useToast();
+  const router = useRouter();
 
-  const form = useForm<RegisterFormValues>({
+  const form = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
       firstName: '',
       lastName: '',
       email: '',
       password: '',
-      confirmPassword: ''
+      confirmPassword: '',
     },
+    mode: 'onChange', // Enable real-time validation
   });
-  const onSubmit = async (values: RegisterFormValues) => {
-    try {
-      setIsLoading(true);
-        const ip =  fetch('https://api.ipify.org?format=json').then(res => res.json()).then(data => data.ip)
 
-      const user = await AuthService.signUp(
-        { email: values.email, password: values.password },
-        { first: values.firstName, last: values.lastName },
-        await ip
-      );
-      
-      // Clear previous session data
-      AuthService.clearSession();
-      
-      // Direct session creation and redirect
-      AuthService.handleNewUser(user);
-  
-    } catch (error) {
-      if (error instanceof Error) {
-        if (error.message.includes('already exists')) {
-          // Redirect to login with pre-filled email
-          window.location.href = `/auth/login?email=${encodeURIComponent(values.email)}`;
-          return;
-        }
+  const { mutate: register, isPending, error } = useRegister();
+
+  const onSubmit = async (values: RegisterInput) => {
+    console.log('Form submitted with values:', values); // Log form values
+    register(values, {
+      onError: (error) => {
+        console.error('Registration error in form:', error); // Log form submission error
+        toast({
+          title: "Registration failed",
+          description: error.message,
+          variant: "destructive",
+        });
+      },
+      onSuccess: (data) => {
+        console.log('Registration succeeded:', data); // Log success
+        router.push('/auth/verify-email-sent');
       }
-      toast({ title: "Registration Error", description: error.message });
-    } finally {
-      setIsLoading(false);
+    });
+  };
+
+  const togglePassword = (field: 'password' | 'confirmPassword') => {
+    if (field === 'password') {
+      setShowPassword(!showPassword);
+    } else {
+      setShowConfirmPassword(!showConfirmPassword);
     }
   };
 
   return (
-    <div className="space-y-6 rounded-lg" >
-      <div className="space-y-2 text-center">
-        <h1 className="text-2xl font-semibold tracking-tight">Create an account</h1>
-        <p className="text-sm text-muted-foreground">
-          Enter your details below to create your account
-        </p>
-      </div>
+    <div className="space-y-6 w-full max-w-md mx-auto">
+
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            {error.message}
+          </AlertDescription>
+        </Alert>
+      )}
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -99,12 +91,18 @@ export function RegisterForm() {
                 <FormItem>
                   <FormLabel>First Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="Wirngo" {...field} />
+                    <Input
+                      placeholder="First name"
+                      autoComplete="given-name"
+                      disabled={isPending}
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name="lastName"
@@ -112,7 +110,12 @@ export function RegisterForm() {
                 <FormItem>
                   <FormLabel>Last Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="Elvis" {...field} />
+                    <Input
+                      placeholder="Last name"
+                      autoComplete="family-name"
+                      disabled={isPending}
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -127,8 +130,18 @@ export function RegisterForm() {
               <FormItem>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <Input placeholder="wirngoelvis@gmail.com" type="email" {...field} />
+                  <Input
+                    placeholder="email@example.com"
+                    type="email"
+                    autoComplete="email"
+                    autoCapitalize="none"
+                    disabled={isPending}
+                    {...field}
+                  />
                 </FormControl>
+                <FormDescription>
+                  We'll send a verification link to this email
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -141,8 +154,26 @@ export function RegisterForm() {
               <FormItem>
                 <FormLabel>Password</FormLabel>
                 <FormControl>
-                  <Input placeholder="********" type="password" {...field} />
+                  <div className="relative">
+                    <Input
+                      placeholder="********"
+                      type={showPassword ? "text" : "password"}
+                      autoComplete="new-password"
+                      disabled={isPending}
+                      {...field}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                      onClick={() => togglePassword('password')}
+                    >
+                      {showPassword ? "Hide" : "Show"}
+                    </Button>
+                  </div>
                 </FormControl>
+                <PasswordStrengthIndicator password={field.value} />
                 <FormMessage />
               </FormItem>
             )}
@@ -155,23 +186,53 @@ export function RegisterForm() {
               <FormItem>
                 <FormLabel>Confirm Password</FormLabel>
                 <FormControl>
-                  <Input placeholder="********" type="password" {...field} />
+                  <div className="relative">
+                    <Input
+                      placeholder="********"
+                      type={showConfirmPassword ? "text" : "password"}
+                      autoComplete="new-password"
+                      disabled={isPending}
+                      {...field}
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                      onClick={() => togglePassword('confirmPassword')}
+                    >
+                      {showConfirmPassword ? "Hide" : "Show"}
+                    </Button>
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Create account
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={isPending || !form.formState.isValid}
+          >
+            {isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Creating account...
+              </>
+            ) : (
+              "Create account"
+            )}
           </Button>
         </form>
       </Form>
 
       <div className="text-center text-sm">
         Already have an account?{" "}
-        <Link href="/auth/login" className="text-primary hover:underline">
+        <Link
+          href="/auth/login"
+          className="font-medium text-primary hover:underline"
+        >
           Sign in
         </Link>
       </div>

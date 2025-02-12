@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-service
+spec:
+  replicas: 3
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    spec:
+      containers:
+      - name: notification
+        image: notification-service:1.0.0
+        envFrom:
+        - secretRef:
+            name: notification-secrets
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+  # Grafana Dashboard
+- title: Notification Service
+  panels:
+    - title: Delivery Success Rate
+      type: stat
+      targets:
+        - expr: sum(rate(notification_attempts_total{success="true"}[5m])) / sum(rate(notification_attempts_total[5m]))
+    - title: P99 Delivery Latency
+      type: heatmap
+      targets:
+        - expr: histogram_quantile(0.99, sum(rate(notification_delivery_latency_seconds_bucket[5m])) by (le, channel))

@@ -1,47 +1,63 @@
-// app/auth/onboarding/layout.tsx
+// src/app/onboarding/layout.tsx
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import { useUserStore } from "@/stores/useUserStore";
+import { useAuthStore } from '@/lib/auth/store';
+import { useOnboardingStore } from '@/lib/onboarding/store';
+import { ProgressTracker } from '@/components/onboarding/ProgressTracker';
+import { Card } from '@/components/ui/card';
+import { LoadingSpinner } from '@/components/loading-spinner'; // Import LoadingSpinner
+
+const STAGES = [
+  'setup',
+  'role-selection',
+  'basic-info',
+  'role-details',
+  'verification'
+] as const;
 
 export default function OnboardingLayout({
-  children
+  children,
 }: {
   children: React.ReactNode;
 }) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const { user } = useUserStore();
+  const { user, isLoading: authLoading } = useAuthStore();
+  const { status, isLoading: onboardingLoading } = useOnboardingStore();
 
-  useEffect(() => {
-    if (!user) {
-      router.push('/auth/login');
-      return;
-    }
+  if (authLoading || onboardingLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <LoadingSpinner /> {/* Use the LoadingSpinner component */}
+      </div>
+    );
+  }
 
-    const currentStage = user.onboarding.stage;
-    const stagePaths = {
-      'role-selection': '/auth/onboarding/role-selection',
-      'basic-info': '/auth/onboarding/basic-info',
-      'role-details': '/auth/onboarding/role-details',
-      'verification': '/auth/onboarding/verification',
-      'completed': '/auth/onboarding/completed'
-    };
-
-    // Prevent skipping stages
-    if (pathname !== stagePaths[currentStage]) {
-      router.push(stagePaths[currentStage]);
-    }
-  }, [user, pathname, router]);
-
-  if (!user) return null;
+  if (!user || user.hasCompletedOnboarding) {
+    return null;
+  }
 
   return (
-    <div className="min-h-screen bg-background">
-      <main className="container max-w-screen-lg py-8">
-        {children}
-      </main>
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 p-6">
+      <div className="max-w-4xl mx-auto space-y-8">
+        <div className="text-center space-y-2">
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Complete Your Profile
+          </h1>
+          <p className="text-muted-foreground">
+            Let's get you set up with everything you need
+          </p>
+        </div>
+
+        <Card className="p-6">
+          <ProgressTracker
+            stages={STAGES}
+            currentStage={status?.stage || 'setup'} // Get current stage from status
+          />
+
+          <div className="mt-8">
+            {children}
+          </div>
+        </Card>
+      </div>
     </div>
   );
 }

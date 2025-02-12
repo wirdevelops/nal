@@ -1,0 +1,6 @@
+{
+    "onboarding": {
+      "incomplete": "Please complete all onboarding steps",
+      "stage_order": "Complete previous steps first"
+    }
+  }

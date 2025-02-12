@@ -1,3 +1,4 @@
+// components/auth/ResetPasswordForm.tsx
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -51,18 +52,16 @@ export function ResetPasswordForm({ token, email }: ResetPasswordFormProps) {
   const onSubmit = async (values: z.infer<typeof schema>) => {
     try {
       setIsLoading(true);
-      await AuthService.resetPassword(email, token, values.password);
-      
+      await AuthService.resetPassword(token, values.password); // Use token, not email
       toast({
         title: "Password reset successful",
         description: "You can now log in with your new password",
       });
-      
       router.push('/auth/login');
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Reset failed",
-        description: error instanceof Error ? error.message : "Failed to reset password",
+        description: error?.response?.data?.error || "Failed to reset password. The link may have expired.", // More specific error
         variant: "destructive",
       });
     } finally {
@@ -71,52 +70,42 @@ export function ResetPasswordForm({ token, email }: ResetPasswordFormProps) {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-semibold tracking-tight">Reset your password</h1>
-        <p className="text-sm text-muted-foreground">
-          Enter your new password below
-        </p>
-      </div>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>New Password</FormLabel>
+              <FormControl>
+                <Input type="password" placeholder="********" autoComplete="new-password" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>New Password</FormLabel>
-                <FormControl>
-                  <Input type="password" placeholder="********" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        <FormField
+          control={form.control}
+          name="confirmPassword"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Confirm New Password</FormLabel>
+              <FormControl>
+                <Input type="password" placeholder="********" autoComplete="new-password" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-          <FormField
-            control={form.control}
-            name="confirmPassword"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Confirm New Password</FormLabel>
-                <FormControl>
-                  <Input type="password" placeholder="********" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Reset password
-          </Button>
-        </form>
-      </Form>
-
-      <div className="space-y-4">
+        <Button type="submit" className="w-full" disabled={isLoading}>
+          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          Reset password
+        </Button>
+      </form>
+       <div className="space-y-4">
         <p className="text-sm text-muted-foreground">Password requirements:</p>
         <ul className="text-sm text-muted-foreground space-y-1">
           <li>At least 8 characters long</li>
@@ -125,6 +114,6 @@ export function ResetPasswordForm({ token, email }: ResetPasswordFormProps) {
           <li>Must include special characters</li>
         </ul>
       </div>
-    </div>
+    </Form>
   );
 }

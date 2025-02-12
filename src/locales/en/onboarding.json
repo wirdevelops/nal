@@ -1,0 +1,37 @@
+
+{
+    "onboarding": {
+      "title": "Complete Your Profile",
+      "steps": {
+        "basicInfo": {
+          "title": "Basic Information",
+          "fields": {
+            "firstName": "First Name",
+            "lastName": "Last Name"
+     
+          }
+        },
+        "roleDetails": {
+          "title": "Role Details",
+          "primaryRole": "Primary Role"
+  
+        },
+        "verification": {
+          "title": "Account Verification",
+          "documentTypes": {
+            "id_card": "National ID Card",
+            "passport": "Passport",
+            "drivers_license": "Driver's License"
+          }
+        }
+      },
+      "errors": {
+        "invalid_stage": "Please complete previous steps first",
+        "document_required": "Document upload is required"
+  
+      },
+      "completeButton": "Finish Setup",
+      "previousButton": "Back",
+      "nextButton": "Continue"
+    }
+  }

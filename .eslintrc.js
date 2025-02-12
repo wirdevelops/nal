@@ -1,9 +1,13 @@
 // .eslintrc.js
 module.exports = {
     parser: '@typescript-eslint/parser',
+    plugins: ['@typescript-eslint'],
+  root: true,
     extends: [
       'next/core-web-vitals',
-      'plugin:@typescript-eslint/recommended',
+    'eslint:recommended',
+    'plugin:@typescript-eslint/recommended',
+    'plugin:prettier/recommended',
     ],
     rules: {
       // Disable unused variables warning
